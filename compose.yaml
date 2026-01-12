@@ -4,8 +4,14 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+    env_file:
+      - .env
     environment:
-      NODE_ENV: development
+      - NODE_ENV=development
+      # Override DATABASE_URL from .env
+      # This is to ensure the app can connect to the correct database
+      # So we must replace the "localhost" with "db"
+      - DATABASE_URL=postgres://root:mysecretpassword@db:5432/local
     ports:
       - 5172:5172
     working_dir: /app
@@ -17,9 +23,9 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: local
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_DB=local
     volumes:
       - pgdata:/var/lib/postgresql
 volumes:
