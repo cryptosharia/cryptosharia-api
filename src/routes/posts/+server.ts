@@ -31,7 +31,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		where: (posts, { eq, or, ilike, and }) => {
 			const filters = [];
 
-			if (category) {
+			if (category !== 'all') {
 				filters.push(eq(posts.category, category));
 			}
 
