@@ -1,30 +1,15 @@
 import type { RequestHandler } from './$types';
-
 import { db } from '$lib/server/db';
-import { z } from 'zod';
-import { postCategory } from '$lib/server/db/schema';
-import type { Post } from '$lib/types';
-
-/**
- * Zod schema for validating post query parameters.
- * - category: strictly 'article' or 'activity'
- * - search: optional string
- * - limit: range 1-100, defaults to 10
- * - page: minimum 1, defaults to 1
- */
-const GetParams = z.object({
-	category: z.enum(postCategory.enumValues).optional(),
-	search: z.string().optional(),
-	limit: z.coerce.number().min(1).max(100).default(10),
-	page: z.coerce.number().min(1).default(1)
-});
+import type { ApiResponse, Post } from '$lib/types';
+import { GetPostsParams } from '.';
+import z from '$lib/zod-openapi';
 
 /**
  * Handles GET requests to fetch posts with filtering, searching, and pagination.
  */
 export const GET: RequestHandler = async ({ url }) => {
 	// 1. Validate query parameters using Zod
-	const result = GetParams.safeParse(Object.fromEntries(url.searchParams));
+	const result = GetPostsParams.safeParse(Object.fromEntries(url.searchParams));
 
 	// If validation fails, return a 400 Bad Request using the class helper
 	if (!result.success) {

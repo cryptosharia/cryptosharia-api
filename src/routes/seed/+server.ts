@@ -4,6 +4,7 @@ import * as schema from '$lib/server/db/schema';
 import { error } from '@sveltejs/kit';
 
 import { dev } from '$app/environment';
+import type { ApiResponse } from '$lib/types';
 
 export async function GET() {
 	// 1. Strict Environment Safety Check
