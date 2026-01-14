@@ -8,9 +8,15 @@ import { dev } from '$app/environment';
 export async function GET() {
 	// 1. Strict Environment Safety Check
 	// This ensures the route ONLY works in development mode.
-	// In production, Vite will bake 'dev' as 'false', and this code becomes unreachable/error.
+	// In production, SvelteKit will bake 'dev' as 'false', and this code becomes unreachable/error.
 	if (!dev) {
-		throw error(403, 'Forbidden: Seeding is only allowed in development mode.');
+		return Response.json(
+			{
+				success: false,
+				message: 'Forbidden: Seeding is only allowed in development mode.'
+			} satisfies ApiResponse<undefined>,
+			{ status: 403 }
+		);
 	}
 
 	try {

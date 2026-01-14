@@ -32,9 +32,8 @@ export const GET: RequestHandler = async ({ url }) => {
 			{
 				success: false,
 				message: 'Invalid query parameters',
-				errors: result.error.flatten().fieldErrors,
-				data: null
-			} satisfies ApiResponse<null>,
+				errors: result.error.flatten().fieldErrors
+			} satisfies ApiResponse<undefined>,
 			{ status: 400 }
 		);
 	}
