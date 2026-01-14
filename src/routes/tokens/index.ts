@@ -15,7 +15,11 @@ export const GetTokensParams = z
 		status: z.enum(['all', ...tokenStatus.enumValues]).default('all'),
 		search: z.string().default(''),
 		limit: z.coerce.number().min(1).max(100).default(10),
-		page: z.coerce.number().min(1).default(1)
+		page: z.coerce.number().min(1).default(1),
+		exclude: z.string().default('').openapi({
+			description: 'Comma-separated list of token slugs to exclude',
+			example: 'bitcoin,ethereum,sui'
+		})
 	})
 	.openapi('GetTokensParams', {
 		description: 'Query parameters for fetching tokens with filtering, searching, and pagination'

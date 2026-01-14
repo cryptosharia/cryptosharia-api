@@ -11,7 +11,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	// 1. Validate query parameters using Zod
 	const result = GetPostsParams.safeParse(Object.fromEntries(url.searchParams));
 
-	// If validation fails, return a 400 Bad Request using the class helper
+	// If validation fails, return a 400 Bad Request
 	if (!result.success) {
 		return Response.json(
 			{
@@ -23,12 +23,12 @@ export const GET: RequestHandler = async ({ url }) => {
 		);
 	}
 
-	const { category, search, limit, page } = result.data;
+	const { category, search, limit, page, exclude } = result.data;
 	const offset = (page - 1) * limit;
 
 	// 2. Fetch posts from the database
 	const posts = await db.query.posts.findMany({
-		where: (posts, { eq, or, ilike, and }) => {
+		where: (posts, { eq, or, ilike, and, notInArray }) => {
 			const filters = [];
 
 			if (category !== 'all') {
@@ -42,6 +42,17 @@ export const GET: RequestHandler = async ({ url }) => {
 				);
 			}
 
+			if (exclude) {
+				const excludedSlugs = exclude
+					.split(',')
+					.map((s) => s.trim())
+					.filter((s) => s.length > 0);
+
+				if (excludedSlugs.length > 0) {
+					filters.push(notInArray(posts.slug, excludedSlugs));
+				}
+			}
+
 			return filters.length > 0 ? and(...filters) : undefined;
 		},
 		limit,
@@ -49,7 +60,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		orderBy: (posts, { desc }) => [desc(posts.createdAt)]
 	});
 
-	// 3. Return structured success response
+	// 3. Return the success response
 	return Response.json({
 		success: true,
 		message: 'Posts fetched successfully',
