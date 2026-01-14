@@ -32,9 +32,9 @@ export const posts = pgTable('posts', {
 	category: categoryEnum('category').notNull(),
 	tags: text('tags').array().notNull().default([]),
 	title: text('title').notNull(),
-	description: text('description'),
-	thumbnailUrl: text('thumbnail_url'),
-	contentUrl: text('content_url')
+	description: text('description').notNull(),
+	thumbnailUrl: text('thumbnail_url').notNull(),
+	contentUrl: text('content_url').notNull()
 });
 
 /**
@@ -51,7 +51,7 @@ export const tokens = pgTable('tokens', {
 	tags: text('tags').array().notNull().default([]),
 	tvPair: text('tv_pair'),
 	website: text('website'),
-	logoUrl: text('logo_url'),
-	overviewUrl: text('overview_url'),
-	conclusionUrl: text('conclusion_url')
+	logoUrl: text('logo_url').notNull(),
+	overviewUrl: text('overview_url').notNull(),
+	conclusionUrl: text('conclusion_url').notNull()
 });
