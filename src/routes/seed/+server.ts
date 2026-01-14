@@ -1,7 +1,8 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import * as schema from '$lib/server/db/schema';
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
+
 import { dev } from '$app/environment';
 
 export async function GET() {
@@ -25,7 +26,10 @@ export async function GET() {
 		// Seed Tokens
 		await db.insert(schema.tokens).values(TOKENS);
 
-		return json({ success: true, message: 'Database seeded successfully' });
+		return Response.json({
+			success: true,
+			message: 'Database seeded successfully'
+		} satisfies ApiResponse<undefined>);
 	} catch (err) {
 		console.error('Seeding failed:', err);
 		throw error(500, 'Internal Server Error during seeding.');

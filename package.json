@@ -43,6 +43,7 @@
 		"vitest": "^4.0.15"
 	},
 	"dependencies": {
-		"postgres": "^3.4.7"
+		"postgres": "^3.4.7",
+		"zod": "^4.3.5"
 	}
 }

@@ -18,8 +18,8 @@ const BASE_TABLE = {
 
 // --- Enums ---
 
-export const categoryEnum = pgEnum('category', ['activity', 'article']);
-export const statusEnum = pgEnum('status', ['halal', 'haram', 'syubhat']);
+export const postCategory = pgEnum('post_category', ['activity', 'article']);
+export const tokenStatus = pgEnum('token_status', ['halal', 'haram', 'syubhat']);
 
 // --- Tables ---
 
@@ -29,7 +29,7 @@ export const statusEnum = pgEnum('status', ['halal', 'haram', 'syubhat']);
 export const posts = pgTable('posts', {
 	...BASE_TABLE,
 	slug: text('slug').unique().notNull(),
-	category: categoryEnum('category').notNull(),
+	category: postCategory('category').notNull(),
 	tags: text('tags').array().notNull().default([]),
 	title: text('title').notNull(),
 	description: text('description').notNull(),
@@ -46,7 +46,7 @@ export const tokens = pgTable('tokens', {
 	rank: integer('rank'),
 	name: text('name').notNull(),
 	ticker: text('ticker').notNull(),
-	status: statusEnum('status').notNull(),
+	status: tokenStatus('status').notNull(),
 	color: text('color'),
 	tags: text('tags').array().notNull().default([]),
 	tvPair: text('tv_pair'),
