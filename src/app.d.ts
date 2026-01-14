@@ -8,6 +8,12 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	type ApiResponse<T> = {
+		success: boolean;
+		message: string;
+		data: T;
+	};
 }
 
 export {};
