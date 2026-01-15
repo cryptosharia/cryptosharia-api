@@ -1,11 +1,10 @@
 {
 	"git.autofetch": true,
 	"terminal.integrated.suggest.enabled": true,
-	"svelte.enable-ts-plugin": true,
 
 	"editor.tabSize": 2,
 
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.formatOnSave": true,
-	"eslint.validate": ["svelte", "javascript", "typescript"]
+	"eslint.validate": ["javascript", "typescript"]
 }

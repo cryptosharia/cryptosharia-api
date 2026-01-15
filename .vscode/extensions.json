@@ -1,6 +1,5 @@
 {
 	"recommendations": [
-		"svelte.svelte-vscode",
 		"ms-azuretools.vscode-docker",
 		"dbaeumer.vscode-eslint",
 		"esbenp.prettier-vscode"
