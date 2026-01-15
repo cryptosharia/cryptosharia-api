@@ -13,11 +13,11 @@ import z from '$lib/zod-openapi';
 export const GetTokensParams = z
 	.object({
 		status: z.enum(['all', ...tokenStatus.enumValues]).default('all'),
-		slug: z.string().default(''),
-		search: z.string().default(''),
+		slug: z.string().optional(),
+		search: z.string().optional(),
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1),
-		exclude: z.string().default('').openapi({
+		exclude: z.string().optional().openapi({
 			description: 'Comma-separated list of token slugs to exclude',
 			example: 'bitcoin,ethereum,sui'
 		})
