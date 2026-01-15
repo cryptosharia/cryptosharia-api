@@ -1,16 +1,21 @@
 import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { posts } from '../posts';
 import { tokens } from '../tokens';
+import { messages } from '../messages';
+
+const PATHS = [posts, tokens, messages];
 
 export function GET() {
 	const registry = new OpenAPIRegistry();
 
 	// Register paths
-	registry.registerPath(posts);
-	registry.registerPath(tokens);
+	for (const path of PATHS) {
+		registry.registerPath(path);
+	}
 
 	const generator = new OpenApiGeneratorV31(registry.definitions);
 
+	// Generate OpenAPI document
 	const openapi = generator.generateDocument({
 		openapi: '3.1.0',
 		info: {

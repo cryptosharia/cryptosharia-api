@@ -55,3 +55,13 @@ export const tokens = pgTable('tokens', {
 	overviewUrl: text('overview_url').notNull(),
 	conclusionUrl: text('conclusion_url').notNull()
 });
+
+/**
+ * Stores messages sent via the contact form.
+ */
+export const messages = pgTable('messages', {
+	...BASE_TABLE,
+	name: text('name').notNull(),
+	email: text('email').notNull(),
+	message: text('message').notNull()
+});
