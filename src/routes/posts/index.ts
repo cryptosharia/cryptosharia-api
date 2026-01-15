@@ -13,6 +13,7 @@ import z from '$lib/zod-openapi';
 export const GetPostsParams = z
 	.object({
 		category: z.enum(['all', ...postCategory.enumValues]).default('all'),
+		slug: z.string().default(''),
 		search: z.string().default(''),
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1),

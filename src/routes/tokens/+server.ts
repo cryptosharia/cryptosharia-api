@@ -23,7 +23,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		);
 	}
 
-	const { status, search, limit, page, exclude } = result.data;
+	const { status, slug, search, limit, page, exclude } = result.data;
 	const offset = (page - 1) * limit;
 
 	// 2. Fetch tokens from the database
@@ -33,6 +33,10 @@ export const GET: RequestHandler = async ({ url }) => {
 
 			if (status !== 'all') {
 				filters.push(eq(tokens.status, status));
+			}
+
+			if (slug) {
+				filters.push(eq(tokens.slug, slug));
 			}
 
 			if (search) {

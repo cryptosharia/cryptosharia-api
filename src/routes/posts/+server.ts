@@ -23,7 +23,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		);
 	}
 
-	const { category, search, limit, page, exclude } = result.data;
+	const { category, slug, search, limit, page, exclude } = result.data;
 	const offset = (page - 1) * limit;
 
 	// 2. Fetch posts from the database
@@ -33,6 +33,10 @@ export const GET: RequestHandler = async ({ url }) => {
 
 			if (category !== 'all') {
 				filters.push(eq(posts.category, category));
+			}
+
+			if (slug) {
+				filters.push(eq(posts.slug, slug));
 			}
 
 			if (search) {
