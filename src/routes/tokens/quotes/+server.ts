@@ -1,6 +1,6 @@
 import { CMC_API_KEY } from '$env/static/private';
-import { db } from '$lib/server/db';
-import { tokens } from '$lib/server/db/schema';
+import { db } from '$lib/db';
+import { tokens } from '$lib/db/schema';
 import type { ApiResponse } from '$lib/types';
 import { eq } from 'drizzle-orm';
 import z from '$lib/zod-openapi';

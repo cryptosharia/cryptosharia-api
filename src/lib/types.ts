@@ -1,4 +1,4 @@
-import * as schema from './server/db/schema';
+import * as schema from './db/schema';
 import { createSelectSchema } from 'drizzle-zod';
 import z from './zod-openapi';
 

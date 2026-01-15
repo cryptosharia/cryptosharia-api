@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
+import { db } from '$lib/db';
 import type { ApiResponse, Token } from '$lib/types';
 import { GetTokensParams } from '.';
 import z from '$lib/zod-openapi';

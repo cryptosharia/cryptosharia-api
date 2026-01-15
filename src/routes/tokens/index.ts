@@ -1,4 +1,4 @@
-import { tokenStatus } from '$lib/server/db/schema';
+import { tokenStatus } from '$lib/db/schema';
 import { ApiResponse, Token } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';

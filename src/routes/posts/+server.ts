@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
+import { db } from '$lib/db';
 import type { ApiResponse, Post } from '$lib/types';
 import { GetPostsParams } from '.';
 import z from '$lib/zod-openapi';

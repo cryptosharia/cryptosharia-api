@@ -1,4 +1,4 @@
-import { postCategory } from '$lib/server/db/schema';
+import { postCategory } from '$lib/db/schema';
 import { ApiResponse, Post } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
