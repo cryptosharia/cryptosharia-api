@@ -1,4 +1,3 @@
-import type { InferSelectModel } from 'drizzle-orm';
 import * as schema from './server/db/schema';
 import { createSelectSchema } from 'drizzle-zod';
 import z from './zod-openapi';
@@ -21,13 +20,12 @@ export const ApiResponse = z
 	})
 	.openapi('ApiResponse');
 
-export type Post = InferSelectModel<typeof schema.posts>;
 export const Post = createSelectSchema(schema.posts).openapi('Post');
+export type Post = z.infer<typeof Post>;
 
-export type Token = InferSelectModel<typeof schema.tokens>;
 export const Token = createSelectSchema(schema.tokens).openapi('Token');
+export type Token = z.infer<typeof Token>;
 
-export type Message = InferSelectModel<typeof schema.messages>;
 export const Message = createSelectSchema(schema.messages, {
 	name: (s) =>
 		s
@@ -38,7 +36,10 @@ export const Message = createSelectSchema(schema.messages, {
 		s
 			.min(10, { message: 'Message must be at least 10 characters long' })
 			.max(5000, { message: 'Message must be at most 5000 characters long' })
-}).extend({
-	// Use extend (override) for "email" to solve "string().email()" deprecation
-	email: z.email().max(255, { message: 'Email must be at most 255 characters long' })
-});
+})
+	.extend({
+		// Use extend (override) for "email" to solve "string().email()" deprecation
+		email: z.email().max(255, { message: 'Email must be at most 255 characters long' })
+	})
+	.openapi('Message');
+export type Message = z.infer<typeof Message>;
