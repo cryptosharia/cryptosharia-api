@@ -1,7 +1,6 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import * as schema from '$lib/server/db/schema';
-import { error } from '@sveltejs/kit';
 
 import { dev } from '$app/environment';
 import type { ApiResponse } from '$lib/types';
@@ -39,7 +38,13 @@ export async function GET() {
 		} satisfies ApiResponse<undefined>);
 	} catch (err) {
 		console.error('Seeding failed:', err);
-		throw error(500, 'Internal Server Error during seeding.');
+		return Response.json(
+			{
+				success: false,
+				message: 'Internal Server Error during seeding.'
+			} satisfies ApiResponse<undefined>,
+			{ status: 500 }
+		);
 	}
 }
 
