@@ -3,13 +3,6 @@ import { ApiResponse, Post } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
-/**
- * Zod schema for validating post query parameters.
- * - category: strictly 'article' or 'activity'
- * - search: optional string
- * - limit: range 1-100, defaults to 10
- * - page: minimum 1, defaults to 1
- */
 export const GetPostsParams = z
 	.object({
 		category: z.enum(['all', ...postCategory.enumValues]).default('all'),

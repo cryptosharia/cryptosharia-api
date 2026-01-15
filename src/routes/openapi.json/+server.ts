@@ -1,10 +1,11 @@
 import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { posts } from '../posts';
+import { postsCount } from '../posts/count';
 import { tokens } from '../tokens';
 import { messages } from '../messages';
 import { seed } from '../seed';
 
-const PATHS = [posts, tokens, messages, seed];
+const PATHS = [posts, postsCount, tokens, messages, seed];
 
 export function GET() {
 	const registry = new OpenAPIRegistry();
