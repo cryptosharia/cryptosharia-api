@@ -1,38 +1,20 @@
-# sv
+# CryptoSharia API
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+**CryptoSharia API** is the robust backend engine and core logic provider for all **CryptoSharia** platforms. It manages Sharia-compliant crypto data, blog content, community activities, and core business logic, ensuring a unified and ethical data source for the entire ecosystem.
 
-## Creating a project
+## 🏛️ Architecture & Tech Stack
 
-If you're seeing this, you've probably already done this step. Congrats!
+Built with a focus on type safety, performance, and clear documentation:
 
-```sh
-# create a new project in the current directory
-npx sv create
+- **Framework:** [SvelteKit](https://svelte.dev/docs/kit/) (Utilized as a high-performance API-only server)
+- **Database:** [PostgreSQL](https://postgresql.org/)
+- **ORM:** [Drizzle ORM](https://orm.drizzle.team/) for type-safe database interactions
+- **Validation:** [Zod](https://zod.dev/) for strict schema validation
+- **Documentation:** [OpenAPI 3.1](https://www.openapis.org/) with [Scalar](https://scalar.com/) for interactive API docs
+- **Containerization:** [Docker Compose](https://docs.docker.com/compose/) for development
 
-# create a new project in my-app
-npx sv create my-app
-```
+## 🔗 Links
 
-## Developing
+### 🌐 **REST API:** [_api.cryptosharia.id_](https://api.cryptosharia.id)
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+### 🧑🏻‍💻 **Developers:** [_Daffa Ilhami_](https://github.com/mdaffailhami)
