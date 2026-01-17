@@ -1,23 +1,50 @@
+# Notes:
+# Port allocation for the CryptoSharia project family:
+# 5173 = CryptoSharia API
+# 5174 = CryptoSharia Admin
+# 5175 = CryptoSharia Profile
+# 5176 = CryptoSharia News
+
 services:
-  app:
+  cryptosharia-api:
     image: node:24-alpine
+
     volumes:
-      - .:/app
-      - /app/node_modules
+      - .:/app # Bind mount: expose the host project folder into /app (live, real-time view of host files)
+      - /app/node_modules # Anonymous Docker-managed volume mounted at /app/node_modules (overrides the bind mount at that subpath)
+
     env_file:
-      - .env
+      - .env # Load variables from .env file.
+
+    # Explicitly set environment variables.
+    # Note: Variables defined here will OVERRIDE those with the same name in the .env file loaded above.
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=development # Explicitly tells Node and libraries that we are in development mode
       # Override DATABASE_URL from .env
       # This is to ensure the app can connect to the correct database
-      # So we must replace the "localhost" with "db"
-      - DATABASE_URL=postgres://root:mysecretpassword@db:5432/local
-    ports:
-      - 5172:5172
-    working_dir: /app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5172"
+      # So we must replace the "localhost" with "cryptosharia-db" (the service name)
+      - DATABASE_URL=postgres://root:mysecretpassword@cryptosharia-db:5432/local
 
-  db:
+    ports:
+      # Maps ports from the host (actual computer) to ports inside the container
+      - '5173:5173' # [Host Port 5173] : [Container Port 5173]
+
+    # Join the shared external network to communicate with other services.
+    # Note: When communicating between containers on this network, use the
+    # service name as the hostname instead of 'localhost'.
+    # Example: To reach the API, use 'http://cryptosharia-api:5173'
+    networks:
+      - cryptosharia-net
+
+    # Default directory for running the command (like `cd /app`)
+    working_dir: /app
+
+    # `sh -c` Starts a shell to understand the "&&" logic
+    # `npm install` Install node dependencies and store it inside /app/node_modules Docker-managed volume
+    # `npm run dev -- --host 0.0.0.0 --port 5173` Starts the SvelteKit dev server and makes it visible outside the container
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+
+  cryptosharia-db:
     image: postgres:18-alpine
     restart: always
     ports:
@@ -27,6 +54,14 @@ services:
       - POSTGRES_PASSWORD=mysecretpassword
       - POSTGRES_DB=local
     volumes:
-      - pgdata:/var/lib/postgresql
+      - cryptosharia-db:/var/lib/postgresql
+    networks:
+      - cryptosharia-net
+
 volumes:
-  pgdata:
+  cryptosharia-db:
+
+networks:
+  cryptosharia-net:
+    external: true
+    name: cryptosharia-net

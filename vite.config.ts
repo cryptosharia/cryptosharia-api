@@ -4,6 +4,11 @@ import { sveltekit } from '@sveltejs/kit/vite';
 export default defineConfig({
 	plugins: [sveltekit()],
 
+	server: {
+		// Allow other containers in the same network to send HTTP requests to this CryptoSharia API
+		allowedHosts: ['cryptosharia-api']
+	},
+
 	test: {
 		expect: { requireAssertions: true },
 
