@@ -1,67 +1,181 @@
-import { pgTable, uuid, timestamp, text, integer, pgEnum } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	uuid,
+	timestamp,
+	text,
+	integer,
+	pgEnum,
+	varchar,
+	boolean,
+	jsonb,
+	unique
+} from 'drizzle-orm/pg-core';
 
-/**
- * Base column definitions to be spread into other table schemas.
- *
- * NOTE ON TIMEZONES:
- * We use { withTimezone: true } to create `TIMESTAMPTZ` columns.
- * 1. Storage: Postgres internally converts all input to UTC and stores as UTC.
- * 2. Retrieval: Postgres converts the internal UTC value to the connection session timezone.
- *    NOTE: When serialized to the browser, Server sends this as a UTC ISO string,
- *    allowing the browser to handle the final local timezone conversion.
- */
-const BASE_TABLE = {
-	id: uuid('id').primaryKey().defaultRandom(),
+// --- Helpers ---
+
+const PK_UUID = {
+	id: uuid('id').primaryKey().defaultRandom()
+};
+
+const PK_INT = {
+	id: integer('id').primaryKey().generatedAlwaysAsIdentity()
+};
+
+const BASE_TIMESTAMPS = {
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
 };
 
 // --- Enums ---
 
-export const postCategory = pgEnum('post_category', ['activity', 'article']);
-export const tokenStatus = pgEnum('token_status', ['halal', 'haram', 'syubhat']);
+export const shariaStatusEnum = pgEnum('sharia_status', ['halal', 'haram', 'syubhat']);
+export const iconTypeEnum = pgEnum('icon_type', ['lucide', 'simple_icons', 'svg']);
+export const settingTypeEnum = pgEnum('setting_type', [
+	'number',
+	'boolean',
+	'string',
+	'text',
+	'markdown',
+	'array'
+]);
 
 // --- Tables ---
 
 /**
- * Stores blog articles and activity logs.
+ * Stores various application settings and configurations.
  */
-export const posts = pgTable('posts', {
-	...BASE_TABLE,
-	slug: text('slug').unique().notNull(),
-	category: postCategory('category').notNull(),
-	tags: text('tags').array().notNull().default([]),
-	title: text('title').notNull(),
-	description: text('description').notNull(),
-	thumbnailUrl: text('thumbnail_url').notNull(),
-	contentUrl: text('content_url').notNull()
+export const settings = pgTable('settings', {
+	...PK_UUID,
+	key: varchar('key', { length: 120 }).notNull().unique(),
+	type: settingTypeEnum('type').notNull(),
+	value: jsonb('value').notNull(),
+
+	...BASE_TIMESTAMPS
 });
 
 /**
- * Stores cryptocurrency tokendata, including its Sharia compliance status.
+ * Represents a cryptocurrency token with its Sharia compliance status.
  */
 export const tokens = pgTable('tokens', {
-	...BASE_TABLE,
-	slug: text('slug').unique().notNull(),
+	...PK_UUID,
+	slug: varchar('slug', { length: 100 }).notNull().unique(),
 	rank: integer('rank'),
-	name: text('name').notNull(),
-	ticker: text('ticker').notNull(),
-	status: tokenStatus('status').notNull(),
-	color: text('color'),
-	tags: text('tags').array().notNull().default([]),
-	tvPair: text('tv_pair'),
+
+	name: varchar('name', { length: 100 }).notNull(),
+	ticker: varchar('ticker', { length: 20 }).notNull().unique(),
+
+	shariaStatus: shariaStatusEnum('sharia_status').notNull(),
+
+	brandColorHex: varchar('brand_color_hex', { length: 7 }),
+	tradingviewSymbol: varchar('tradingview_symbol', { length: 64 }),
+
 	website: text('website'),
-	logoUrl: text('logo_url').notNull(),
-	overviewUrl: text('overview_url').notNull(),
-	conclusionUrl: text('conclusion_url').notNull()
+	logoUrl: text('logo_url'),
+	contentUrl: text('content_url').notNull(),
+
+	...BASE_TIMESTAMPS
+});
+
+/**
+ * Stores reusable tags for Tokens, Posts, etc.
+ */
+export const tags = pgTable('tags', {
+	...PK_INT,
+	name: varchar('name', { length: 50 }).notNull().unique(),
+
+	...BASE_TIMESTAMPS
+});
+
+/**
+ * Junction table for the Many-to-Many relationship between Tokens and Tags.
+ * Includes `display_order` for controlling tag order per token.
+ */
+export const tokenTags = pgTable(
+	'token_tags',
+	{
+		...PK_INT,
+		tokenId: uuid('token_id')
+			.notNull()
+			.references(() => tokens.id, { onDelete: 'cascade' }),
+		tagId: integer('tag_id')
+			.notNull()
+			.references(() => tags.id, { onDelete: 'cascade' }),
+		displayOrder: integer('display_order'),
+
+		...BASE_TIMESTAMPS
+	},
+	(t) => [unique('token_tags_token_id_tag_id_unique').on(t.tokenId, t.tagId)]
+);
+
+/**
+ * A central repository for icons (Lucide, Simple Icons, or raw SVG).
+ * Referenced by Principles, Contributor Links, etc.
+ */
+export const icons = pgTable('icons', {
+	...PK_INT,
+	type: iconTypeEnum('type').notNull(),
+	icon: text('icon').notNull(),
+
+	...BASE_TIMESTAMPS
+});
+
+/**
+ * Stores the Principles of CryptoSharia.
+ */
+export const principles = pgTable('principles', {
+	...PK_UUID,
+	title: varchar('title', { length: 100 }).notNull(),
+	description: text('description').notNull(),
+	colorHex: varchar('color_hex', { length: 7 }).notNull(),
+	iconId: integer('icon_id')
+		.notNull()
+		.references(() => icons.id), // No cascade (RESTRICT default)
+	displayOrder: integer('display_order'),
+
+	...BASE_TIMESTAMPS
+});
+
+/**
+ * Stores the Contributors of CryptoSharia.
+ */
+export const contributors = pgTable('contributors', {
+	...PK_UUID,
+	name: varchar('name', { length: 120 }).notNull(),
+	role: varchar('role', { length: 120 }).notNull(),
+	photoUrl: text('photo_url'),
+	bio: text('bio'),
+	isActive: boolean('is_active').notNull().default(true),
+	displayOrder: integer('display_order'),
+
+	...BASE_TIMESTAMPS
+});
+
+/**
+ * Stores the Social Links of Contributors.
+ */
+export const contributorLinks = pgTable('contributor_links', {
+	...PK_INT,
+	contributorId: uuid('contributor_id')
+		.notNull()
+		.references(() => contributors.id, { onDelete: 'cascade' }),
+	iconId: integer('icon_id')
+		.notNull()
+		.references(() => icons.id), // No cascade
+	href: text('href').notNull(),
+	label: varchar('label', { length: 50 }),
+	displayOrder: integer('display_order'),
+
+	...BASE_TIMESTAMPS
 });
 
 /**
  * Stores messages sent via the contact form.
  */
 export const messages = pgTable('messages', {
-	...BASE_TABLE,
-	name: text('name').notNull(),
-	email: text('email').notNull(),
-	message: text('message').notNull()
+	...PK_UUID,
+	name: varchar('name', { length: 120 }).notNull(),
+	email: varchar('email', { length: 255 }).notNull(),
+	message: text('message').notNull(),
+
+	...BASE_TIMESTAMPS
 });
