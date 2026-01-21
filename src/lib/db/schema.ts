@@ -169,6 +169,37 @@ export const contributorLinks = pgTable('contributor_links', {
 });
 
 /**
+ * Stores links (e.g. for floating CTA, etc).
+ */
+export const links = pgTable('links', {
+	...PK_UUID,
+	label: varchar('label', { length: 100 }).notNull(),
+	href: text('href').notNull(),
+	iconId: integer('icon_id')
+		.notNull()
+		.references(() => icons.id),
+	colorHex: varchar('color_hex', { length: 7 }),
+	displayOrder: integer('display_order'),
+
+	...BASE_TIMESTAMPS
+});
+
+/**
+ * Stores CryptoSharia's social medias.
+ */
+export const socials = pgTable('socials', {
+	...PK_UUID,
+	label: varchar('label', { length: 100 }).notNull(),
+	href: text('href').notNull(),
+	iconId: integer('icon_id')
+		.notNull()
+		.references(() => icons.id),
+	displayOrder: integer('display_order'),
+
+	...BASE_TIMESTAMPS
+});
+
+/**
  * Stores messages sent via the contact form.
  */
 export const messages = pgTable('messages', {
