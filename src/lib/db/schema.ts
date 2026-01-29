@@ -91,8 +91,8 @@ export const permissions = pgTable('permissions', {
 	...PK_UUID,
 	/** Human-readable name of the permission */
 	name: varchar('name', { length: 100 }).notNull(),
-	/** Unique system identifier for the permission (e.g. 'tokens.create') */
-	slug: varchar('slug', { length: 100 }).notNull().unique(),
+	/** Programmatic key for code-level permission checks (e.g. 'tokens.create') */
+	key: varchar('key', { length: 100 }).notNull().unique(),
 	/** Logical grouping for the permission (e.g. 'tokens') */
 	module: varchar('module', { length: 50 }).notNull(),
 	...CREATED_AT,
@@ -252,8 +252,12 @@ export const posts = pgTable('posts', {
  */
 export const tags = pgTable('tags', {
 	...PK_UUID,
-	/** Unique name of the tag (e.g. 'Bitcoin', 'Halal') */
+	/** Human-readable name of the tag (e.g. 'Halal Crypto') */
 	name: varchar('name', { length: 50 }).notNull().unique(),
+	/** URL-friendly identifier (e.g. 'halal-crypto') for SEO and routing */
+	slug: varchar('slug', { length: 50 }).notNull().unique(),
+	/** Detailed context about this tag */
+	description: text('description'),
 	...CREATED_BY,
 	...UPDATED_BY,
 	...CREATED_AT,
