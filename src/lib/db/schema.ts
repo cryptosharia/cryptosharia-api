@@ -82,6 +82,11 @@ export const shariaStatusEnum = pgEnum('sharia_status', ['halal', 'haram', 'syub
  */
 export const contentStatusEnum = pgEnum('content_status', ['draft', 'published', 'archived']);
 
+/**
+ * Storage provider for assets.
+ */
+export const assetProviderEnum = pgEnum('asset_provider', ['local', 'vercel_blob']);
+
 // --- Tables ---
 
 /**
@@ -327,10 +332,8 @@ export const messages = pgTable('messages', {
  */
 export const assets = pgTable('assets', {
 	...PK_UUID,
-	/** Direct access URL to the asset (e.g. Vercel Blob URL) */
-	url: text('url').notNull(),
 	/** Internal pathname in the storage provider */
-	pathname: text('pathname').notNull(),
+	pathname: text('pathname').notNull().unique(),
 	/** Original or generated filename */
 	filename: varchar('filename', { length: 255 }).notNull(),
 	/** File size in bytes (bigint for scale) */
@@ -341,6 +344,8 @@ export const assets = pgTable('assets', {
 	width: integer('width'),
 	/** Pixel height (for images) */
 	height: integer('height'),
+	/** Storage provider used for this asset */
+	provider: assetProviderEnum('provider').notNull(),
 	...CREATED_BY,
 	...CREATED_AT
 });
