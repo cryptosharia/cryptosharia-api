@@ -8,8 +8,8 @@ import {
 	pgEnum,
 	varchar,
 	boolean,
-	unique,
 	bigint,
+	primaryKey,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 
@@ -20,13 +20,6 @@ import {
  */
 const PK_UUID = {
 	id: uuid('id').primaryKey().defaultRandom()
-};
-
-/**
- * Standard Primary Key for Integer-based tables (junctions/simple lookups).
- */
-const PK_INT = {
-	id: integer('id').primaryKey().generatedAlwaysAsIdentity()
 };
 
 /**@
@@ -154,7 +147,6 @@ export const admins = pgTable('admins', {
 export const rolePermissions = pgTable(
 	'role_permissions',
 	{
-		...PK_INT,
 		/** Reference to the role */
 		roleId: uuid('role_id')
 			.notNull()
@@ -164,14 +156,14 @@ export const rolePermissions = pgTable(
 			.notNull()
 			.references(() => permissions.id, { onDelete: 'cascade' })
 	},
-	(t) => [unique('role_permissions_role_id_permission_id_unique').on(t.roleId, t.permissionId)]
+	(t) => [primaryKey({ columns: [t.roleId, t.permissionId] })]
 );
 
 /**
  * Stores audit logs for admins' activities.
  */
 export const activityLogs = pgTable('activity_logs', {
-	...PK_INT,
+	...PK_UUID,
 	/** ID of the admin who performed the action */
 	adminId: uuid('admin_id').references(() => admins.id),
 	/** Description of the action (e.g. 'create', 'update', 'delete') */
@@ -259,7 +251,7 @@ export const posts = pgTable('posts', {
  * Stores tags for posts & tokens.
  */
 export const tags = pgTable('tags', {
-	...PK_INT,
+	...PK_UUID,
 	/** Unique name of the tag (e.g. 'Bitcoin', 'Halal') */
 	name: varchar('name', { length: 50 }).notNull().unique(),
 	...CREATED_BY,
@@ -274,13 +266,12 @@ export const tags = pgTable('tags', {
 export const tokenTags = pgTable(
 	'token_tags',
 	{
-		...PK_INT,
 		/** Reference to the associated Token */
 		tokenId: uuid('token_id')
 			.notNull()
 			.references(() => tokens.id, { onDelete: 'cascade' }),
 		/** Reference to the associated Tag */
-		tagId: integer('tag_id')
+		tagId: uuid('tag_id')
 			.notNull()
 			.references(() => tags.id, { onDelete: 'cascade' }),
 		/**
@@ -288,7 +279,7 @@ export const tokenTags = pgTable(
 		 */
 		displayOrder: integer('display_order')
 	},
-	(t) => [unique('token_tags_token_id_tag_id_unique').on(t.tokenId, t.tagId)]
+	(t) => [primaryKey({ columns: [t.tokenId, t.tagId] })]
 );
 
 /**
@@ -297,13 +288,12 @@ export const tokenTags = pgTable(
 export const postTags = pgTable(
 	'post_tags',
 	{
-		...PK_INT,
 		/** Reference to the associated Post */
 		postId: uuid('post_id')
 			.notNull()
 			.references(() => posts.id, { onDelete: 'cascade' }),
 		/** Reference to the associated Tag */
-		tagId: integer('tag_id')
+		tagId: uuid('tag_id')
 			.notNull()
 			.references(() => tags.id, { onDelete: 'cascade' }),
 		/**
@@ -311,14 +301,14 @@ export const postTags = pgTable(
 		 */
 		displayOrder: integer('display_order')
 	},
-	(t) => [unique('post_tags_post_id_tag_id_unique').on(t.postId, t.tagId)]
+	(t) => [primaryKey({ columns: [t.postId, t.tagId] })]
 );
 
 /**
  * Stores messages sent via the Contact Form.
  */
 export const messages = pgTable('messages', {
-	...PK_INT,
+	...PK_UUID,
 	/** Name of the contact form sender */
 	name: varchar('name', { length: 120 }).notNull(),
 	/** Email address for response */
@@ -351,7 +341,7 @@ export const assets = pgTable('assets', {
 	...CREATED_AT
 });
 
-// --- Relations to enable Drizzle Query API ---
+// --- Define Drizzle Relations in order to enable Drizzle Query API ---
 
 /**
  * Relations for the Admins table.
