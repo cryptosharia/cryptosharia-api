@@ -87,6 +87,21 @@ export const contentStatusEnum = pgEnum('content_status', ['draft', 'published',
  */
 export const assetProviderEnum = pgEnum('asset_provider', ['local', 'vercel_blob']);
 
+/**
+ * Post section categories.
+ */
+export const postSectionEnum = pgEnum('post_section', [
+	'news',
+	'education',
+	'research',
+	'activity'
+]);
+
+/**
+ * Post content types.
+ */
+export const postTypeEnum = pgEnum('post_type', ['article', 'webinar', 'video', 'headline']);
+
 // --- Tables ---
 
 /**
@@ -233,10 +248,10 @@ export const posts = pgTable('posts', {
 	content: text('content'),
 	/** Reference to the main cover image asset */
 	coverImageId: uuid('cover_image_id').references(() => assets.id),
-	/** Logical section or category (e.g. 'news', 'education') */
-	section: varchar('section', { length: 50 }).notNull(),
-	/** Document type (e.g. 'article', 'video', 'news') */
-	type: varchar('type', { length: 50 }).notNull().default('article'),
+	/** Logical section or category */
+	section: postSectionEnum('section').notNull(),
+	/** Document type */
+	type: postTypeEnum('type').notNull(),
 	/** Publication workflow status */
 	status: contentStatusEnum('status').notNull().default('draft'),
 	/** If true, this post will be highlighted in the UI */
