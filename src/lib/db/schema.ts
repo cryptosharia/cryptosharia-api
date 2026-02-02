@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
 	pgTable,
 	uuid,
@@ -7,235 +8,512 @@ import {
 	pgEnum,
 	varchar,
 	boolean,
-	jsonb,
-	unique,
-	primaryKey
+	bigint,
+	primaryKey,
+	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 
 // --- Helpers ---
 
+/**
+ * Standard Primary Key for UUID-based tables.
+ */
 const PK_UUID = {
 	id: uuid('id').primaryKey().defaultRandom()
 };
 
-const PK_INT = {
-	id: integer('id').primaryKey().generatedAlwaysAsIdentity()
+/**@
+ * Audit field for creation timestamp.
+ */
+const CREATED_AT = {
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 };
 
-const BASE_TIMESTAMPS = {
-	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-	updatedAt: timestamp('updated_at', { withTimezone: true })
-		.notNull()
-		.defaultNow()
-		.$onUpdate(() => new Date())
+/**
+ * Audit field for update timestamp.
+ * Logically nullable to represent an 'unmodified' state.
+ */
+const UPDATED_AT = {
+	updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(() => new Date())
+};
+
+/**
+ * Content field for publication timestamp.
+ */
+const PUBLISHED_AT = {
+	publishedAt: timestamp('published_at', { withTimezone: true })
+};
+
+/**
+ * Standard audit field for the creator.
+ */
+const CREATED_BY = {
+	createdBy: uuid('created_by').references(() => admins.id)
+};
+
+/**
+ * Standard audit field for the updater.
+ */
+const UPDATED_BY = {
+	updatedBy: uuid('updated_by').references(() => admins.id)
+};
+
+/**
+ * Specialized audit helpers specifically for tables that have circular dependencies (admins, roles).
+ * Uses AnyPgColumn to break the TypeScript recursion loop while keeping SQL Foreign Keys.
+ */
+const CREATED_BY_CIR = {
+	createdBy: uuid('created_by').references((): AnyPgColumn => admins.id)
+};
+
+const UPDATED_BY_CIR = {
+	updatedBy: uuid('updated_by').references((): AnyPgColumn => admins.id)
 };
 
 // --- Enums ---
 
+/**
+ * Practical Sharia status for crypto assets.
+ */
 export const shariaStatusEnum = pgEnum('sharia_status', ['halal', 'haram', 'syubhat']);
-export const iconTypeEnum = pgEnum('icon_type', ['lucide', 'simple_icons', 'svg']);
-export const settingTypeEnum = pgEnum('setting_type', [
-	'number',
-	'boolean',
-	'string',
-	'text',
-	'markdown',
-	'array'
-]);
-export const adminRoleEnum = pgEnum('admin_role', ['super_admin', 'editor', 'viewer']);
-
-// --- Admin & RBAC Tables ---
 
 /**
- * Master permissions per module.
+ * Publication lifecycle status for CMS content.
+ */
+export const contentStatusEnum = pgEnum('content_status', ['draft', 'published', 'archived']);
+
+/**
+ * Storage provider for assets.
+ */
+export const assetProviderEnum = pgEnum('asset_provider', ['local', 'vercel_blob']);
+
+/**
+ * Post section categories.
+ */
+export const postSectionEnum = pgEnum('post_section', [
+	'news',
+	'education',
+	'research',
+	'activity'
+]);
+
+/**
+ * Post content types.
+ */
+export const postTypeEnum = pgEnum('post_type', ['article', 'webinar', 'video', 'headline']);
+
+// --- Tables ---
+
+/**
+ * Stores permissions per module.
  */
 export const permissions = pgTable('permissions', {
-	...PK_INT,
+	...PK_UUID,
+	/** Human-readable name of the permission */
 	name: varchar('name', { length: 100 }).notNull(),
-	slug: varchar('slug', { length: 100 }).notNull().unique(), // e.g. 'tokens.create'
-	module: varchar('module', { length: 50 }).notNull(), // e.g. 'tokens'
-	...BASE_TIMESTAMPS
+	/** Programmatic key for code-level permission checks (e.g. 'tokens.create') */
+	key: varchar('key', { length: 100 }).notNull().unique(),
+	/** Logical grouping for the permission (e.g. 'tokens') */
+	module: varchar('module', { length: 50 }).notNull(),
+	...CREATED_AT,
+	...UPDATED_AT
 });
 
 /**
- * Master roles for admins.
+ * Stores roles for admins.
  */
 export const roles = pgTable('roles', {
-	...PK_INT,
+	...PK_UUID,
+	/** Display name of the role (e.g. 'Super Admin') */
 	name: varchar('name', { length: 50 }).notNull(),
+	/** Unique URL-friendly identifier for the role */
 	slug: varchar('slug', { length: 50 }).notNull().unique(),
-	...BASE_TIMESTAMPS
+	...CREATED_BY_CIR,
+	...UPDATED_BY_CIR,
+	...CREATED_AT,
+	...UPDATED_AT
 });
 
 /**
- * Junction table for Role-Permissions.
- */
-export const rolePermissions = pgTable('role_permissions', {
-	roleId: integer('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
-	permissionId: integer('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
-}, (t) => ({
-	pk: primaryKey({ columns: [t.roleId, t.permissionId] })
-}));
-
-/**
- * Table for Internal Staff / Admins.
+ * Stores internal staff (admins).
  */
 export const admins = pgTable('admins', {
 	...PK_UUID,
+	/** Full name of the administrator */
 	name: varchar('name', { length: 120 }).notNull(),
+	/** Unique email address for login and notifications */
 	email: varchar('email', { length: 255 }).notNull().unique(),
-	password: text('password').notNull(),
+	/** Argon2 or Bcrypted password hash */
+	hashedPassword: text('hashed_password').notNull(),
+	/** URL to the admin's profile image (optional) */
 	avatarUrl: text('avatar_url'),
-	roleId: integer('role_id').references(() => roles.id),
+	/** Reference to the assigned role */
+	roleId: uuid('role_id').references((): AnyPgColumn => roles.id),
+	/** Boolean flag to enable/disable account access */
 	isActive: boolean('is_active').notNull().default(true),
+	/** TOTP or secondary authentication secret */
 	twoFactorSecret: text('two_factor_secret'),
+	/** Timestamp of the most recent successful login */
 	lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
-	...BASE_TIMESTAMPS
+	...CREATED_BY_CIR,
+	...UPDATED_BY_CIR,
+	...CREATED_AT,
+	...UPDATED_AT
 });
 
 /**
- * Table for Public Users (Future use).
+ * Stores role-permission many-to-many relationships.
  */
-export const users = pgTable('users', {
-	...PK_UUID,
-	username: varchar('username', { length: 50 }).unique(),
-	email: varchar('email', { length: 255 }).notNull().unique(),
-	password: text('password').notNull(),
-	isVerified: boolean('is_verified').notNull().default(false),
-	...BASE_TIMESTAMPS
-});
+export const rolePermissions = pgTable(
+	'role_permissions',
+	{
+		/** Reference to the role */
+		roleId: uuid('role_id')
+			.notNull()
+			.references(() => roles.id, { onDelete: 'cascade' }),
+		/** Reference to the permission */
+		permissionId: uuid('permission_id')
+			.notNull()
+			.references(() => permissions.id, { onDelete: 'cascade' })
+	},
+	(t) => [primaryKey({ columns: [t.roleId, t.permissionId] })]
+);
 
 /**
- * Detailed audit logs for admin actions.
+ * Stores audit logs for admins' activities.
  */
 export const activityLogs = pgTable('activity_logs', {
 	...PK_UUID,
+	/** ID of the admin who performed the action */
 	adminId: uuid('admin_id').references(() => admins.id),
-	action: varchar('action', { length: 50 }).notNull(), // e.g., 'UPDATE'
-	subjectType: varchar('subject_type', { length: 50 }).notNull(), // e.g., 'tokens'
+	/** Description of the action (e.g. 'create', 'update', 'delete') */
+	action: varchar('action', { length: 50 }).notNull(),
+	/** Type of entity the action was performed on (e.g. 'tokens', 'posts') */
+	subjectType: varchar('subject_type', { length: 50 }).notNull(),
+	/** ID of the specific entity associated with the log */
 	subjectId: uuid('subject_id'),
-	description: jsonb('description'),
+	/** Detailed human-readable description of the event */
+	description: text('description'),
+	/** IP address of the administrator at the time of the action */
 	ipAddress: varchar('ip_address', { length: 45 }),
-	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+	...CREATED_AT
 });
 
-// --- Blameable Helper ---
-// Reusable fields to track who created/edited a record
-const BLAMEABLE = {
-	createdBy: uuid('created_by').references(() => admins.id),
-	lastEditedBy: uuid('last_edited_by').references(() => admins.id)
-};
-
-// --- Updated Existing Tables ---
-
-export const settings = pgTable('settings', {
-	...PK_UUID,
-	key: varchar('key', { length: 120 }).notNull().unique(),
-	type: settingTypeEnum('type').notNull(),
-	value: jsonb('value').notNull(),
-	...BLAMEABLE,
-	...BASE_TIMESTAMPS
-});
-
+/**
+ * Stores tokens data.
+ */
 export const tokens = pgTable('tokens', {
 	...PK_UUID,
+	/** Unique URL-friendly identifier for the token */
 	slug: varchar('slug', { length: 100 }).notNull().unique(),
+	/** Global market capitalization rank (optional) */
 	rank: integer('rank'),
+	/** Full display name of the cryptocurrency (e.g. 'Bitcoin') */
 	name: varchar('name', { length: 100 }).notNull(),
+	/** Short symbol (e.g. 'BTC') */
 	ticker: varchar('ticker', { length: 20 }).notNull().unique(),
+	/** Sharia compliance rating */
 	shariaStatus: shariaStatusEnum('sharia_status').notNull(),
+	/** Current editorial status of the token metadata */
+	status: contentStatusEnum('status').notNull().default('draft'),
+	/** Primary brand color in HEX format */
 	brandColorHex: varchar('brand_color_hex', { length: 7 }),
+	/** TradingView symbol for technical charts (e.g. 'BINANCE:BTCUSDT') */
 	tradingviewSymbol: varchar('tradingview_symbol', { length: 64 }),
+	/** Official project website URL */
 	website: text('website'),
-	logoUrl: text('logo_url'),
-	contentUrl: text('content_url').notNull(),
-	...BLAMEABLE,
-	...BASE_TIMESTAMPS
+	/** Reference to the token's logo asset */
+	logoId: uuid('logo_id').references(() => assets.id),
+	/** Detailed Sharia analysis or project description (Markdown) */
+	content: text('content'),
+	...PUBLISHED_AT,
+	...CREATED_BY,
+	...UPDATED_BY,
+	...CREATED_AT,
+	...UPDATED_AT
 });
 
-export const principles = pgTable('principles', {
+/**
+ * Stores blog posts, articles, and other content types.
+ */
+export const posts = pgTable('posts', {
 	...PK_UUID,
-	title: varchar('title', { length: 100 }).notNull(),
-	description: text('description').notNull(),
-	colorHex: varchar('color_hex', { length: 7 }).notNull(),
-	iconId: integer('icon_id').notNull().references(() => icons.id),
-	displayOrder: integer('display_order'),
-	...BLAMEABLE,
-	...BASE_TIMESTAMPS
+	/** Main title of the post or article */
+	title: varchar('title', { length: 255 }).notNull(),
+	/** Unique URL-friendly slug */
+	slug: varchar('slug', { length: 255 }).notNull().unique(),
+	/** Brief summary of the content for listings */
+	excerpt: text('excerpt'),
+	/** Main content of the post (HTML or Markdown) */
+	content: text('content'),
+	/** Reference to the main cover image asset */
+	coverImageId: uuid('cover_image_id').references(() => assets.id),
+	/** Logical section or category */
+	section: postSectionEnum('section').notNull(),
+	/** Document type */
+	type: postTypeEnum('type').notNull(),
+	/** Publication workflow status */
+	status: contentStatusEnum('status').notNull().default('draft'),
+	/** If true, this post will be highlighted in the UI */
+	isFeatured: boolean('is_featured').notNull().default(false),
+	/** Scheduled or historical date associated with the event */
+	eventDate: timestamp('event_date', { withTimezone: true }),
+	/** Link to external source or full article */
+	externalLink: text('external_link'),
+	...PUBLISHED_AT,
+	...CREATED_BY,
+	...UPDATED_BY,
+	...CREATED_AT,
+	...UPDATED_AT
 });
 
-// ... (Penerapan BLAMEABLE bisa dilanjutkan ke tabel lain seperti contributors, links, dll)
-
+/**
+ * Stores tags for posts & tokens.
+ */
 export const tags = pgTable('tags', {
-	...PK_INT,
+	...PK_UUID,
+	/** Human-readable name of the tag (e.g. 'Halal Crypto') */
 	name: varchar('name', { length: 50 }).notNull().unique(),
-	...BASE_TIMESTAMPS
+	/** URL-friendly identifier (e.g. 'halal-crypto') for SEO and routing */
+	slug: varchar('slug', { length: 50 }).notNull().unique(),
+	/** Detailed context about this tag */
+	description: text('description'),
+	...CREATED_BY,
+	...UPDATED_BY,
+	...CREATED_AT,
+	...UPDATED_AT
 });
 
+/**
+ * Junction table for the Many-to-Many relationship between Tokens and Tags.
+ */
 export const tokenTags = pgTable(
 	'token_tags',
 	{
-		...PK_INT,
-		tokenId: uuid('token_id').notNull().references(() => tokens.id, { onDelete: 'cascade' }),
-		tagId: integer('tag_id').notNull().references(() => tags.id, { onDelete: 'cascade' }),
-		displayOrder: integer('display_order'),
-		...BASE_TIMESTAMPS
+		/** Reference to the associated Token */
+		tokenId: uuid('token_id')
+			.notNull()
+			.references(() => tokens.id, { onDelete: 'cascade' }),
+		/** Reference to the associated Tag */
+		tagId: uuid('tag_id')
+			.notNull()
+			.references(() => tags.id, { onDelete: 'cascade' }),
+		/**
+		 * Logical display order. Nullable to represent 'unprioritized' items.
+		 */
+		displayOrder: integer('display_order')
 	},
-	(t) => [unique('token_tags_token_id_tag_id_unique').on(t.tokenId, t.tagId)]
+	(t) => [primaryKey({ columns: [t.tokenId, t.tagId] })]
 );
 
-export const icons = pgTable('icons', {
-	...PK_INT,
-	type: iconTypeEnum('type').notNull(),
-	icon: text('icon').notNull(),
-	...BASE_TIMESTAMPS
-});
+/**
+ * Junction table for the Many-to-Many relationship between Posts and Tags.
+ */
+export const postTags = pgTable(
+	'post_tags',
+	{
+		/** Reference to the associated Post */
+		postId: uuid('post_id')
+			.notNull()
+			.references(() => posts.id, { onDelete: 'cascade' }),
+		/** Reference to the associated Tag */
+		tagId: uuid('tag_id')
+			.notNull()
+			.references(() => tags.id, { onDelete: 'cascade' }),
+		/**
+		 * Logical display order. Nullable to represent 'unprioritized' items.
+		 */
+		displayOrder: integer('display_order')
+	},
+	(t) => [primaryKey({ columns: [t.postId, t.tagId] })]
+);
 
-export const contributors = pgTable('contributors', {
-	...PK_UUID,
-	name: varchar('name', { length: 120 }).notNull(),
-	role: varchar('role', { length: 120 }).notNull(),
-	photoUrl: text('photo_url'),
-	bio: text('bio'),
-	isActive: boolean('is_active').notNull().default(true),
-	displayOrder: integer('display_order'),
-	...BLAMEABLE,
-	...BASE_TIMESTAMPS
-});
-
-export const contributorLinks = pgTable('contributor_links', {
-	...PK_INT,
-	contributorId: uuid('contributor_id').notNull().references(() => contributors.id, { onDelete: 'cascade' }),
-	iconId: integer('icon_id').notNull().references(() => icons.id),
-	href: text('href').notNull(),
-	label: varchar('label', { length: 50 }),
-	displayOrder: integer('display_order'),
-	...BASE_TIMESTAMPS
-});
-
-export const links = pgTable('links', {
-	...PK_UUID,
-	label: varchar('label', { length: 100 }).notNull(),
-	href: text('href').notNull(),
-	iconId: integer('icon_id').notNull().references(() => icons.id),
-	colorHex: varchar('color_hex', { length: 7 }),
-	displayOrder: integer('display_order'),
-	...BASE_TIMESTAMPS
-});
-
-export const socials = pgTable('socials', {
-	...PK_UUID,
-	label: varchar('label', { length: 100 }).notNull(),
-	href: text('href').notNull(),
-	iconId: integer('icon_id').notNull().references(() => icons.id),
-	displayOrder: integer('display_order'),
-	...BASE_TIMESTAMPS
-});
-
+/**
+ * Stores messages sent via the Contact Form.
+ */
 export const messages = pgTable('messages', {
 	...PK_UUID,
+	/** Name of the contact form sender */
 	name: varchar('name', { length: 120 }).notNull(),
+	/** Email address for response */
 	email: varchar('email', { length: 255 }).notNull(),
+	/** Full message content */
 	message: text('message').notNull(),
-	...BASE_TIMESTAMPS
+	...CREATED_AT
 });
+
+/**
+ * Stores metadata for all digital assets uploaded to files storage (Images, Markdowns, etc).
+ */
+export const assets = pgTable('assets', {
+	...PK_UUID,
+	/** Internal pathname in the storage provider */
+	pathname: text('pathname').notNull().unique(),
+	/** Original or generated filename */
+	filename: varchar('filename', { length: 255 }).notNull(),
+	/** File size in bytes (bigint for scale) */
+	size: bigint('size', { mode: 'number' }).notNull(),
+	/** MIME type (e.g. 'image/png') */
+	contentType: varchar('content_type', { length: 100 }),
+	/** Pixel width (for images) */
+	width: integer('width'),
+	/** Pixel height (for images) */
+	height: integer('height'),
+	/** Storage provider used for this asset */
+	provider: assetProviderEnum('provider').notNull(),
+	...CREATED_BY,
+	...CREATED_AT
+});
+
+// --- Define Drizzle Relations in order to enable Drizzle Query API ---
+
+/**
+ * Relations for the Admins table.
+ */
+export const adminsRelations = relations(admins, ({ one, many }) => ({
+	role: one(roles, {
+		fields: [admins.roleId],
+		references: [roles.id]
+	}),
+	createdBy: one(admins, {
+		fields: [admins.createdBy],
+		references: [admins.id],
+		relationName: 'admin_created_by'
+	}),
+	updatedBy: one(admins, {
+		fields: [admins.updatedBy],
+		references: [admins.id],
+		relationName: 'admin_updated_by'
+	}),
+	activityLogs: many(activityLogs)
+}));
+
+/**
+ * Relations for the Roles table.
+ */
+export const rolesRelations = relations(roles, ({ one, many }) => ({
+	createdBy: one(admins, {
+		fields: [roles.createdBy],
+		references: [admins.id]
+	}),
+	updatedBy: one(admins, {
+		fields: [roles.updatedBy],
+		references: [admins.id]
+	}),
+	permissions: many(rolePermissions)
+}));
+
+/**
+ * Relations for the Permissions table.
+ */
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+	roles: many(rolePermissions)
+}));
+
+/**
+ * Relations for the Role-Permissions junction table.
+ */
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+	role: one(roles, {
+		fields: [rolePermissions.roleId],
+		references: [roles.id]
+	}),
+	permission: one(permissions, {
+		fields: [rolePermissions.permissionId],
+		references: [permissions.id]
+	})
+}));
+
+/**
+ * Relations for the Activity Logs table.
+ */
+export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
+	admin: one(admins, {
+		fields: [activityLogs.adminId],
+		references: [admins.id]
+	})
+}));
+
+/**
+ * Relations for the Tokens table.
+ */
+export const tokensRelations = relations(tokens, ({ one, many }) => ({
+	logo: one(assets, {
+		fields: [tokens.logoId],
+		references: [assets.id]
+	}),
+	createdBy: one(admins, {
+		fields: [tokens.createdBy],
+		references: [admins.id]
+	}),
+	updatedBy: one(admins, {
+		fields: [tokens.updatedBy],
+		references: [admins.id]
+	}),
+	tags: many(tokenTags)
+}));
+
+/**
+ * Relations for the Posts table.
+ */
+export const postsRelations = relations(posts, ({ one, many }) => ({
+	coverImage: one(assets, {
+		fields: [posts.coverImageId],
+		references: [assets.id]
+	}),
+	createdBy: one(admins, {
+		fields: [posts.createdBy],
+		references: [admins.id]
+	}),
+	updatedBy: one(admins, {
+		fields: [posts.updatedBy],
+		references: [admins.id]
+	}),
+	tags: many(postTags)
+}));
+
+/**
+ * Relations for the Tags table.
+ */
+export const tagsRelations = relations(tags, ({ many }) => ({
+	tokenTags: many(tokenTags),
+	postTags: many(postTags)
+}));
+
+/**
+ * Relations for the Token-Tags junction table.
+ */
+export const tokenTagsRelations = relations(tokenTags, ({ one }) => ({
+	token: one(tokens, {
+		fields: [tokenTags.tokenId],
+		references: [tokens.id]
+	}),
+	tag: one(tags, {
+		fields: [tokenTags.tagId],
+		references: [tags.id]
+	})
+}));
+
+/**
+ * Relations for the Post-Tags junction table.
+ */
+export const postTagsRelations = relations(postTags, ({ one }) => ({
+	post: one(posts, {
+		fields: [postTags.postId],
+		references: [posts.id]
+	}),
+	tag: one(tags, {
+		fields: [postTags.tagId],
+		references: [tags.id]
+	})
+}));
+
+/**
+ * Relations for the Assets table.
+ */
+export const assetsRelations = relations(assets, ({ one }) => ({
+	createdBy: one(admins, {
+		fields: [assets.createdBy],
+		references: [admins.id]
+	})
+}));
