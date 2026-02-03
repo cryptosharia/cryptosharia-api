@@ -1,14 +1,11 @@
-import type { InferInsertModel } from 'drizzle-orm';
 import { db } from '$lib/db';
 import * as schema from '$lib/db/tables';
-
 import { dev } from '$app/environment';
 import type { ApiResponse } from '$lib/types';
+import type { InferInsertModel } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export async function GET() {
-	// 1. Strict Environment Safety Check
-	// This ensures the route ONLY works in development mode.
-	// In production, SvelteKit will bake 'dev' as 'false', and this code becomes unreachable/error.
 	if (!dev) {
 		return Response.json(
 			{
@@ -22,15 +19,95 @@ export async function GET() {
 	try {
 		console.log('--- Seeding started via API ---');
 
-		// Clear existing data
+		// Clear existing data (Cascade will handle relations)
 		await db.delete(schema.posts);
 		await db.delete(schema.tokens);
+		await db.delete(schema.tags);
+		await db.delete(schema.assets);
 
 		// Seed Posts
-		await db.insert(schema.posts).values(POSTS);
+		for (const postData of POSTS) {
+			const { tags: tagNames, coverImage, ...postFields } = postData;
+
+			// 1. Create cover image asset if provided
+			let coverImageId: string | undefined;
+			if (coverImage) {
+				const [asset] = await db
+					.insert(schema.assets)
+					.values(coverImage)
+					.returning({ id: schema.assets.id });
+				coverImageId = asset.id;
+			}
+
+			// 2. Insert Post
+			const [insertedPost] = await db
+				.insert(schema.posts)
+				.values({ ...postFields, coverImageId })
+				.returning({ id: schema.posts.id });
+
+			// 3. Handle tags
+			if (tagNames && tagNames.length > 0) {
+				for (const tagName of tagNames) {
+					const slug = tagName.toLowerCase().replace(/ /g, '-');
+
+					// Insert tag if not exists
+					await db.insert(schema.tags).values({ name: tagName, slug }).onConflictDoNothing();
+
+					// Get tag
+					const [tag] = await db.select().from(schema.tags).where(eq(schema.tags.slug, slug));
+
+					// Link post to tag
+					if (tag) {
+						await db
+							.insert(schema.postTags)
+							.values({ postId: insertedPost.id, tagId: tag.id })
+							.onConflictDoNothing();
+					}
+				}
+			}
+		}
 
 		// Seed Tokens
-		await db.insert(schema.tokens).values(TOKENS);
+		for (const tokenData of TOKENS) {
+			const { tags: tagNames, logo, ...tokenFields } = tokenData;
+
+			// 1. Create logo asset if provided
+			let logoId: string | undefined;
+			if (logo) {
+				const [asset] = await db
+					.insert(schema.assets)
+					.values(logo)
+					.returning({ id: schema.assets.id });
+				logoId = asset.id;
+			}
+
+			// 2. Insert Token
+			const [insertedToken] = await db
+				.insert(schema.tokens)
+				.values({ ...tokenFields, logoId })
+				.returning({ id: schema.tokens.id });
+
+			// 3. Handle tags
+			if (tagNames && tagNames.length > 0) {
+				for (const tagName of tagNames) {
+					const slug = tagName.toLowerCase().replace(/ /g, '-');
+
+					// Insert tag if not exists
+					await db.insert(schema.tags).values({ name: tagName, slug }).onConflictDoNothing();
+
+					// Get tag
+					const [tag] = await db.select().from(schema.tags).where(eq(schema.tags.slug, slug));
+
+					// Link token to tag
+					if (tag) {
+						await db
+							.insert(schema.tokenTags)
+							.values({ tokenId: insertedToken.id, tagId: tag.id })
+							.onConflictDoNothing();
+					}
+				}
+			}
+		}
 
 		return Response.json({
 			success: true,
@@ -41,151 +118,274 @@ export async function GET() {
 		return Response.json(
 			{
 				success: false,
-				message: 'Internal Server Error during seeding.'
+				message: 'Internal Server Error during seeding.',
+				errors: err instanceof Error ? { message: [err.message] } : undefined
 			} satisfies ApiResponse<undefined>,
 			{ status: 500 }
 		);
 	}
 }
 
-const POSTS: InferInsertModel<typeof schema.posts>[] = [
+// Seed Data Types
+type SeedPost = Omit<InferInsertModel<typeof schema.posts>, 'coverImageId'> & {
+	tags: string[];
+	coverImage?: InferInsertModel<typeof schema.assets>;
+};
+
+type SeedToken = Omit<InferInsertModel<typeof schema.tokens>, 'logoId'> & {
+	tags: string[];
+	logo?: InferInsertModel<typeof schema.assets>;
+};
+
+// Posts Data
+const POSTS: SeedPost[] = [
 	{
-		slug: 'ustadz-ali-hasan-bawazier-resmi-jadi-pembina-cryptosharia-sinergi-dakwah-edukasi-dan-teknologi-syariah',
-		category: 'activity',
-		tags: [
-			'Collaboration',
-			'Ustadz',
-			'Dakwah',
-			'Sharia Crypto',
-			'Sharia Finance',
-			'Halal Crypto',
-			'Sharia Economy',
-			'Technology',
-			'Ustadz Ali Hasan Bawazier'
-		],
-		title:
-			'Ustadz Ali Hasan Bawazier Resmi Jadi Pembina CryptoSharia: Sinergi Dakwah, Edukasi, dan Teknologi Syariah',
-		description:
-			'Sebuah langkah penting dalam penguatan ekosistem kripto syariah di Indonesia terjadi pada Jumat, 15 Agustus 2025, ketika Ketua Crypto Sharia Sholahuddin Al Ayyuubi bersama Pembina Ustadz Devin Halim Wijaya melakukan kunjungan silaturahmi ke kediaman Ustadz Ali Hasan Bawazier.',
-		thumbnailUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/posts/activities/ustadz-ali-hasan-bawazier-resmi-jadi-pembina-cryptosharia-sinergi-dakwah-edukasi-dan-teknologi-syariah/thumbnail.jpg',
-		contentUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/posts/activities/ustadz-ali-hasan-bawazier-resmi-jadi-pembina-cryptosharia-sinergi-dakwah-edukasi-dan-teknologi-syariah/content.md'
+		slug: 'understanding-halal-cryptocurrency-basics',
+		section: 'education',
+		title: 'Understanding Halal Cryptocurrency: The Basics',
+		excerpt:
+			'A comprehensive guide to understanding cryptocurrency from an Islamic perspective, covering fundamental concepts and sharia compliance.',
+		content: `# Understanding Halal Cryptocurrency
+
+Cryptocurrency has emerged as a revolutionary financial technology, but for Muslims, the question of its permissibility under Islamic law is paramount.
+
+## What Makes Cryptocurrency Halal?
+
+For a cryptocurrency to be considered halal, it must meet several criteria:
+
+1. **No Riba (Interest)**: The system must not involve interest-based transactions
+2. **No Gharar (Uncertainty)**: Excessive uncertainty and speculation should be avoided
+3. **Real Value**: The asset should have intrinsic value or utility
+4. **Transparency**: The technology and operations must be transparent`,
+		type: 'article',
+		status: 'published',
+		isFeatured: true,
+		eventDate: null,
+		externalLink: null,
+		tags: ['Education', 'Cryptocurrency', 'Halal', 'Sharia', 'Blockchain'],
+		coverImage: {
+			pathname: 'seed/halal-crypto-basics/800/600',
+			filename: 'halal-crypto-basics.jpg',
+			size: 150000,
+			contentType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
 	},
 	{
-		slug: 'cryptosharia-dan-halal-kulture-market-berkolaborasi-edukasi-kripto-syariah-untuk-kemajuan-umat',
-		category: 'activity',
-		tags: [
-			'Halal Kulture',
-			'Education',
-			'Collaboration',
-			'Innovation',
-			'Sharia Crypto',
-			'Sharia Finance',
-			'Halal Crypto',
-			'Blockchain',
-			'Digital Economy',
-			'Dakwah',
-			'Halal Kulture Market'
-		],
-		title:
-			'CryptoSharia dan Halal Kulture Market Berkolaborasi: Edukasi Kripto Syariah untuk Kemajuan Umat',
-		description:
-			'Dalam upaya memperluas literasi dan pemahaman masyarakat Muslim terhadap dunia aset digital, Crypto Sharia resmi berkolaborasi with Halal Kulture Market untuk menghadirkan sesi edukasi bertema “Crypto Syariah dan Blockchain untuk Umat”.',
-		thumbnailUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/posts/activities/cryptosharia-dan-halal-kulture-market-berkolaborasi-edukasi-kripto-syariah-untuk-kemajuan-umat/thumbnail.jpg',
-		contentUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/posts/activities/cryptosharia-dan-halal-kulture-market-berkolaborasi-edukasi-kripto-syariah-untuk-kemajuan-umat/content.md'
+		slug: 'bitcoin-halal-analysis-2024',
+		section: 'research',
+		title: 'Bitcoin: A Comprehensive Halal Analysis',
+		excerpt:
+			'An in-depth research paper examining Bitcoin through the lens of Islamic jurisprudence and modern financial principles.',
+		content: `# Bitcoin Halal Analysis
+
+This research examines Bitcoin's compliance with Islamic financial principles.
+
+## Methodology
+
+Our analysis is based on classical Islamic jurisprudence combined with modern financial understanding.`,
+		type: 'article',
+		status: 'published',
+		isFeatured: false,
+		eventDate: null,
+		externalLink: null,
+		tags: ['Bitcoin', 'Research', 'Halal Analysis', 'Cryptocurrency'],
+		coverImage: {
+			pathname: 'seed/bitcoin-analysis/800/600',
+			filename: 'bitcoin-analysis.jpg',
+			size: 175000,
+			contentType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
 	},
 	{
-		slug: 'sejarah-bitcoin-dari-krisis-finansial-ke-era-blockchain',
-		category: 'article',
-		tags: ['bitcoin', 'history', 'blockchain', 'decentralization', 'digital finance'],
-		title: 'Sejarah Bitcoin: Dari Krisis Finansial ke Era Blockchain',
-		description:
-			'Bitcoin telah menjadi fenomena global dalam dunia keuangan digital. Namun, bagaimana sejarah kemunculannya? Materi ini akan menjelaskan latar belakang and perjalanan Bitcoin sejak diciptakan tahun 2008 hingga perannya saat ini, with bahasa yang sederhana untuk masyarakat umum.',
-		thumbnailUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/posts/articles/sejarah-bitcoin-dari-krisis-finansial-ke-era-blockchain/thumbnail.png',
-		contentUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/posts/articles/sejarah-bitcoin-dari-krisis-finansial-ke-era-blockchain/content.md'
+		slug: 'crypto-sharia-webinar-march-2024',
+		section: 'activity',
+		title: 'Crypto Sharia Webinar: Islamic Finance Meets Blockchain',
+		excerpt:
+			'Join us for an exclusive webinar discussing the intersection of Islamic finance and blockchain technology.',
+		content: `# Upcoming Webinar
+
+**Date**: March 15, 2024  
+**Time**: 7:00 PM GMT+8
+
+## Topics Covered
+
+- Introduction to Islamic Finance Principles
+- Blockchain Technology Overview
+- Halal Cryptocurrency Projects
+- Q&A Session with Scholars`,
+		type: 'webinar',
+		status: 'published',
+		isFeatured: true,
+		eventDate: new Date('2024-03-15T19:00:00Z'),
+		externalLink: 'https://example.com/webinar',
+		tags: ['Webinar', 'Event', 'Islamic Finance', 'Blockchain', 'Education'],
+		coverImage: {
+			pathname: 'seed/webinar-march/800/600',
+			filename: 'webinar-march.jpg',
+			size: 160000,
+			contentType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
 	},
 	{
-		slug: 'sejarah-penggunaan-emas-uang-logam-dan-uang-kertas-hingga-era-digital',
-		category: 'article',
-		tags: ['Sejarah', 'Uang', 'Emas', 'Uang Logam', 'Uang Kertas', 'Ekonomi'],
-		title: 'Sejarah Penggunaan Emas, Uang Logam, dan Uang Kertas hingga Era Digital',
-		description:
-			'Uang merupakan elemen penting dalam kehidupan manusia, namun bentuk and konsep uang telah berevolusi selama ribuan tahun.',
-		thumbnailUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/posts/articles/sejarah-penggunaan-emas-uang-logam-dan-uang-kertas-hingga-era-digital/thumbnail.jpg',
-		contentUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/posts/articles/sejarah-penggunaan-emas-uang-logam-dan-uang-kertas-hingga-era-digital/content.md'
+		slug: 'ethereum-pos-sharia-compliance',
+		section: 'news',
+		title: 'Ethereum Proof-of-Stake: Sharia Compliance Update',
+		excerpt:
+			"Breaking news on how Ethereum's transition to Proof-of-Stake affects its status under Islamic law.",
+		content: `# Ethereum PoS Update
+
+Ethereum's successful transition to Proof-of-Stake has significant implications for its sharia compliance status.`,
+		type: 'headline',
+		status: 'published',
+		isFeatured: false,
+		eventDate: null,
+		externalLink: null,
+		tags: ['Ethereum', 'News', 'Proof of Stake', 'Sharia Compliance'],
+		coverImage: {
+			pathname: 'seed/ethereum-pos/800/600',
+			filename: 'ethereum-pos.jpg',
+			size: 155000,
+			contentType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
 	}
 ];
 
-const TOKENS: InferInsertModel<typeof schema.tokens>[] = [
+// Tokens Data
+const TOKENS: SeedToken[] = [
 	{
 		slug: 'bitcoin',
 		rank: 1,
 		name: 'Bitcoin',
 		ticker: 'BTC',
-		status: 'halal',
-		color: '#F7931A',
-		tags: ['currency', 'pow'],
-		tvPair: 'INDEX:BTCUSD',
+		shariaStatus: 'halal',
+		brandColorHex: '#F7931A',
+		tradingviewSymbol: 'INDEX:BTCUSD',
 		website: 'https://bitcoin.org',
-		logoUrl: 'https://s2.coinmarketcap.com/static/img/coins/128x128/1.png',
-		overviewUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/tokens/bitcoin/overview.md',
-		conclusionUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/tokens/bitcoin/conclusion.md'
+		content: `# Bitcoin (BTC)
+
+Bitcoin is the first and most well-known cryptocurrency, created by Satoshi Nakamoto in 2009.
+
+## Sharia Analysis
+
+Bitcoin is generally considered halal by many Islamic scholars due to its decentralized nature and absence of interest-bearing mechanisms.`,
+		status: 'published',
+		tags: ['Currency', 'Proof of Work', 'Store of Value', 'Decentralized'],
+		logo: {
+			pathname: 'seed/btc-logo/128/128',
+			filename: 'btc-logo.png',
+			size: 8000,
+			contentType: 'image/png',
+			provider: 'picsum',
+			width: 128,
+			height: 128
+		}
 	},
 	{
 		slug: 'ethereum',
 		rank: 2,
 		name: 'Ethereum',
 		ticker: 'ETH',
-		status: 'halal',
-		color: '#627EEA',
-		tags: ['platform', 'pos'],
-		tvPair: 'INDEX:ETHUSD',
+		shariaStatus: 'halal',
+		brandColorHex: '#627EEA',
+		tradingviewSymbol: 'INDEX:ETHUSD',
 		website: 'https://ethereum.org',
-		logoUrl: 'https://s2.coinmarketcap.com/static/img/coins/128x128/1027.png',
-		overviewUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/tokens/ethereum/overview.md',
-		conclusionUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/tokens/ethereum/conclusion.md'
+		content: `# Ethereum (ETH)
+
+Ethereum is a decentralized platform that enables smart contracts and decentralized applications.`,
+		status: 'published',
+		tags: ['Platform', 'Smart Contracts', 'Proof of Stake', 'DeFi'],
+		logo: {
+			pathname: 'seed/eth-logo/128/128',
+			filename: 'eth-logo.png',
+			size: 7500,
+			contentType: 'image/png',
+			provider: 'picsum',
+			width: 128,
+			height: 128
+		}
 	},
 	{
-		slug: 'tether',
+		slug: 'usdc',
 		rank: 3,
-		name: 'Tether',
-		ticker: 'USDT',
-		status: 'halal',
-		color: '#009393',
-		tags: ['stablecoin', 'fiat-backed'],
-		tvPair: 'CRYPTO:USDTUSD',
-		website: 'https://tether.to',
-		logoUrl: 'https://s2.coinmarketcap.com/static/img/coins/128x128/825.png',
-		overviewUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/tokens/tether/overview.md',
-		conclusionUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/tokens/tether/conclusion.md'
+		name: 'USD Coin',
+		ticker: 'USDC',
+		shariaStatus: 'halal',
+		brandColorHex: '#2775CA',
+		tradingviewSymbol: 'CRYPTO:USDCUSD',
+		website: 'https://www.circle.com/en/usdc',
+		content: `# USD Coin (USDC)
+
+USDC is a fully-backed stablecoin pegged to the US Dollar.`,
+		status: 'published',
+		tags: ['Stablecoin', 'Fiat-Backed', 'USD', 'Payments'],
+		logo: {
+			pathname: 'seed/usdc-logo/128/128',
+			filename: 'usdc-logo.png',
+			size: 6500,
+			contentType: 'image/png',
+			provider: 'picsum',
+			width: 128,
+			height: 128
+		}
 	},
 	{
 		slug: 'bnb',
-		rank: 5,
+		rank: 4,
 		name: 'BNB',
 		ticker: 'BNB',
-		status: 'syubhat',
-		color: '#F3BA2F',
-		tags: ['currency', 'pow', 'cz'],
-		tvPair: 'BINANCE:BNBUSDT',
+		shariaStatus: 'syubhat',
+		brandColorHex: '#F3BA2F',
+		tradingviewSymbol: 'BINANCE:BNBUSDT',
 		website: 'https://www.bnbchain.org',
-		logoUrl: 'https://s2.coinmarketcap.com/static/img/coins/128x128/1839.png',
-		overviewUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/tokens/bnb/overview.md',
-		conclusionUrl:
-			'https://juyarisxwydpyrzujhsd.supabase.co/storage/v1/object/public/main/tokens/bnb/conclusion.md'
+		content: `# BNB
+
+BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
+		status: 'published',
+		tags: ['Exchange Token', 'BNB Chain', 'Utility Token'],
+		logo: {
+			pathname: 'seed/bnb-logo/128/128',
+			filename: 'bnb-logo.png',
+			size: 7000,
+			contentType: 'image/png',
+			provider: 'picsum',
+			width: 128,
+			height: 128
+		}
+	},
+	{
+		slug: 'solana',
+		rank: 5,
+		name: 'Solana',
+		ticker: 'SOL',
+		shariaStatus: 'halal',
+		brandColorHex: '#14F195',
+		tradingviewSymbol: 'BINANCE:SOLUSDT',
+		website: 'https://solana.com',
+		content: `# Solana (SOL)
+
+Solana is a high-performance blockchain designed for decentralized applications.`,
+		status: 'published',
+		tags: ['Platform', 'Proof of Stake', 'High Performance', 'DeFi'],
+		logo: {
+			pathname: 'seed/sol-logo/128/128',
+			filename: 'sol-logo.png',
+			size: 7200,
+			contentType: 'image/png',
+			provider: 'picsum',
+			width: 128,
+			height: 128
+		}
 	}
 ];

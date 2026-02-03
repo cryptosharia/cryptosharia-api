@@ -4,8 +4,9 @@ import type { ApiResponse } from '$lib/types';
 import { count, eq, or, ilike, and } from 'drizzle-orm';
 import z from '$lib/zod-openapi';
 import { GetPostsCountParams } from '.';
+import type { RequestHandler } from './$types';
 
-export async function GET({ url }) {
+export const GET: RequestHandler = async ({ url }) => {
 	const result = GetPostsCountParams.safeParse(Object.fromEntries(url.searchParams));
 
 	if (!result.success) {
@@ -43,4 +44,4 @@ export async function GET({ url }) {
 		message: 'Posts count fetched successfully',
 		data: total.value
 	} satisfies ApiResponse<number>);
-}
+};

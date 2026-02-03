@@ -2,8 +2,9 @@ import { GS_SEND_MESSAGE_URL } from '$env/static/private';
 import type { ApiResponse } from '$lib/types';
 import { InsertMessage } from '$lib/db/types';
 import z from '$lib/zod-openapi';
+import type { RequestHandler } from './$types';
 
-export async function POST({ request, fetch }) {
+export const POST: RequestHandler = async ({ request, fetch }) => {
 	// 1. Safe Parse Body
 	let body;
 
@@ -51,4 +52,4 @@ export async function POST({ request, fetch }) {
 		success: data.success,
 		message: data.message
 	} satisfies ApiResponse);
-}
+};

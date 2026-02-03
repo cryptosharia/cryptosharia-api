@@ -83,7 +83,7 @@ export const contentStatusEnum = pgEnum('content_status', ['draft', 'published',
 /**
  * Storage provider for assets.
  */
-export const assetProviderEnum = pgEnum('asset_provider', ['local', 'vercel_blob']);
+export const assetProviderEnum = pgEnum('asset_provider', ['local', 'picsum', 'vercel_blob']);
 
 /**
  * Post section categories.

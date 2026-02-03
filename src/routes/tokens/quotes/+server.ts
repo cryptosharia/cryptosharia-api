@@ -5,8 +5,9 @@ import type { ApiResponse } from '$lib/types';
 import { eq } from 'drizzle-orm';
 import z from '$lib/zod-openapi';
 import { GetTokensQuotesParams, TokenQuote } from '.';
+import type { RequestHandler } from './$types';
 
-export async function GET({ url, fetch }) {
+export const GET: RequestHandler = async ({ url, fetch }) => {
 	const result = GetTokensQuotesParams.safeParse(Object.fromEntries(url.searchParams));
 
 	if (!result.success) {
@@ -102,4 +103,4 @@ export async function GET({ url, fetch }) {
 			{ status: 500 }
 		);
 	}
-}
+};
