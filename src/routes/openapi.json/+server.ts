@@ -1,24 +1,25 @@
 import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import { posts } from '../posts';
-import { postsCount } from '../posts/count';
-import { tokens } from '../tokens';
-import { tokensCount } from '../tokens/count';
-import { tokensQuotes } from '../tokens/quotes';
-import { messagesPost, messagesGet } from '../messages';
-import { seed } from '../seed';
+import { postsGet } from '../posts';
+import { postsCountGet } from '../posts/count';
+import { tokensGet } from '../tokens';
+import { tokensCountGet } from '../tokens/count';
+import { tokensQuotesGet } from '../tokens/quotes';
+import { messagesGet, messagesPost } from '../messages';
+import { seedGet } from '../seed';
+import type { RequestHandler } from './$types';
 
 const PATHS = [
-	posts,
-	postsCount,
-	tokens,
-	tokensCount,
-	tokensQuotes,
+	postsGet,
+	postsCountGet,
+	tokensGet,
+	tokensCountGet,
+	tokensQuotesGet,
 	messagesGet,
 	messagesPost,
-	seed
+	seedGet
 ];
 
-export function GET() {
+export const GET: RequestHandler = async () => {
 	const registry = new OpenAPIRegistry();
 
 	// Register paths
@@ -34,9 +35,10 @@ export function GET() {
 		info: {
 			title: 'CryptoSharia API',
 			version: '1.0.0',
-			description: 'API for CryptoSharia'
+			description:
+				'API for CryptoSharia Ecosystem<br>Open API Spec: <a href="/openapi.json">openapi.json</a>'
 		}
 	});
 
 	return Response.json(openapi);
-}
+};

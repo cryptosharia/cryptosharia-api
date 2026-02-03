@@ -1,31 +1,25 @@
 import { CMC_API_KEY } from '$env/static/private';
 import { db } from '$lib/db';
 import { tokens } from '$lib/db/tables';
-import type { ApiResponse } from '$lib/types';
+import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
 import z from '$lib/zod-openapi';
 import { GetTokensQuotesParams, TokenQuote } from '.';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url, fetch }) => {
-	const result = GetTokensQuotesParams.safeParse(Object.fromEntries(url.searchParams));
+	const params = Object.fromEntries(url.searchParams);
+	const result = GetTokensQuotesParams.safeParse(params);
 
 	if (!result.success) {
-		return Response.json(
-			{
-				success: false,
-				message: 'Invalid query parameters',
-				errors: z.flattenError(result.error).fieldErrors
-			} satisfies ApiResponse<undefined>,
-			{ status: 400 }
-		);
+		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
 	const { slugs } = result.data;
 
 	try {
 		const res = await fetch(
-			`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?slug=${slugs}`,
+			`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?slug=${(slugs as string[]).join(',')}`,
 			{
 				headers: {
 					Accept: 'application/json',
@@ -36,13 +30,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 
 		if (!res.ok) {
 			console.error(`CMC Fetch Error: ${res.statusText}`);
-			return Response.json(
-				{
-					success: false,
-					message: 'Failed to fetch quotes from upstream provider'
-				} satisfies ApiResponse,
-				{ status: 502 }
-			);
+			return ApiResponse.badGateway();
 		}
 
 		const json = await res.json();
@@ -81,7 +69,6 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 					percentChange24h: quote.quote.USD.percent_change_24h
 				};
 
-				// Update local database rank (fire and forget)
 				db.update(tokens)
 					.set({ rank: data.rank })
 					.where(eq(tokens.slug, data.slug))
@@ -91,16 +78,9 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			})
 		);
 
-		return Response.json({
-			success: true,
-			message: 'Token quotes fetched successfully',
-			data: quotes
-		} satisfies ApiResponse);
+		return ApiResponse.ok(quotes);
 	} catch (error) {
 		console.error('/tokens/quotes Error:', error);
-		return Response.json(
-			{ success: false, message: 'Internal Server Error' } satisfies ApiResponse,
-			{ status: 500 }
-		);
+		return ApiResponse.internalServerError();
 	}
 };

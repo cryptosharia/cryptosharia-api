@@ -1,19 +1,13 @@
 import { db } from '$lib/db';
 import * as schema from '$lib/db/tables';
 import { dev } from '$app/environment';
-import type { ApiResponse } from '$lib/types';
+import ApiResponse from '$lib/api-response';
 import type { InferInsertModel } from 'drizzle-orm';
 import { eq } from 'drizzle-orm';
 
 export async function GET() {
 	if (!dev) {
-		return Response.json(
-			{
-				success: false,
-				message: 'Forbidden: Seeding is only allowed in development mode.'
-			} satisfies ApiResponse<undefined>,
-			{ status: 403 }
-		);
+		return ApiResponse.forbidden();
 	}
 
 	try {
@@ -109,20 +103,10 @@ export async function GET() {
 			}
 		}
 
-		return Response.json({
-			success: true,
-			message: 'Database seeded successfully'
-		} satisfies ApiResponse<undefined>);
+		return ApiResponse.ok();
 	} catch (err) {
 		console.error('Seeding failed:', err);
-		return Response.json(
-			{
-				success: false,
-				message: 'Internal Server Error during seeding.',
-				errors: err instanceof Error ? { message: [err.message] } : undefined
-			} satisfies ApiResponse<undefined>,
-			{ status: 500 }
-		);
+		return ApiResponse.internalServerError();
 	}
 }
 

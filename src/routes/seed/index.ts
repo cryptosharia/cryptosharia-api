@@ -1,34 +1,14 @@
-import { ApiResponse } from '$lib/types';
+import OpenApiResponse from '$lib/openapi-response';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
-export const seed: RouteConfig = {
+export const seedGet: RouteConfig = {
 	path: '/seed',
 	method: 'get',
-	summary: 'Seed the database with dummy data (Development only)',
+	summary: 'Seed Sample Data',
+	description: 'Initialize the database with sample data for development and testing purposes.',
 	responses: {
-		200: {
-			description: 'Database seeded successfully',
-			content: {
-				'application/json': {
-					schema: ApiResponse
-				}
-			}
-		},
-		403: {
-			description: 'Forbidden: Seeding is only allowed in development mode',
-			content: {
-				'application/json': {
-					schema: ApiResponse
-				}
-			}
-		},
-		500: {
-			description: 'Internal Server Error during seeding',
-			content: {
-				'application/json': {
-					schema: ApiResponse
-				}
-			}
-		}
+		...OpenApiResponse.ok(),
+		...OpenApiResponse.forbidden(),
+		...OpenApiResponse.internalServerError()
 	}
 };

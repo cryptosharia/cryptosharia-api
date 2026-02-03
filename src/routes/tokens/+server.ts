@@ -1,7 +1,6 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import type { ApiResponse } from '$lib/types';
-import type { Token } from '$lib/db/types';
+import ApiResponse from '$lib/api-response';
 import { GetTokensParams } from '.';
 import z from '$lib/zod-openapi';
 
@@ -10,65 +9,53 @@ import z from '$lib/zod-openapi';
  */
 export const GET: RequestHandler = async ({ url }) => {
 	// 1. Validate query parameters using Zod
-	const result = GetTokensParams.safeParse(Object.fromEntries(url.searchParams));
+	const params = Object.fromEntries(url.searchParams);
+	const result = GetTokensParams.safeParse(params);
 
 	// If validation fails, return a 400 Bad Request
 	if (!result.success) {
-		return Response.json(
-			{
-				success: false,
-				message: 'Invalid query parameters',
-				errors: z.flattenError(result.error).fieldErrors
-			} satisfies ApiResponse<undefined>,
-			{ status: 400 }
-		);
+		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { status, slug, search, limit, page, exclude } = result.data;
+	const { status, slugs, search, limit, page, exclude } = result.data;
 	const offset = (page - 1) * limit;
 
-	// 2. Fetch tokens from the database
-	const tokens = await db.query.tokens.findMany({
-		where: (tokens, { eq, or, ilike, and, notInArray }) => {
-			const filters = [];
+	try {
+		// 2. Fetch tokens from the database
+		const tokensList = await db.query.tokens.findMany({
+			where: (tokens, { eq, or, ilike, and, notInArray, inArray }) => {
+				const filters = [];
 
-			if (status !== 'all') {
-				filters.push(eq(tokens.shariaStatus, status));
-			}
-
-			if (slug) {
-				filters.push(eq(tokens.slug, slug));
-			}
-
-			if (search) {
-				const query = `%${search}%`;
-				filters.push(
-					or(ilike(tokens.name, query), ilike(tokens.ticker, query), ilike(tokens.slug, query))
-				);
-			}
-
-			if (exclude) {
-				const excludedSlugs = exclude
-					.split(',')
-					.map((s) => s.trim())
-					.filter((s) => s.length > 0);
-
-				if (excludedSlugs.length > 0) {
-					filters.push(notInArray(tokens.slug, excludedSlugs));
+				if (status !== 'all') {
+					filters.push(eq(tokens.shariaStatus, status));
 				}
-			}
 
-			return filters.length > 0 ? and(...filters) : undefined;
-		},
-		limit,
-		offset,
-		orderBy: (tokens, { asc }) => [asc(tokens.rank)]
-	});
+				if (slugs && (slugs as string[]).length > 0) {
+					filters.push(inArray(tokens.slug, slugs as string[]));
+				}
 
-	// 3. Return the success response
-	return Response.json({
-		success: true,
-		message: 'Tokens fetched successfully',
-		data: tokens
-	} satisfies ApiResponse<Token[]>);
+				if (search) {
+					const query = `%${search}%`;
+					filters.push(
+						or(ilike(tokens.name, query), ilike(tokens.ticker, query), ilike(tokens.slug, query))
+					);
+				}
+
+				if (exclude && (exclude as string[]).length > 0) {
+					filters.push(notInArray(tokens.slug, exclude as string[]));
+				}
+
+				return filters.length > 0 ? and(...filters) : undefined;
+			},
+			limit,
+			offset,
+			orderBy: (tokens, { asc }) => [asc(tokens.rank)]
+		});
+
+		// 3. Return the success response
+		return ApiResponse.ok(tokensList);
+	} catch (err) {
+		console.error('Error fetching tokens:', err);
+		return ApiResponse.internalServerError();
+	}
 };

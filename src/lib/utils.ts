@@ -1,79 +1,35 @@
-import type { ApiResponse as ApiResponseType } from '$lib/types';
+import z from './zod-openapi';
 
 /**
- * Standardized API response utilities.
- * Automatically uses standard HTTP status messages based on status codes.
+ * Helper for defining comma-separated query parameters in OpenAPI.
+ * Automatically handles preprocessing from string to array and sets OpenAPI metadata.
+ * @param itemSchema - The schema for individual items in the array
+ * @param metadata - Description and optional example for the parameter
  */
-export class ApiResponse {
-	/**
-	 * Creates a 200 OK response.
-	 * @param data - Optional response data
-	 */
-	static ok(data?: unknown): Response {
-		return Response.json(
-			{
-				success: true,
-				message: 'OK',
-				data
-			} satisfies ApiResponseType,
-			{ status: 200 }
-		);
-	}
+export const zQueryArray = (
+	itemSchema: z.ZodTypeAny,
+	metadata: { description: string; example?: string; required?: boolean }
+) => {
+	const baseSchema = z.array(itemSchema);
+	const schema = metadata.required ? baseSchema : baseSchema.optional();
 
-	/**
-	 * Creates a 201 Created response.
-	 * @param data - Optional response data
-	 */
-	static created(data?: unknown): Response {
-		return Response.json(
-			{
-				success: true,
-				message: 'Created',
-				data
-			} satisfies ApiResponseType,
-			{ status: 201 }
-		);
-	}
-
-	/**
-	 * Creates a 400 Bad Request response.
-	 * @param errors - Optional field-level validation errors
-	 */
-	static badRequest(errors?: Record<string, string[]>): Response {
-		return Response.json(
-			{
-				success: false,
-				message: 'Bad Request',
-				errors
-			} satisfies ApiResponseType,
-			{ status: 400 }
-		);
-	}
-
-	/**
-	 * Creates a 404 Not Found response.
-	 */
-	static notFound(): Response {
-		return Response.json(
-			{
-				success: false,
-				message: 'Not Found'
-			} satisfies ApiResponseType,
-			{ status: 404 }
-		);
-	}
-
-	/**
-	 * Creates a 500 Internal Server Error response.
-	 * Never exposes error details to consumers for security.
-	 */
-	static internalServerError(): Response {
-		return Response.json(
-			{
-				success: false,
-				message: 'Internal Server Error'
-			} satisfies ApiResponseType,
-			{ status: 500 }
-		);
-	}
-}
+	return z
+		.preprocess((val) => {
+			if (typeof val === 'string') {
+				return val
+					.split(',')
+					.map((s) => s.trim())
+					.filter(Boolean);
+			}
+			return val;
+		}, schema)
+		.openapi({
+			description: metadata.description,
+			param: {
+				style: 'form',
+				explode: false,
+				required: metadata.required
+			},
+			example: metadata.example
+		});
+};

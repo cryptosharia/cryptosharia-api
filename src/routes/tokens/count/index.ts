@@ -1,7 +1,7 @@
 import { GetTokensParams } from '..';
+import OpenApiResponse from '$lib/openapi-response';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
-import { ApiResponse } from '$lib/types';
 
 export const GetTokensCountParams = GetTokensParams.pick({
 	status: true,
@@ -10,31 +10,17 @@ export const GetTokensCountParams = GetTokensParams.pick({
 	description: 'Query parameters for counting tokens with filtering and searching'
 });
 
-export const tokensCount: RouteConfig = {
+export const tokensCountGet: RouteConfig = {
 	path: '/tokens/count',
 	method: 'get',
-	summary: 'Get the total number of tokens matching the filters',
+	summary: 'Count Tokens',
+	description: 'Get the total count of tokens matching the specified criteria.',
 	request: {
 		query: GetTokensCountParams
 	},
 	responses: {
-		200: {
-			description: 'Success',
-			content: {
-				'application/json': {
-					schema: ApiResponse.extend({
-						data: z.number().openapi({ example: 42 })
-					})
-				}
-			}
-		},
-		400: {
-			description: 'Bad Request',
-			content: {
-				'application/json': {
-					schema: ApiResponse
-				}
-			}
-		}
+		...OpenApiResponse.ok(z.number().openapi({ example: 42 })),
+		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.internalServerError()
 	}
 };

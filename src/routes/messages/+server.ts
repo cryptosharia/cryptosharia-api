@@ -1,12 +1,12 @@
 import { GS_SEND_MESSAGE_URL } from '$env/static/private';
 import { InsertMessage } from '$lib/db/types';
+import ApiResponse from '$lib/api-response';
 import z from '$lib/zod-openapi';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { messages } from '$lib/db/tables';
 import { GetMessagesParams } from './index';
 import { and, desc, ilike, inArray, or } from 'drizzle-orm';
-import { ApiResponse } from '$lib/utils';
 
 /**
  * GET /messages
@@ -15,11 +15,14 @@ import { ApiResponse } from '$lib/utils';
  */
 export const GET: RequestHandler = async ({ url }) => {
 	// Parse and validate query parameters from URL
-	const result = GetMessagesParams.safeParse(Object.fromEntries(url.searchParams));
+	const params = Object.fromEntries(url.searchParams);
+	const result = GetMessagesParams.safeParse(params);
 
 	// Return 400 if validation fails
 	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
+		return ApiResponse.badRequest(
+			z.flattenError(result.error).fieldErrors as Record<string, string[]>
+		);
 	}
 
 	// Extract validated parameters
@@ -31,8 +34,8 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		// Filter by sender emails if provided
 		// 'senders' is automatically parsed from comma-separated string to array via z.preprocess
-		if (senders && senders.length > 0) {
-			filters.push(inArray(messages.email, senders));
+		if (senders && (senders as string[]).length > 0) {
+			filters.push(inArray(messages.email, senders as string[]));
 		}
 
 		// Search across name, email, and message content if search term provided
@@ -47,66 +50,55 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 
 		// Fetch messages from database with applied filters and pagination
-		const data = await db.query.messages.findMany({
-			where: filters.length > 0 ? and(...filters) : undefined, // Combine filters with AND
-			orderBy: [desc(messages.createdAt)], // Newest first
+		const messagesList = await db.query.messages.findMany({
+			where: filters.length > 0 ? and(...filters) : undefined,
 			limit,
-			offset
+			offset,
+			orderBy: [desc(messages.createdAt)]
 		});
 
-		return ApiResponse.ok(data);
+		// Return successful response with data
+		return ApiResponse.ok(messagesList);
 	} catch (err) {
 		console.error('Error fetching messages:', err);
 		return ApiResponse.internalServerError();
 	}
 };
 
+/**
+ * POST /messages
+ * Creates a new message (contact form submission).
+ * Also sends the message to a Google Apps Script endpoint for email notification.
+ */
 export const POST: RequestHandler = async ({ request, fetch }) => {
-	// 1. Safe Parse Body
-	let body;
-
 	try {
-		body = await request.json();
-	} catch {
-		return ApiResponse.badRequest();
-	}
+		// Parse request body
+		const body = await request.json();
 
-	// 2. Validate Data
-	const result = InsertMessage.safeParse(body);
+		// Validate input using InsertMessage schema
+		const result = InsertMessage.safeParse(body);
 
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
-	}
-
-	const { name, email, message } = result.data;
-
-	try {
-		// 3. Save to Database first (most important)
-		await db.insert(messages).values({ name, email, message });
-
-		// 4. Forward Request to Google Script (optional notification)
-		if (GS_SEND_MESSAGE_URL) {
-			try {
-				const res = await fetch(GS_SEND_MESSAGE_URL, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ name, email, message })
-				});
-
-				if (!res.ok) {
-					console.error('Google Script forwarding failed:', res.statusText);
-				}
-			} catch (fetchErr) {
-				console.error('Google Script fetch error:', fetchErr);
-			}
-		} else {
-			console.warn('GS_SEND_MESSAGE_URL not configured, skipping Google Script');
+		// Return 400 if validation fails
+		if (!result.success) {
+			return ApiResponse.badRequest(
+				z.flattenError(result.error).fieldErrors as Record<string, string[]>
+			);
 		}
 
-		// Always return success if DB save succeeded
+		// 1. Insert into local database
+		await db.insert(messages).values(result.data);
+
+		// 2. Send to Google Apps Script (fire and forget, don't wait for success)
+		// This handles email notifications in the background
+		fetch(GS_SEND_MESSAGE_URL, {
+			method: 'POST',
+			body: JSON.stringify(result.data)
+		}).catch((err) => console.error('GAS Email Error:', err));
+
+		// Return 201 Created on success
 		return ApiResponse.created();
 	} catch (err) {
-		console.error('Message processing error:', err);
+		console.error('Error creating message:', err);
 		return ApiResponse.internalServerError();
 	}
 };

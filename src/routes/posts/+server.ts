@@ -1,7 +1,6 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import type { ApiResponse } from '$lib/types';
-import type { Post } from '$lib/db/types';
+import ApiResponse from '$lib/api-response';
 import { GetPostsParams } from '.';
 import z from '$lib/zod-openapi';
 
@@ -10,65 +9,53 @@ import z from '$lib/zod-openapi';
  */
 export const GET: RequestHandler = async ({ url }) => {
 	// 1. Validate query parameters using Zod
-	const result = GetPostsParams.safeParse(Object.fromEntries(url.searchParams));
+	const params = Object.fromEntries(url.searchParams);
+	const result = GetPostsParams.safeParse(params);
 
 	// If validation fails, return a 400 Bad Request
 	if (!result.success) {
-		return Response.json(
-			{
-				success: false,
-				message: 'Invalid query parameters',
-				errors: z.flattenError(result.error).fieldErrors
-			} satisfies ApiResponse<undefined>,
-			{ status: 400 }
-		);
+		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { category, slug, search, limit, page, exclude } = result.data;
+	const { category, slugs, search, limit, page, exclude } = result.data;
 	const offset = (page - 1) * limit;
 
-	// 2. Fetch posts from the database
-	const posts = await db.query.posts.findMany({
-		where: (posts, { eq, or, ilike, and, notInArray }) => {
-			const filters = [];
+	try {
+		// 2. Fetch posts from the database
+		const postsList = await db.query.posts.findMany({
+			where: (posts, { eq, or, ilike, and, notInArray, inArray }) => {
+				const filters = [];
 
-			if (category !== 'all') {
-				filters.push(eq(posts.section, category));
-			}
-
-			if (slug) {
-				filters.push(eq(posts.slug, slug));
-			}
-
-			if (search) {
-				const query = `%${search}%`;
-				filters.push(
-					or(ilike(posts.title, query), ilike(posts.content, query), ilike(posts.slug, query))
-				);
-			}
-
-			if (exclude) {
-				const excludedSlugs = exclude
-					.split(',')
-					.map((s) => s.trim())
-					.filter((s) => s.length > 0);
-
-				if (excludedSlugs.length > 0) {
-					filters.push(notInArray(posts.slug, excludedSlugs));
+				if (category !== 'all') {
+					filters.push(eq(posts.section, category));
 				}
-			}
 
-			return filters.length > 0 ? and(...filters) : undefined;
-		},
-		limit,
-		offset,
-		orderBy: (posts, { desc }) => [desc(posts.createdAt)]
-	});
+				if (slugs && (slugs as string[]).length > 0) {
+					filters.push(inArray(posts.slug, slugs as string[]));
+				}
 
-	// 3. Return the success response
-	return Response.json({
-		success: true,
-		message: 'Posts fetched successfully',
-		data: posts
-	} satisfies ApiResponse<Post[]>);
+				if (search) {
+					const query = `%${search}%`;
+					filters.push(
+						or(ilike(posts.title, query), ilike(posts.content, query), ilike(posts.slug, query))
+					);
+				}
+
+				if (exclude && (exclude as string[]).length > 0) {
+					filters.push(notInArray(posts.slug, exclude as string[]));
+				}
+
+				return filters.length > 0 ? and(...filters) : undefined;
+			},
+			limit,
+			offset,
+			orderBy: (posts, { desc }) => [desc(posts.createdAt)]
+		});
+
+		// 3. Return the success response
+		return ApiResponse.ok(postsList);
+	} catch (err) {
+		console.error('Error fetching posts:', err);
+		return ApiResponse.internalServerError();
+	}
 };

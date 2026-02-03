@@ -1,16 +1,11 @@
-import { ApiResponse } from '$lib/types';
+import { zQueryArray } from '$lib/utils';
+import OpenApiResponse from '$lib/openapi-response';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
-export const GetTokensQuotesParams = z
-	.object({
-		slugs: z.string().min(1).openapi({
-			description: 'Comma-separated list of token slugs',
-			example: 'bitcoin,ethereum,sui'
-		})
-	})
-	.openapi('GetTokensQuotesParams');
-
+/**
+ * Response schema for a token quote.
+ */
 export const TokenQuote = z
 	.object({
 		slug: z.string(),
@@ -25,39 +20,27 @@ export const TokenQuote = z
 	})
 	.openapi('TokenQuote');
 
-export const tokensQuotes: RouteConfig = {
+export const GetTokensQuotesParams = z
+	.object({
+		slugs: zQueryArray(z.string(), {
+			description: 'List of token slugs to get quotes for',
+			example: 'bitcoin,ethereum,sui',
+			required: true
+		})
+	})
+	.openapi('GetTokensQuotesParams');
+
+export const tokensQuotesGet: RouteConfig = {
 	path: '/tokens/quotes',
 	method: 'get',
-	summary: 'Fetch live token quotes from CoinMarketCap',
+	summary: 'Get Token Quotes',
+	description: 'Fetch real-time quotes and market data for specific tokens from CoinMarketCap.',
 	request: {
 		query: GetTokensQuotesParams
 	},
 	responses: {
-		200: {
-			description: 'Success',
-			content: {
-				'application/json': {
-					schema: ApiResponse.extend({
-						data: z.array(TokenQuote)
-					})
-				}
-			}
-		},
-		400: {
-			description: 'Bad Request',
-			content: {
-				'application/json': {
-					schema: ApiResponse
-				}
-			}
-		},
-		502: {
-			description: 'Upstream Error (CoinMarketCap)',
-			content: {
-				'application/json': {
-					schema: ApiResponse
-				}
-			}
-		}
+		...OpenApiResponse.ok(z.array(TokenQuote)),
+		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.internalServerError()
 	}
 };

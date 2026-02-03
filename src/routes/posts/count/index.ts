@@ -1,7 +1,7 @@
 import { GetPostsParams } from '..';
+import OpenApiResponse from '$lib/openapi-response';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
-import { ApiResponse } from '$lib/types';
 
 export const GetPostsCountParams = GetPostsParams.pick({
 	category: true,
@@ -10,31 +10,17 @@ export const GetPostsCountParams = GetPostsParams.pick({
 	description: 'Query parameters for counting posts with filtering and searching'
 });
 
-export const postsCount: RouteConfig = {
+export const postsCountGet: RouteConfig = {
 	path: '/posts/count',
 	method: 'get',
-	summary: 'Get the total number of posts matching the filters',
+	summary: 'Count Posts',
+	description: 'Get the total count of blog posts matching the specified criteria.',
 	request: {
 		query: GetPostsCountParams
 	},
 	responses: {
-		200: {
-			description: 'Success',
-			content: {
-				'application/json': {
-					schema: ApiResponse.extend({
-						data: z.number().openapi({ example: 42 })
-					})
-				}
-			}
-		},
-		400: {
-			description: 'Bad Request',
-			content: {
-				'application/json': {
-					schema: ApiResponse
-				}
-			}
-		}
+		...OpenApiResponse.ok(z.number().openapi({ example: 42 })),
+		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.internalServerError()
 	}
 };
