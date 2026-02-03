@@ -1,12 +1,16 @@
+import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import * as schema from '$lib/db/tables';
 import { dev } from '$app/environment';
+import { env } from '$env/dynamic/private';
 import ApiResponse from '$lib/api-response';
-import type { InferInsertModel } from 'drizzle-orm';
 import { eq } from 'drizzle-orm';
+import { MESSAGES, POSTS, TOKENS } from './data';
 
-export async function GET() {
-	if (!dev) {
+export const GET: RequestHandler = async () => {
+	// Only allow seeding in local development or Vercel preview environments
+	// env.VERCEL_ENV is automatically provided by Vercel
+	if (!dev && env.VERCEL_ENV !== 'preview') {
 		return ApiResponse.forbidden();
 	}
 
@@ -18,6 +22,7 @@ export async function GET() {
 		await db.delete(schema.tokens);
 		await db.delete(schema.tags);
 		await db.delete(schema.assets);
+		await db.delete(schema.messages);
 
 		// Seed Posts
 		for (const postData of POSTS) {
@@ -103,273 +108,14 @@ export async function GET() {
 			}
 		}
 
+		// Seed Messages
+		for (const messageData of MESSAGES) {
+			await db.insert(schema.messages).values(messageData);
+		}
+
 		return ApiResponse.ok();
 	} catch (err) {
 		console.error('Seeding failed:', err);
 		return ApiResponse.internalServerError();
 	}
-}
-
-// Seed Data Types
-type SeedPost = Omit<InferInsertModel<typeof schema.posts>, 'coverImageId'> & {
-	tags: string[];
-	coverImage?: InferInsertModel<typeof schema.assets>;
 };
-
-type SeedToken = Omit<InferInsertModel<typeof schema.tokens>, 'logoId'> & {
-	tags: string[];
-	logo?: InferInsertModel<typeof schema.assets>;
-};
-
-// Posts Data
-const POSTS: SeedPost[] = [
-	{
-		slug: 'understanding-halal-cryptocurrency-basics',
-		section: 'education',
-		title: 'Understanding Halal Cryptocurrency: The Basics',
-		excerpt:
-			'A comprehensive guide to understanding cryptocurrency from an Islamic perspective, covering fundamental concepts and sharia compliance.',
-		content: `# Understanding Halal Cryptocurrency
-
-Cryptocurrency has emerged as a revolutionary financial technology, but for Muslims, the question of its permissibility under Islamic law is paramount.
-
-## What Makes Cryptocurrency Halal?
-
-For a cryptocurrency to be considered halal, it must meet several criteria:
-
-1. **No Riba (Interest)**: The system must not involve interest-based transactions
-2. **No Gharar (Uncertainty)**: Excessive uncertainty and speculation should be avoided
-3. **Real Value**: The asset should have intrinsic value or utility
-4. **Transparency**: The technology and operations must be transparent`,
-		type: 'article',
-		status: 'published',
-		isFeatured: true,
-		eventDate: null,
-		externalLink: null,
-		tags: ['Education', 'Cryptocurrency', 'Halal', 'Sharia', 'Blockchain'],
-		coverImage: {
-			pathname: 'seed/halal-crypto-basics/800/600',
-			filename: 'halal-crypto-basics.jpg',
-			size: 150000,
-			contentType: 'image/jpeg',
-			provider: 'picsum',
-			width: 800,
-			height: 600
-		}
-	},
-	{
-		slug: 'bitcoin-halal-analysis-2024',
-		section: 'research',
-		title: 'Bitcoin: A Comprehensive Halal Analysis',
-		excerpt:
-			'An in-depth research paper examining Bitcoin through the lens of Islamic jurisprudence and modern financial principles.',
-		content: `# Bitcoin Halal Analysis
-
-This research examines Bitcoin's compliance with Islamic financial principles.
-
-## Methodology
-
-Our analysis is based on classical Islamic jurisprudence combined with modern financial understanding.`,
-		type: 'article',
-		status: 'published',
-		isFeatured: false,
-		eventDate: null,
-		externalLink: null,
-		tags: ['Bitcoin', 'Research', 'Halal Analysis', 'Cryptocurrency'],
-		coverImage: {
-			pathname: 'seed/bitcoin-analysis/800/600',
-			filename: 'bitcoin-analysis.jpg',
-			size: 175000,
-			contentType: 'image/jpeg',
-			provider: 'picsum',
-			width: 800,
-			height: 600
-		}
-	},
-	{
-		slug: 'crypto-sharia-webinar-march-2024',
-		section: 'activity',
-		title: 'Crypto Sharia Webinar: Islamic Finance Meets Blockchain',
-		excerpt:
-			'Join us for an exclusive webinar discussing the intersection of Islamic finance and blockchain technology.',
-		content: `# Upcoming Webinar
-
-**Date**: March 15, 2024  
-**Time**: 7:00 PM GMT+8
-
-## Topics Covered
-
-- Introduction to Islamic Finance Principles
-- Blockchain Technology Overview
-- Halal Cryptocurrency Projects
-- Q&A Session with Scholars`,
-		type: 'webinar',
-		status: 'published',
-		isFeatured: true,
-		eventDate: new Date('2024-03-15T19:00:00Z'),
-		externalLink: 'https://example.com/webinar',
-		tags: ['Webinar', 'Event', 'Islamic Finance', 'Blockchain', 'Education'],
-		coverImage: {
-			pathname: 'seed/webinar-march/800/600',
-			filename: 'webinar-march.jpg',
-			size: 160000,
-			contentType: 'image/jpeg',
-			provider: 'picsum',
-			width: 800,
-			height: 600
-		}
-	},
-	{
-		slug: 'ethereum-pos-sharia-compliance',
-		section: 'news',
-		title: 'Ethereum Proof-of-Stake: Sharia Compliance Update',
-		excerpt:
-			"Breaking news on how Ethereum's transition to Proof-of-Stake affects its status under Islamic law.",
-		content: `# Ethereum PoS Update
-
-Ethereum's successful transition to Proof-of-Stake has significant implications for its sharia compliance status.`,
-		type: 'headline',
-		status: 'published',
-		isFeatured: false,
-		eventDate: null,
-		externalLink: null,
-		tags: ['Ethereum', 'News', 'Proof of Stake', 'Sharia Compliance'],
-		coverImage: {
-			pathname: 'seed/ethereum-pos/800/600',
-			filename: 'ethereum-pos.jpg',
-			size: 155000,
-			contentType: 'image/jpeg',
-			provider: 'picsum',
-			width: 800,
-			height: 600
-		}
-	}
-];
-
-// Tokens Data
-const TOKENS: SeedToken[] = [
-	{
-		slug: 'bitcoin',
-		rank: 1,
-		name: 'Bitcoin',
-		ticker: 'BTC',
-		shariaStatus: 'halal',
-		brandColorHex: '#F7931A',
-		tradingviewSymbol: 'INDEX:BTCUSD',
-		website: 'https://bitcoin.org',
-		content: `# Bitcoin (BTC)
-
-Bitcoin is the first and most well-known cryptocurrency, created by Satoshi Nakamoto in 2009.
-
-## Sharia Analysis
-
-Bitcoin is generally considered halal by many Islamic scholars due to its decentralized nature and absence of interest-bearing mechanisms.`,
-		status: 'published',
-		tags: ['Currency', 'Proof of Work', 'Store of Value', 'Decentralized'],
-		logo: {
-			pathname: 'seed/btc-logo/128/128',
-			filename: 'btc-logo.png',
-			size: 8000,
-			contentType: 'image/png',
-			provider: 'picsum',
-			width: 128,
-			height: 128
-		}
-	},
-	{
-		slug: 'ethereum',
-		rank: 2,
-		name: 'Ethereum',
-		ticker: 'ETH',
-		shariaStatus: 'halal',
-		brandColorHex: '#627EEA',
-		tradingviewSymbol: 'INDEX:ETHUSD',
-		website: 'https://ethereum.org',
-		content: `# Ethereum (ETH)
-
-Ethereum is a decentralized platform that enables smart contracts and decentralized applications.`,
-		status: 'published',
-		tags: ['Platform', 'Smart Contracts', 'Proof of Stake', 'DeFi'],
-		logo: {
-			pathname: 'seed/eth-logo/128/128',
-			filename: 'eth-logo.png',
-			size: 7500,
-			contentType: 'image/png',
-			provider: 'picsum',
-			width: 128,
-			height: 128
-		}
-	},
-	{
-		slug: 'usdc',
-		rank: 3,
-		name: 'USD Coin',
-		ticker: 'USDC',
-		shariaStatus: 'halal',
-		brandColorHex: '#2775CA',
-		tradingviewSymbol: 'CRYPTO:USDCUSD',
-		website: 'https://www.circle.com/en/usdc',
-		content: `# USD Coin (USDC)
-
-USDC is a fully-backed stablecoin pegged to the US Dollar.`,
-		status: 'published',
-		tags: ['Stablecoin', 'Fiat-Backed', 'USD', 'Payments'],
-		logo: {
-			pathname: 'seed/usdc-logo/128/128',
-			filename: 'usdc-logo.png',
-			size: 6500,
-			contentType: 'image/png',
-			provider: 'picsum',
-			width: 128,
-			height: 128
-		}
-	},
-	{
-		slug: 'bnb',
-		rank: 4,
-		name: 'BNB',
-		ticker: 'BNB',
-		shariaStatus: 'syubhat',
-		brandColorHex: '#F3BA2F',
-		tradingviewSymbol: 'BINANCE:BNBUSDT',
-		website: 'https://www.bnbchain.org',
-		content: `# BNB
-
-BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
-		status: 'published',
-		tags: ['Exchange Token', 'BNB Chain', 'Utility Token'],
-		logo: {
-			pathname: 'seed/bnb-logo/128/128',
-			filename: 'bnb-logo.png',
-			size: 7000,
-			contentType: 'image/png',
-			provider: 'picsum',
-			width: 128,
-			height: 128
-		}
-	},
-	{
-		slug: 'solana',
-		rank: 5,
-		name: 'Solana',
-		ticker: 'SOL',
-		shariaStatus: 'halal',
-		brandColorHex: '#14F195',
-		tradingviewSymbol: 'BINANCE:SOLUSDT',
-		website: 'https://solana.com',
-		content: `# Solana (SOL)
-
-Solana is a high-performance blockchain designed for decentralized applications.`,
-		status: 'published',
-		tags: ['Platform', 'Proof of Stake', 'High Performance', 'DeFi'],
-		logo: {
-			pathname: 'seed/sol-logo/128/128',
-			filename: 'sol-logo.png',
-			size: 7200,
-			contentType: 'image/png',
-			provider: 'picsum',
-			width: 128,
-			height: 128
-		}
-	}
-];

@@ -5,7 +5,8 @@ export const seedGet: RouteConfig = {
 	path: '/seed',
 	method: 'get',
 	summary: 'Seed Sample Data',
-	description: 'Initialize the database with sample data for development and testing purposes.',
+	description:
+		'Initialize the database with sample data for development and testing purposes. (Seeding in production is forbidden)',
 	responses: {
 		...OpenApiResponse.ok(),
 		...OpenApiResponse.forbidden(),
