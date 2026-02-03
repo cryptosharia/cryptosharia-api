@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import type { ApiResponse, Token } from '$lib/types';
+import type { ApiResponse } from '$lib/types';
+import type { Token } from '$lib/db/types';
 import { GetTokensParams } from '.';
 import z from '$lib/zod-openapi';
 
@@ -32,7 +33,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			const filters = [];
 
 			if (status !== 'all') {
-				filters.push(eq(tokens.status, status));
+				filters.push(eq(tokens.shariaStatus, status));
 			}
 
 			if (slug) {

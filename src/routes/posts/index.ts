@@ -1,11 +1,12 @@
-import { postCategory } from '$lib/db/tables';
-import { ApiResponse, Post } from '$lib/types';
+import { postSectionEnum } from '$lib/db/tables';
+import { ApiResponse } from '$lib/types';
+import { Post } from '$lib/db/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
 export const GetPostsParams = z
 	.object({
-		category: z.enum(['all', ...postCategory.enumValues]).default('all'),
+		category: z.enum(['all', ...postSectionEnum.enumValues]).default('all'),
 		slug: z.string().optional(),
 		search: z.string().optional(),
 		limit: z.coerce.number().min(1).max(100).default(10),

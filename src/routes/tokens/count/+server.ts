@@ -23,7 +23,7 @@ export async function GET({ url }) {
 	const filters = [];
 
 	if (status !== 'all') {
-		filters.push(eq(tokens.status, status));
+		filters.push(eq(tokens.shariaStatus, status));
 	}
 
 	if (search) {

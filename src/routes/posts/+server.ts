@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import type { ApiResponse, Post } from '$lib/types';
+import type { ApiResponse } from '$lib/types';
+import type { Post } from '$lib/db/types';
 import { GetPostsParams } from '.';
 import z from '$lib/zod-openapi';
 
@@ -32,7 +33,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			const filters = [];
 
 			if (category !== 'all') {
-				filters.push(eq(posts.category, category));
+				filters.push(eq(posts.section, category));
 			}
 
 			if (slug) {
@@ -42,7 +43,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			if (search) {
 				const query = `%${search}%`;
 				filters.push(
-					or(ilike(posts.title, query), ilike(posts.description, query), ilike(posts.slug, query))
+					or(ilike(posts.title, query), ilike(posts.content, query), ilike(posts.slug, query))
 				);
 			}
 

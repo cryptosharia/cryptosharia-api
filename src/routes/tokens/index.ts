@@ -1,5 +1,6 @@
-import { tokenStatus } from '$lib/db/tables';
-import { ApiResponse, Token } from '$lib/types';
+import { shariaStatusEnum } from '$lib/db/tables';
+import { ApiResponse } from '$lib/types';
+import { Token } from '$lib/db/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
@@ -12,7 +13,7 @@ import z from '$lib/zod-openapi';
  */
 export const GetTokensParams = z
 	.object({
-		status: z.enum(['all', ...tokenStatus.enumValues]).default('all'),
+		status: z.enum(['all', ...shariaStatusEnum.enumValues]).default('all'),
 		slug: z.string().optional(),
 		search: z.string().optional(),
 		limit: z.coerce.number().min(1).max(100).default(10),

@@ -23,13 +23,13 @@ export async function GET({ url }) {
 	const filters = [];
 
 	if (category !== 'all') {
-		filters.push(eq(posts.category, category));
+		filters.push(eq(posts.section, category));
 	}
 
 	if (search) {
 		const query = `%${search}%`;
 		filters.push(
-			or(ilike(posts.title, query), ilike(posts.description, query), ilike(posts.slug, query))
+			or(ilike(posts.title, query), ilike(posts.content, query), ilike(posts.slug, query))
 		);
 	}
 
