@@ -1,5 +1,5 @@
 import { db } from '$lib/db';
-import { tokens } from '$lib/db/schema';
+import { tokens } from '$lib/db/tables';
 import type { ApiResponse } from '$lib/types';
 import { count, eq, or, ilike, and } from 'drizzle-orm';
 import z from '$lib/zod-openapi';

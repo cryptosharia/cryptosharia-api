@@ -1,6 +1,6 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import { db } from '$lib/db';
-import * as schema from '$lib/db/schema';
+import * as schema from '$lib/db/tables';
 
 import { dev } from '$app/environment';
 import type { ApiResponse } from '$lib/types';

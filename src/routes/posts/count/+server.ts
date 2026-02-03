@@ -1,5 +1,5 @@
 import { db } from '$lib/db';
-import { posts } from '$lib/db/schema';
+import { posts } from '$lib/db/tables';
 import type { ApiResponse } from '$lib/types';
 import { count, eq, or, ilike, and } from 'drizzle-orm';
 import z from '$lib/zod-openapi';
