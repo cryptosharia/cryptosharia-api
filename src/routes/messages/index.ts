@@ -1,17 +1,6 @@
-import { ApiResponse, Message } from '$lib/types';
+import { ApiResponse } from '$lib/types';
+import { InsertMessage } from '$lib/db/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
-
-export const PostMessagesBody = Message.pick({
-	name: true,
-	email: true,
-	message: true
-}).openapi({
-	example: {
-		name: 'John Doe',
-		email: 'john@example.com',
-		message: 'Hello, I have a question about...'
-	}
-});
 
 export const messages: RouteConfig = {
 	path: '/messages',
@@ -21,7 +10,7 @@ export const messages: RouteConfig = {
 		body: {
 			content: {
 				'application/json': {
-					schema: PostMessagesBody
+					schema: InsertMessage
 				}
 			}
 		}

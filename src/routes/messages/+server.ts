@@ -1,12 +1,12 @@
 import { GS_SEND_MESSAGE_URL } from '$env/static/private';
 import type { ApiResponse } from '$lib/types';
+import { InsertMessage } from '$lib/db/types';
 import z from '$lib/zod-openapi';
-
-import { PostMessagesBody } from '.';
 
 export async function POST({ request, fetch }) {
 	// 1. Safe Parse Body
 	let body;
+
 	try {
 		body = await request.json();
 	} catch {
@@ -16,7 +16,8 @@ export async function POST({ request, fetch }) {
 	}
 
 	// 2. Validate Data
-	const result = PostMessagesBody.safeParse(body);
+	const result = InsertMessage.safeParse(body);
+
 	if (!result.success) {
 		return Response.json(
 			{

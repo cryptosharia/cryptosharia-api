@@ -1,8 +1,11 @@
-import * as schema from './db/tables';
-import { createSelectSchema } from 'drizzle-zod';
 import z from './zod-openapi';
 
-// TypeScript type for API responses
+// --- Global Application Types ---
+
+/**
+ * Common shape for all API responses.
+ * Reserved for general application types, not tied to a specific DB table.
+ */
 export type ApiResponse<T = unknown> = {
 	success: boolean;
 	message: string;
@@ -10,7 +13,6 @@ export type ApiResponse<T = unknown> = {
 	data?: T;
 };
 
-// Zod schema for API responses
 export const ApiResponse = z
 	.object({
 		success: z.boolean(),
@@ -19,27 +21,3 @@ export const ApiResponse = z
 		data: z.any().optional()
 	})
 	.openapi('ApiResponse');
-
-export const Post = createSelectSchema(schema.posts).openapi('Post');
-export type Post = z.infer<typeof Post>;
-
-export const Token = createSelectSchema(schema.tokens).openapi('Token');
-export type Token = z.infer<typeof Token>;
-
-export const Message = createSelectSchema(schema.messages, {
-	name: (s) =>
-		s
-			.trim()
-			.min(1, { message: 'Name cannot be empty' })
-			.max(100, { message: 'Name must be at most 100 characters long' }),
-	message: (s) =>
-		s
-			.min(10, { message: 'Message must be at least 10 characters long' })
-			.max(5000, { message: 'Message must be at most 5000 characters long' })
-})
-	.extend({
-		// Use extend (override) for "email" to solve "string().email()" deprecation
-		email: z.email().max(255, { message: 'Email must be at most 255 characters long' })
-	})
-	.openapi('Message');
-export type Message = z.infer<typeof Message>;
