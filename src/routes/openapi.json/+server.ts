@@ -4,10 +4,19 @@ import { postsCount } from '../posts/count';
 import { tokens } from '../tokens';
 import { tokensCount } from '../tokens/count';
 import { tokensQuotes } from '../tokens/quotes';
-import { messages } from '../messages';
+import { messagesPost, messagesGet } from '../messages';
 import { seed } from '../seed';
 
-const PATHS = [posts, postsCount, tokens, tokensCount, tokensQuotes, messages, seed];
+const PATHS = [
+	posts,
+	postsCount,
+	tokens,
+	tokensCount,
+	tokensQuotes,
+	messagesGet,
+	messagesPost,
+	seed
+];
 
 export function GET() {
 	const registry = new OpenAPIRegistry();

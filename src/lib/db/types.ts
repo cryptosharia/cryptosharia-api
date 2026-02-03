@@ -75,9 +75,9 @@ export const InsertMessage = createInsertSchema(schema.messages, {
 	})
 	.openapi('InsertMessage', {
 		example: {
-			name: 'Daffa Ilhami',
-			email: 'mdaffailhami@gmail.com',
-			message: 'Hello, I have a question about...'
+			name: 'Ngetes API',
+			email: 'ngetes@wadidaw.uwu',
+			message: 'Ngetes from\nCryptoSharia API'
 		}
 	});
 export type InsertMessage = z.infer<typeof InsertMessage>;
