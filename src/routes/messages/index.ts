@@ -9,8 +9,8 @@ export const GetMessagesParams = z
 	.object({
 		search: z.string().optional(),
 		senders: zQueryArray(z.email(), {
-			description: 'List of sender emails to filter by',
-			example: 'example1@gmail.com,example2@gmail.com'
+			description:
+				'List of sender emails to filter by.<br>Example: example1@gmail.com,example2@gmail.com'
 		}),
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1)

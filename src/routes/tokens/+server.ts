@@ -4,6 +4,7 @@ import { Token } from '$lib/db/types';
 import ApiResponse from '$lib/api-response';
 import { GetTokensParams } from '.';
 import z from '$lib/zod-openapi';
+import { shariaStatusEnum } from '$lib/db/tables';
 
 /**
  * Handles GET requests to fetch tokens with filtering, searching, and pagination.
@@ -18,20 +19,25 @@ export const GET: RequestHandler = async ({ url }) => {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { status, slugs, search, limit, page, exclude } = result.data;
+	const { 'sharia-statuses': shariaStatuses, slugs, search, limit, page, exclude } = result.data;
 	const offset = (page - 1) * limit;
 
 	try {
 		// 2. Fetch tokens from the database
 		const tokensList = await db.query.tokens.findMany({
-			where: (tokens, { eq, or, ilike, and, notInArray, inArray }) => {
+			where: (tokens, { or, ilike, and, notInArray, inArray }) => {
 				const filters = [];
 
-				if (status !== 'all') {
-					filters.push(eq(tokens.shariaStatus, status));
+				if (shariaStatuses && shariaStatuses.length > 0) {
+					filters.push(
+						inArray(
+							tokens.shariaStatus,
+							shariaStatuses as (typeof shariaStatusEnum.enumValues)[number][]
+						)
+					);
 				}
 
-				if (slugs && (slugs as string[]).length > 0) {
+				if (slugs && slugs.length > 0) {
 					filters.push(inArray(tokens.slug, slugs as string[]));
 				}
 

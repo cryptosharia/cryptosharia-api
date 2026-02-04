@@ -23,8 +23,7 @@ export const TokenQuote = z
 export const GetTokensQuotesParams = z
 	.object({
 		slugs: zQueryArray(z.string(), {
-			description: 'List of token slugs to get quotes for',
-			example: 'bitcoin,ethereum,sui',
+			description: 'List of token slugs to get quotes for.<br>Example: bitcoin,ethereum,sui',
 			required: true
 		})
 	})

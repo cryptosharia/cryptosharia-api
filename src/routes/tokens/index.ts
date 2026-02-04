@@ -10,17 +10,17 @@ import z from '$lib/zod-openapi';
  */
 export const GetTokensParams = z
 	.object({
-		status: z.enum(['all', ...shariaStatusEnum.enumValues]).default('all'),
+		'sharia-statuses': zQueryArray(z.enum(shariaStatusEnum.enumValues), {
+			description: 'List of sharia statuses to filter by.<br>Example: halal,haram'
+		}),
 		slugs: zQueryArray(z.string(), {
-			description: 'List of token slugs to filter by',
-			example: 'bitcoin,ethereum'
+			description: 'List of token slugs to filter by.<br>Example: bitcoin,ethereum,sui'
 		}),
 		search: z.string().optional(),
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1),
 		exclude: zQueryArray(z.string(), {
-			description: 'List of token slugs to exclude',
-			example: 'bitcoin,ethereum,sui'
+			description: 'List of token slugs to exclude.<br>Example: bitcoin,ethereum,sui'
 		})
 	})
 	.openapi('GetTokensParams', {

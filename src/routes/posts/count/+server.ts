@@ -2,7 +2,8 @@ import { db } from '$lib/db';
 import { posts } from '$lib/db/tables';
 import ApiResponse from '$lib/api-response';
 import z from '$lib/zod-openapi';
-import { count, eq, or, ilike, and } from 'drizzle-orm';
+import { count, or, ilike, and, inArray } from 'drizzle-orm';
+import { postSectionEnum, postTypeEnum } from '$lib/db/tables';
 import { GetPostsCountParams } from '.';
 import type { RequestHandler } from './$types';
 
@@ -18,13 +19,21 @@ export const GET: RequestHandler = async ({ url }) => {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { category, search } = result.data;
+	const { sections, types, search } = result.data;
 
 	try {
 		const filters = [];
 
-		if (category !== 'all') {
-			filters.push(eq(posts.section, category));
+		if (sections && (sections as string[]).length > 0) {
+			filters.push(
+				inArray(posts.section, (sections as (typeof postSectionEnum.enumValues)[number][]) || [])
+			);
+		}
+
+		if (types && (types as string[]).length > 0) {
+			filters.push(
+				inArray(posts.type, (types as (typeof postTypeEnum.enumValues)[number][]) || [])
+			);
 		}
 
 		if (search) {

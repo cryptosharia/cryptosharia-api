@@ -4,6 +4,7 @@ import { Post } from '$lib/db/types';
 import ApiResponse from '$lib/api-response';
 import { GetPostsParams } from '.';
 import z from '$lib/zod-openapi';
+import { postSectionEnum, postTypeEnum } from '$lib/db/tables';
 
 /**
  * Handles GET requests to fetch posts with filtering, searching, and pagination.
@@ -18,17 +19,28 @@ export const GET: RequestHandler = async ({ url }) => {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { category, slugs, search, limit, page, exclude } = result.data;
+	const { sections, types, slugs, search, limit, page, exclude } = result.data;
 	const offset = (page - 1) * limit;
 
 	try {
 		// 2. Fetch posts from the database
 		const postsList = await db.query.posts.findMany({
-			where: (posts, { eq, or, ilike, and, notInArray, inArray }) => {
+			where: (posts, { or, ilike, and, notInArray, inArray }) => {
 				const filters = [];
 
-				if (category !== 'all') {
-					filters.push(eq(posts.section, category));
+				if (sections && sections.length > 0) {
+					filters.push(
+						inArray(
+							posts.section,
+							(sections as (typeof postSectionEnum.enumValues)[number][]) || []
+						)
+					);
+				}
+
+				if (types && types.length > 0) {
+					filters.push(
+						inArray(posts.type, (types as (typeof postTypeEnum.enumValues)[number][]) || [])
+					);
 				}
 
 				if (slugs && (slugs as string[]).length > 0) {

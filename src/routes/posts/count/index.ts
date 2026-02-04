@@ -4,7 +4,8 @@ import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
 export const GetPostsCountParams = GetPostsParams.pick({
-	category: true,
+	sections: true,
+	types: true,
 	search: true
 }).openapi('GetPostsCountParams', {
 	description: 'Query parameters for counting posts with filtering and searching'

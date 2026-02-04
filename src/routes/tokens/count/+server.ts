@@ -2,7 +2,8 @@ import { db } from '$lib/db';
 import { tokens } from '$lib/db/tables';
 import ApiResponse from '$lib/api-response';
 import z from '$lib/zod-openapi';
-import { count, eq, or, ilike, and } from 'drizzle-orm';
+import { count, or, ilike, and, inArray } from 'drizzle-orm';
+import { shariaStatusEnum } from '$lib/db/tables';
 import { GetTokensCountParams } from '.';
 import type { RequestHandler } from './$types';
 
@@ -13,13 +14,18 @@ export const GET: RequestHandler = async ({ url }) => {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { status, search } = result.data;
+	const { 'sharia-statuses': shariaStatuses, search } = result.data;
 
 	try {
 		const filters = [];
 
-		if (status !== 'all') {
-			filters.push(eq(tokens.shariaStatus, status));
+		if (shariaStatuses && (shariaStatuses as string[]).length > 0) {
+			filters.push(
+				inArray(
+					tokens.shariaStatus,
+					shariaStatuses as (typeof shariaStatusEnum.enumValues)[number][]
+				)
+			);
 		}
 
 		if (search) {
