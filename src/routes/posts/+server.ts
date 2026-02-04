@@ -50,7 +50,12 @@ export const GET: RequestHandler = async ({ url }) => {
 				if (search) {
 					const query = `%${search}%`;
 					filters.push(
-						or(ilike(posts.title, query), ilike(posts.content, query), ilike(posts.slug, query))
+						or(
+							ilike(posts.title, query),
+							ilike(posts.excerpt, query),
+							ilike(posts.slug, query),
+							ilike(posts.content, query)
+						)
 					);
 				}
 

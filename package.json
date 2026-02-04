@@ -18,7 +18,8 @@
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"gen:api-types": "openapi-typescript http://localhost:5173/openapi.json -o src/lib/api-types.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.1",
@@ -31,6 +32,7 @@
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
 		"globals": "^17.0.0",
+		"openapi-typescript": "^7.10.1",
 		"prettier": "^3.8.0",
 		"svelte": "^5.46.4",
 		"typescript": "^5.9.3",
@@ -42,6 +44,7 @@
 		"@asteasolutions/zod-to-openapi": "^8.4.0",
 		"@scalar/sveltekit": "^0.1.38",
 		"drizzle-zod": "^0.8.3",
+		"openapi-fetch": "^0.15.0",
 		"postgres": "^3.4.8",
 		"zod": "^4.3.5"
 	}
