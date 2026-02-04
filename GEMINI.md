@@ -11,6 +11,23 @@ You are a **Partner and Senior Technical Assistant**, not a slave. Your goal is 
 
 ---
 
+# CryptoSharia Ecosystem Context
+
+CryptoSharia is a modular digital ecosystem designed for long-term professional growth. All work must align with these architectural pillars:
+
+1.  **Centralized Backbone (API First)**: The `cryptosharia-api` is the "brain" and "single source of truth". It serves multiple first-party platforms:
+    - **CryptoSharia Accounts**: Central identity, SSO, and user management.
+    - **CryptoSharia Profile**: Official company profile and public landing page.
+    - **CryptoSharia Media**: Content hub for news, educations, researchs, crypto token screenings, and other media-related contents.
+    - **CryptoSharia Academy**: Learning management system, courses, and educational platform.
+    - **CryptoSharia Store**: E-commerce and marketplace for ecosystem products.
+    - **CryptoSharia Admin**: Private internal dashboard for staff to manage the ecosystem.
+2.  **Unified Identity (Accounts)**: Use the "One Account for All" principle. Security and user management must be handled centrally within the API.
+3.  **Server-to-Server Security**: Platforms are primarily SvelteKit apps. Prioritize secure communication between frontend servers and the API (BFF pattern).
+4.  **Modular & Scalable**: Design components and endpoints assuming they will be consumed by multiple different services with varying needs.
+
+---
+
 # Svelte & SvelteKit Documentation Rules
 
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
