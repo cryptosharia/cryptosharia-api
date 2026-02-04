@@ -34,7 +34,7 @@ export const GET: RequestHandler = async () => {
 		openapi: '3.1.0',
 		info: {
 			title: 'CryptoSharia API',
-			version: '1.0.0',
+			version: '',
 			description:
 				'API for CryptoSharia Ecosystem<br>Open API Spec: <a href="/openapi.json">openapi.json</a>'
 		}
