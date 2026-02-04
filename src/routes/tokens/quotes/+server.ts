@@ -78,7 +78,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			})
 		);
 
-		return ApiResponse.ok(quotes);
+		return ApiResponse.ok<z.infer<typeof TokenQuote>[]>(quotes);
 	} catch (error) {
 		console.error('/tokens/quotes Error:', error);
 		return ApiResponse.internalServerError();

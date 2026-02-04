@@ -1,16 +1,8 @@
 import { ApiResponse as ApiResponseSchema } from '$lib/types';
 import z from './zod-openapi';
 
-/**
- * Utility for generating standardized OpenAPI response objects.
- * Mimics the class-based pattern of the runtime ApiResponse utility.
- */
 export default class OpenApiResponse {
-	/**
-	 * Creates a standardized 200 OK OpenAPI response.
-	 * @param schema - Optional Zod schema for the 'data' field
-	 */
-	static ok(schema?: z.ZodTypeAny) {
+	static ok<T extends z.ZodTypeAny>(schema?: T) {
 		return {
 			200: {
 				description: 'OK',
@@ -23,11 +15,7 @@ export default class OpenApiResponse {
 		};
 	}
 
-	/**
-	 * Creates a standardized 201 Created OpenAPI response.
-	 * @param schema - Optional Zod schema for the 'data' field
-	 */
-	static created(schema?: z.ZodTypeAny) {
+	static created<T extends z.ZodTypeAny>(schema?: T) {
 		return {
 			201: {
 				description: 'Created',
@@ -40,9 +28,6 @@ export default class OpenApiResponse {
 		};
 	}
 
-	/**
-	 * Creates a standardized 400 Bad Request OpenAPI response.
-	 */
 	static badRequest() {
 		return {
 			400: {
@@ -56,9 +41,6 @@ export default class OpenApiResponse {
 		};
 	}
 
-	/**
-	 * Creates a standardized 401 Unauthorized OpenAPI response.
-	 */
 	static unauthorized() {
 		return {
 			401: {

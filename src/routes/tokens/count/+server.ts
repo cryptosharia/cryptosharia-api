@@ -34,7 +34,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			.from(tokens)
 			.where(filters.length > 0 ? and(...filters) : undefined);
 
-		return ApiResponse.ok(total.value);
+		return ApiResponse.ok<number>(total.value);
 	} catch (err) {
 		console.error('Error fetching tokens count:', err);
 		return ApiResponse.internalServerError();

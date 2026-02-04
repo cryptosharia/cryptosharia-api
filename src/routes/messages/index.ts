@@ -8,7 +8,7 @@ import z from '$lib/zod-openapi';
 export const GetMessagesParams = z
 	.object({
 		search: z.string().optional(),
-		senders: zQueryArray(z.string().email(), {
+		senders: zQueryArray(z.email(), {
 			description: 'List of sender emails to filter by',
 			example: 'example1@gmail.com,example2@gmail.com'
 		}),

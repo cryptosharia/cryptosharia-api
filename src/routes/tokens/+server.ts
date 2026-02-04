@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
+import { Token } from '$lib/db/types';
 import ApiResponse from '$lib/api-response';
 import { GetTokensParams } from '.';
 import z from '$lib/zod-openapi';
@@ -53,7 +54,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 
 		// 3. Return the success response
-		return ApiResponse.ok(tokensList);
+		return ApiResponse.ok<Token[]>(tokensList as Token[]);
 	} catch (err) {
 		console.error('Error fetching tokens:', err);
 		return ApiResponse.internalServerError();

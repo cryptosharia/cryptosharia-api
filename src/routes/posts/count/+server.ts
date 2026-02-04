@@ -39,7 +39,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			.from(posts)
 			.where(filters.length > 0 ? and(...filters) : undefined);
 
-		return ApiResponse.ok(row.value);
+		return ApiResponse.ok<number>(row.value);
 	} catch (err) {
 		console.error('Error counting posts:', err);
 		return ApiResponse.internalServerError();

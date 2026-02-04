@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
+import { Post } from '$lib/db/types';
 import ApiResponse from '$lib/api-response';
 import { GetPostsParams } from '.';
 import z from '$lib/zod-openapi';
@@ -53,7 +54,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 
 		// 3. Return the success response
-		return ApiResponse.ok(postsList);
+		return ApiResponse.ok<Post[]>(postsList as Post[]);
 	} catch (err) {
 		console.error('Error fetching posts:', err);
 		return ApiResponse.internalServerError();

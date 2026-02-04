@@ -1,5 +1,5 @@
 import { GS_SEND_MESSAGE_URL } from '$env/static/private';
-import { InsertMessage } from '$lib/db/types';
+import { InsertMessage, Message } from '$lib/db/types';
 import ApiResponse from '$lib/api-response';
 import z from '$lib/zod-openapi';
 import type { RequestHandler } from './$types';
@@ -58,7 +58,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 
 		// Return successful response with data
-		return ApiResponse.ok(messagesList);
+		return ApiResponse.ok<Message[]>(messagesList);
 	} catch (err) {
 		console.error('Error fetching messages:', err);
 		return ApiResponse.internalServerError();
