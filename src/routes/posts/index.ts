@@ -40,6 +40,8 @@ export const postsGet: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(z.array(Post).default([])),
 		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
-	}
+	},
+	security: [{ ApiKeyAuth: [] }]
 };

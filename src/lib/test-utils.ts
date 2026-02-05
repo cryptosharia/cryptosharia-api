@@ -9,39 +9,88 @@ import { db } from './db';
 import { admins } from './db/tables';
 
 /**
+ * Creates a mock SvelteKit RequestEvent for unit testing handlers or hooks.
+ */
+export function createMockRequestEvent<T>(
+	urlString: string,
+	init?: RequestInit,
+	params: Record<string, string> = {}
+): T {
+	const url = new URL(urlString);
+	const headers = new Headers(init?.headers);
+
+	// Create a minimal Request-like object that satisfies SvelteKit's RequestEvent
+	const request = {
+		url: urlString,
+		method: init?.method || 'GET',
+		headers,
+		json: async () => (init?.body ? JSON.parse(init.body as string) : null),
+		text: async () => (init?.body as string) || '',
+		clone: () => ({ ...request })
+	} as unknown as Request;
+
+	return {
+		url,
+		request,
+		params,
+		locals: {},
+		route: { id: null },
+		cookies: {
+			get: () => undefined,
+			getAll: () => [],
+			set: () => {},
+			delete: () => {},
+			serialize: () => ''
+		}
+	} as unknown as T;
+}
+
+/**
  * Creates a "virtual fetch" that routes requests directly to SvelteKit handlers.
- * This looks at the HTTP method (GET, POST, etc.) to find the correct export from the module.
+ * Optionally wraps the request in a SvelteKit `handle` hook.
  *
  * @param handlers - A record or module containing SvelteKit RequestHandlers
+ * @param handle - Optional SvelteKit handle hook
  * @returns A fetch-compatible function
  */
 export function createVirtualFetch<T>(
-	handlers: Record<string, (event: T) => Response | Promise<Response>>
+	handlers: Record<string, (event: T) => Response | Promise<Response>>,
+	handle?: (args: {
+		event: T;
+		resolve: (event: T) => Response | Promise<Response>;
+	}) => Response | Promise<Response>
 ) {
 	return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-		const urlString =
-			typeof input === 'string'
-				? input
-				: input instanceof URL
-					? input.toString()
-					: (input as Request).url;
-		const url = new URL(urlString);
-		const method = init?.method?.toUpperCase() || 'GET';
+		let urlString: string;
+		const finalInit: RequestInit = { ...init };
+
+		if (input instanceof Request) {
+			urlString = input.url;
+			finalInit.method = finalInit.method || input.method;
+			const mergedHeaders = new Headers(input.headers);
+			if (init?.headers) {
+				new Headers(init.headers).forEach((v, k) => mergedHeaders.set(k, v));
+			}
+			finalInit.headers = mergedHeaders;
+		} else {
+			urlString = input.toString();
+		}
+
+		const method = finalInit.method?.toUpperCase() || 'GET';
 
 		const handler = handlers[method];
 		if (!handler) {
 			return new Response(`Method ${method} not implemented`, { status: 405 });
 		}
 
-		const event = {
-			url,
-			request: new Request(url, init),
-			params: {},
-			locals: {},
-			route: { id: null }
-		} as unknown as T;
+		const event = createMockRequestEvent<T>(urlString, finalInit);
 
-		const result = handler(event);
+		const resolve = (ev: T) => {
+			const result = handler(ev);
+			return result instanceof Promise ? result : Promise.resolve(result);
+		};
+
+		const result = handle ? handle({ event, resolve }) : resolve(event);
 		return result instanceof Promise ? result : Promise.resolve(result);
 	};
 }
@@ -50,14 +99,33 @@ export function createVirtualFetch<T>(
  * Creates a type-safe openapi-fetch client that talks directly to a SvelteKit handler module.
  *
  * @param handlers - The SvelteKit handler module (import * as Module from './+server')
+ * @param options - Optional headers and handle hook
  * @returns A type-safe client
  */
 export function createApiTestClient<T>(
-	handlers: Record<string, (event: T) => Response | Promise<Response>>
+	handlers: Record<string, (event: T) => Response | Promise<Response>>,
+	options?: {
+		headers?: Record<string, string>;
+		handle?: (args: {
+			event: T;
+			resolve: (event: T) => Response | Promise<Response>;
+		}) => Response | Promise<Response>;
+	}
 ) {
 	return createClient<paths>({
 		baseUrl: 'http://localhost:5173',
-		fetch: createVirtualFetch(handlers)
+		fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+			const fetchWithMiddleware = createVirtualFetch(handlers, options?.handle);
+
+			const mergedInit: RequestInit = { ...init };
+			const headers = new Headers(options?.headers);
+			if (init?.headers) {
+				new Headers(init.headers).forEach((v, k) => headers.set(k, v));
+			}
+			mergedInit.headers = headers;
+
+			return fetchWithMiddleware(input, mergedInit);
+		}
 	});
 }
 

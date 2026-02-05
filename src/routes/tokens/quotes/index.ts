@@ -40,6 +40,8 @@ export const tokensQuotesGet: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(z.array(TokenQuote)),
 		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
-	}
+	},
+	security: [{ ApiKeyAuth: [] }]
 };

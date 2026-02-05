@@ -10,6 +10,8 @@ export const seedGet: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(),
 		...OpenApiResponse.forbidden(),
+		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
-	}
+	},
+	security: [{ ApiKeyAuth: [] }]
 };

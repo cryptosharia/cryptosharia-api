@@ -4,607 +4,687 @@
  */
 
 export interface paths {
-    "/posts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Posts
-         * @description Retrieve a list of blog posts with support for sections and types filtering, searching, and pagination.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description List of post sections to filter by.<br>Example: news,education,activity */
-                    sections?: ("news" | "education" | "research" | "activity")[];
-                    /** @description List of post types to filter by.<br>Example: article,video,webinar */
-                    types?: ("article" | "webinar" | "video" | "headline")[];
-                    /** @description List of post slugs to filter by.<br>Example: this-is-a-post,this-is-another-post */
-                    slugs?: string[];
-                    search?: string;
-                    limit?: number;
-                    page?: number;
-                    /** @description List of post slugs to exclude.<br>Example: this-is-a-post,this-is-another-post */
-                    exclude?: string[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            /** @default [] */
-                            data: components["schemas"]["Post"][];
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/posts/count": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Count Posts
-         * @description Get the total count of blog posts matching the specified criteria.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description List of post sections to filter by.<br>Example: news,education,activity */
-                    sections?: ("news" | "education" | "research" | "activity")[];
-                    /** @description List of post types to filter by.<br>Example: article,video,webinar */
-                    types?: ("article" | "webinar" | "video" | "headline")[];
-                    search?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            /** @example 42 */
-                            data: number;
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tokens": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Tokens
-         * @description Retrieve a list of cryptocurrency tokens with support for sharia status filtering, searching, and pagination.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description List of sharia statuses to filter by.<br>Example: halal,haram */
-                    "sharia-statuses"?: ("halal" | "haram" | "syubhat")[];
-                    /** @description List of token slugs to filter by.<br>Example: bitcoin,ethereum,sui */
-                    slugs?: string[];
-                    search?: string;
-                    limit?: number;
-                    page?: number;
-                    /** @description List of token slugs to exclude.<br>Example: bitcoin,ethereum,sui */
-                    exclude?: string[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            /** @default [] */
-                            data: components["schemas"]["Token"][];
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tokens/count": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Count Tokens
-         * @description Get the total count of tokens matching the specified criteria.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description List of sharia statuses to filter by.<br>Example: halal,haram */
-                    "sharia-statuses"?: ("halal" | "haram" | "syubhat")[];
-                    search?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            /** @example 42 */
-                            data: number;
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tokens/quotes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Token Quotes
-         * @description Fetch real-time quotes and market data for specific tokens from CoinMarketCap.
-         */
-        get: {
-            parameters: {
-                query: {
-                    /** @description List of token slugs to get quotes for.<br>Example: bitcoin,ethereum,sui */
-                    slugs: string[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["TokenQuote"][];
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Messages
-         * @description Retrieve a list of messages with support for search, sender filtering, and pagination.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    search?: string;
-                    /** @description List of sender emails to filter by.<br>Example: example1@gmail.com,example2@gmail.com */
-                    senders?: string[];
-                    limit?: number;
-                    page?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["Message"][];
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /**
-         * Create Message
-         * @description Submit a new contact or inquiry message.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["InsertMessage"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/seed": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Seed Sample Data
-         * @description Initialize the database with sample data for development and testing purposes. (Seeding in production is forbidden)
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Forbidden */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+	'/': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * API Documentation Page
+		 * @description Documentation page for the CryptoSharia API using Scalar.
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description API Documentation Page */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'text/html': string;
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/openapi.json': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * OpenAPI Specification
+		 * @description Retrieve the OpenAPI 3.1.0 specification for this API.
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OpenAPI Specification JSON */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/posts': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * List Posts
+		 * @description Retrieve a list of blog posts with support for sections and types filtering, searching, and pagination.
+		 */
+		get: {
+			parameters: {
+				query?: {
+					/** @description List of post sections to filter by.<br>Example: news,education,activity */
+					sections?: ('news' | 'education' | 'research' | 'activity')[];
+					/** @description List of post types to filter by.<br>Example: article,video,webinar */
+					types?: ('article' | 'webinar' | 'video' | 'headline')[];
+					/** @description List of post slugs to filter by.<br>Example: this-is-a-post,this-is-another-post */
+					slugs?: string[];
+					search?: string;
+					limit?: number;
+					page?: number;
+					/** @description List of post slugs to exclude.<br>Example: this-is-a-post,this-is-another-post */
+					exclude?: string[];
+				};
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'] & {
+							/** @default [] */
+							data: components['schemas']['Post'][];
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/posts/count': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Count Posts
+		 * @description Get the total count of blog posts matching the specified criteria.
+		 */
+		get: {
+			parameters: {
+				query?: {
+					/** @description List of post sections to filter by.<br>Example: news,education,activity */
+					sections?: ('news' | 'education' | 'research' | 'activity')[];
+					/** @description List of post types to filter by.<br>Example: article,video,webinar */
+					types?: ('article' | 'webinar' | 'video' | 'headline')[];
+					search?: string;
+				};
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'] & {
+							/** @example 42 */
+							data: number;
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/tokens': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * List Tokens
+		 * @description Retrieve a list of cryptocurrency tokens with support for sharia status filtering, searching, and pagination.
+		 */
+		get: {
+			parameters: {
+				query?: {
+					/** @description List of sharia statuses to filter by.<br>Example: halal,haram */
+					'sharia-statuses'?: ('halal' | 'haram' | 'syubhat')[];
+					/** @description List of token slugs to filter by.<br>Example: bitcoin,ethereum,sui */
+					slugs?: string[];
+					search?: string;
+					limit?: number;
+					page?: number;
+					/** @description List of token slugs to exclude.<br>Example: bitcoin,ethereum,sui */
+					exclude?: string[];
+				};
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'] & {
+							/** @default [] */
+							data: components['schemas']['Token'][];
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/tokens/count': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Count Tokens
+		 * @description Get the total count of tokens matching the specified criteria.
+		 */
+		get: {
+			parameters: {
+				query?: {
+					/** @description List of sharia statuses to filter by.<br>Example: halal,haram */
+					'sharia-statuses'?: ('halal' | 'haram' | 'syubhat')[];
+					search?: string;
+				};
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'] & {
+							/** @example 42 */
+							data: number;
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/tokens/quotes': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get Token Quotes
+		 * @description Fetch real-time quotes and market data for specific tokens from CoinMarketCap.
+		 */
+		get: {
+			parameters: {
+				query: {
+					/** @description List of token slugs to get quotes for.<br>Example: bitcoin,ethereum,sui */
+					slugs: string[];
+				};
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'] & {
+							data: components['schemas']['TokenQuote'][];
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/messages': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * List Messages
+		 * @description Retrieve a list of messages with support for search, sender filtering, and pagination.
+		 */
+		get: {
+			parameters: {
+				query?: {
+					search?: string;
+					/** @description List of sender emails to filter by.<br>Example: example1@gmail.com,example2@gmail.com */
+					senders?: string[];
+					limit?: number;
+					page?: number;
+				};
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'] & {
+							data: components['schemas']['Message'][];
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		/**
+		 * Create Message
+		 * @description Submit a new contact or inquiry message.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: {
+				content: {
+					'application/json': components['schemas']['InsertMessage'];
+				};
+			};
+			responses: {
+				/** @description Created */
+				201: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/seed': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Seed Sample Data
+		 * @description Initialize the database with sample data for development and testing purposes. (Seeding in production is forbidden)
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Forbidden */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json': components['schemas']['ApiResponse'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        Post: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            slug: string;
-            excerpt: string | null;
-            content: string | null;
-            /** Format: uuid */
-            coverImageId: string | null;
-            /** @enum {string} */
-            section: "news" | "education" | "research" | "activity";
-            /** @enum {string} */
-            type: "article" | "webinar" | "video" | "headline";
-            /** @enum {string} */
-            status: "draft" | "published" | "archived";
-            isFeatured: boolean;
-            /** Format: date-time */
-            eventDate: string | null;
-            externalLink: string | null;
-            /** Format: date-time */
-            publishedAt: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            /** Format: uuid */
-            updatedBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string | null;
-        };
-        ApiResponse: {
-            success: boolean;
-            message: string;
-            errors?: {
-                [key: string]: string[];
-            };
-            data?: unknown;
-        };
-        Token: {
-            /** Format: uuid */
-            id: string;
-            slug: string;
-            rank: number | null;
-            name: string;
-            ticker: string;
-            /** @enum {string} */
-            shariaStatus: "halal" | "haram" | "syubhat";
-            /** @enum {string} */
-            status: "draft" | "published" | "archived";
-            brandColorHex: string | null;
-            tradingviewSymbol: string | null;
-            website: string | null;
-            /** Format: uuid */
-            logoId: string | null;
-            content: string | null;
-            /** Format: date-time */
-            publishedAt: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            /** Format: uuid */
-            updatedBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string | null;
-        };
-        TokenQuote: {
-            slug: string;
-            rank: number;
-            infiniteSupply: boolean;
-            maxSupply: number | null;
-            circulatingSupply: number;
-            priceUsd: number;
-            marketCapUsd: number;
-            marketCapDominance: number;
-            percentChange24h: number;
-        };
-        Message: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            email: string;
-            message: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        /**
-         * @example {
-         *       "name": "Ngetes API",
-         *       "email": "ngetes@wadidaw.uwu",
-         *       "message": "Ngetes from\nCryptoSharia API"
-         *     }
-         */
-        InsertMessage: {
-            name: string;
-            /** Format: email */
-            email: string;
-            message: string;
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+	schemas: {
+		Post: {
+			/** Format: uuid */
+			id: string;
+			title: string;
+			slug: string;
+			excerpt: string | null;
+			content: string | null;
+			/** Format: uuid */
+			coverImageId: string | null;
+			/** @enum {string} */
+			section: 'news' | 'education' | 'research' | 'activity';
+			/** @enum {string} */
+			type: 'article' | 'webinar' | 'video' | 'headline';
+			/** @enum {string} */
+			status: 'draft' | 'published' | 'archived';
+			isFeatured: boolean;
+			/** Format: date-time */
+			eventDate: string | null;
+			externalLink: string | null;
+			/** Format: date-time */
+			publishedAt: string | null;
+			/** Format: uuid */
+			createdBy: string | null;
+			/** Format: uuid */
+			updatedBy: string | null;
+			/** Format: date-time */
+			createdAt: string;
+			/** Format: date-time */
+			updatedAt: string | null;
+		};
+		ApiResponse: {
+			success: boolean;
+			message: string;
+			errors?: {
+				[key: string]: string[];
+			};
+			data?: unknown;
+		};
+		Token: {
+			/** Format: uuid */
+			id: string;
+			slug: string;
+			rank: number | null;
+			name: string;
+			ticker: string;
+			/** @enum {string} */
+			shariaStatus: 'halal' | 'haram' | 'syubhat';
+			/** @enum {string} */
+			status: 'draft' | 'published' | 'archived';
+			brandColorHex: string | null;
+			tradingviewSymbol: string | null;
+			website: string | null;
+			/** Format: uuid */
+			logoId: string | null;
+			content: string | null;
+			/** Format: date-time */
+			publishedAt: string | null;
+			/** Format: uuid */
+			createdBy: string | null;
+			/** Format: uuid */
+			updatedBy: string | null;
+			/** Format: date-time */
+			createdAt: string;
+			/** Format: date-time */
+			updatedAt: string | null;
+		};
+		TokenQuote: {
+			slug: string;
+			rank: number;
+			infiniteSupply: boolean;
+			maxSupply: number | null;
+			circulatingSupply: number;
+			priceUsd: number;
+			marketCapUsd: number;
+			marketCapDominance: number;
+			percentChange24h: number;
+		};
+		Message: {
+			/** Format: uuid */
+			id: string;
+			name: string;
+			email: string;
+			message: string;
+			/** Format: date-time */
+			createdAt: string;
+		};
+		/**
+		 * @example {
+		 *       "name": "Ngetes API",
+		 *       "email": "ngetes@wadidaw.uwu",
+		 *       "message": "Ngetes from\nCryptoSharia API"
+		 *     }
+		 */
+		InsertMessage: {
+			name: string;
+			/** Format: email */
+			email: string;
+			message: string;
+		};
+	};
+	responses: never;
+	parameters: never;
+	requestBodies: never;
+	headers: never;
+	pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

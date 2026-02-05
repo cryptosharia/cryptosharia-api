@@ -21,6 +21,8 @@ export const tokensCountGet: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(z.number().openapi({ example: 42 })),
 		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
-	}
+	},
+	security: [{ ApiKeyAuth: [] }]
 };

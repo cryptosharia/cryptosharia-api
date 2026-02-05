@@ -30,8 +30,10 @@ export const messagesGet: RouteConfig = {
 	},
 	responses: {
 		...OpenApiResponse.ok(z.array(Message)),
+		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
-	}
+	},
+	security: [{ ApiKeyAuth: [] }]
 };
 
 export const messagesPost: RouteConfig = {
@@ -51,6 +53,8 @@ export const messagesPost: RouteConfig = {
 	responses: {
 		...OpenApiResponse.created(),
 		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
-	}
+	},
+	security: [{ ApiKeyAuth: [] }]
 };

@@ -15,7 +15,7 @@ Gunakan ini untuk melihat _endpoints_, parameters yang dibutuhkan, struktur resp
 
 ## 2. Install Dependencies
 
-Pertama, install library yang dibutuhkan ke dalam repo frontend kalian:
+Pertama, install library yang dibutuhkan ke dalam project kalian:
 
 ```bash
 npm install -D openapi-typescript
@@ -24,7 +24,7 @@ npm install openapi-fetch
 
 ## 3. Update Types
 
-Untuk memulai, buka file `package.json` di repo frontend kalian dan tambahkan script berikut:
+Untuk memulai, buka file `package.json` di project kalian dan tambahkan script berikut:
 
 ```json
 "scripts": {
@@ -35,7 +35,17 @@ Untuk memulai, buka file `package.json` di repo frontend kalian dan tambahkan sc
 
 Script ini akan mengupdate `src/lib/api-types.ts`, yang menjadi _source of truth_ untuk semua requests dan responses API.
 
-### Opsi A: Local Development Environment (Recommended)
+### Opsi A: Preview Environment
+
+Jika kalian tidak ingin menjalankan full backend di lokal, maka bisa langsung generate TypeScript types-nya berdasarkan _OpenAPI Spec_ yang ada di Preview Environment:
+
+```bash
+npm run gen:api-types:preview
+```
+
+### Opsi B: Local Development Environment
+
+Jika kalian ingin menjalankan full backend di lokal, maka bisa generate TypeScript types-nya berdasarkan _OpenAPI Spec_ yang ada di Local Environment:
 
 1.  **Clone Repo CryptoSharia API**:
 
@@ -59,33 +69,28 @@ Script ini akan mengupdate `src/lib/api-types.ts`, yang menjadi _source of truth
     docker compose up -d # untuk jalan di background
     ```
 
-4.  **Generate Types** (Di repo frontend kalian):
+4.  **Generate Types** (Di project kalian):
     ```bash
     npm run gen:api-types
     ```
-
-### Opsi B: Preview Environment (Fallback)
-
-Jika kalian hanya mengerjakan UI kecil dan tidak ingin menjalankan full backend di lokal:
-
-```bash
-npm run gen:api-types:preview
-```
 
 ---
 
 ## 4. Setup Client
 
-Kita menggunakan `openapi-fetch`. Library ini ringan dan _type-safe_.
+Kita menggunakan `openapi-fetch`. Library ini ringan dan fully _type-safe_.
 
 ```typescript
+// Ini diambil dari `.env` file project kalian!
+import { CS_API_URL, CS_API_KEY } from '$env/static/private';
 import createClient from 'openapi-fetch';
 import type { paths } from '$lib/api-types';
 
 const client = createClient<paths>({
-	baseUrl: 'http://localhost:5173'
-	// atau
-	baseUrl: 'https://preview.api.cryptosharia.id'
+	baseUrl: CS_API_URL,
+	headers: {
+		'Api-Key': CS_API_KEY
+	}
 });
 ```
 
@@ -96,10 +101,13 @@ const client = createClient<paths>({
 ### Contoh GET Request
 
 ```typescript
-const { data, error } = await client.GET('/posts', {
+// data: Berisi jika response code = 2xx; jika tidak maka `undefined`
+// error: Berisi jika response code = 4xx atau 5xx; jika tidak maka `undefined`
+// response: Original Response object (status, headers, etc.)
+const { data, error, response } = await client.GET('/posts', {
 	params: {
 		query: {
-			sections: ['news', 'activity'], // Fully typed!
+			sections: ['news', 'activity'], // Fully typed enum!
 			limit: 5,
 			search: 'CryptoSharia to the MOON'
 		}
@@ -107,9 +115,11 @@ const { data, error } = await client.GET('/posts', {
 });
 
 if (error) {
-	console.error('Waduh!', error); // Fully typed error dari response 4xx/5xx
-} else {
-	console.log(data.data); // Data response kalian
+	console.error('Waduh!', error);
+}
+
+if (data) {
+	console.log(data.data);
 }
 ```
 

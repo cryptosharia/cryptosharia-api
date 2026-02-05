@@ -19,6 +19,7 @@ export default defineConfig({
 				test: {
 					name: 'server',
 					environment: 'node',
+					fileParallelism: false, // Ensures tests run one at a time to avoid DB deadlocks
 					include: ['src/**/*.{test,spec}.{js,ts}'],
 					setupFiles: ['./src/vitest.setup.ts'],
 					env: {

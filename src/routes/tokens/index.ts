@@ -39,6 +39,8 @@ export const tokensGet: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(z.array(Token).default([])),
 		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
-	}
+	},
+	security: [{ ApiKeyAuth: [] }]
 };

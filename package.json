@@ -18,6 +18,7 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
+		"gen:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
 		"gen:api-types": "openapi-typescript http://localhost:5173/openapi.json -o src/lib/api-types.ts",
 		"gen:api-types:preview": "openapi-typescript https://preview.api.cryptosharia.id/openapi.json -o src/lib/api-types.ts"
 	},

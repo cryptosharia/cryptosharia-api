@@ -1,3 +1,4 @@
+import type { RequestHandler } from './$types';
 import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { postsGet } from '../posts';
 import { postsCountGet } from '../posts/count';
@@ -6,9 +7,12 @@ import { tokensCountGet } from '../tokens/count';
 import { tokensQuotesGet } from '../tokens/quotes';
 import { messagesGet, messagesPost } from '../messages';
 import { seedGet } from '../seed';
-import type { RequestHandler } from './$types';
+import { openapiGet } from '.';
+import { docsGet } from '../(docs)';
 
 const PATHS = [
+	docsGet,
+	openapiGet,
 	postsGet,
 	postsCountGet,
 	tokensGet,
@@ -21,6 +25,14 @@ const PATHS = [
 
 export const GET: RequestHandler = async () => {
 	const registry = new OpenAPIRegistry();
+
+	// Register security scheme
+	registry.registerComponent('securitySchemes', 'ApiKeyAuth', {
+		type: 'apiKey',
+		in: 'header',
+		name: 'Api-Key',
+		description: 'API Key for authenticated access to CryptoSharia Ecosystem services.'
+	});
 
 	// Register paths
 	for (const path of PATHS) {
