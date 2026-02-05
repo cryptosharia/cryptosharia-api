@@ -115,8 +115,6 @@ Berikut adalah beberapa kelebihan menggunakan `fetch` bawaan SvelteKit:
 - **Direct Internal Routing**: Request ke route internal (seperti `+server.js`) akan langsung memanggil fungsinya tanpa melalui _overhead_ jaringan HTTP.
 - **SSR Serialization**: Selama SSR, SvelteKit merekam responnya dan memasukkannya langsung ke dalam HTML. Respon ini kemudian dibaca saat **Hidrasi** di browser, sehingga mencegah request jaringan kedua yang tidak perlu.
 
----
-
 ### 5.1 Contoh di Universal Load Function (`+page.ts`)
 
 Fungsi `load` ini berjalan di **server-side** saat _initial load_ dan juga di **client-side** saat _navigation_.
@@ -179,8 +177,6 @@ Gunakan client-side request hanya untuk endpoint publik, seperti mengambil spesi
 	}
 </script>
 ```
-
----
 
 ### 5.4 Contoh di Form Actions (`+page.server.ts`)
 
