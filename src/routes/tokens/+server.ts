@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { 'sharia-statuses': shariaStatuses, slugs, search, limit, page, exclude } = result.data;
+	const { shariaStatuses, slugs, search, limit, page, exclude } = result.data;
 	const offset = (page - 1) * limit;
 
 	try {

@@ -7,7 +7,7 @@ import { db } from '$lib/db';
 import { messages } from '$lib/db/tables';
 import { GetMessagesParams } from './index';
 import { and, desc, ilike, inArray, or } from 'drizzle-orm';
-
+import { waitUntil } from '@vercel/functions';
 /**
  * GET /messages
  * Fetches messages with optional filtering, searching, and pagination.
@@ -70,7 +70,8 @@ export const GET: RequestHandler = async ({ url }) => {
  * Creates a new message (contact form submission).
  * Also sends the message to a Google Apps Script endpoint for email notification.
  */
-export const POST: RequestHandler = async ({ request, fetch }) => {
+export const POST: RequestHandler = async (event) => {
+	const { request, fetch } = event;
 	try {
 		// Parse request body
 		const body = await request.json();
@@ -86,17 +87,19 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		}
 
 		// 1. Insert into local database
-		await db.insert(messages).values(result.data);
+		const [insertedMessage] = await db.insert(messages).values(result.data).returning();
 
-		// 2. Send to Google Apps Script (fire and forget, don't wait for success)
-		// This handles email notifications in the background
-		fetch(GS_SEND_MESSAGE_URL, {
-			method: 'POST',
-			body: JSON.stringify(result.data)
-		}).catch((err) => console.error('GAS Email Error:', err));
+		// 2. Send to Google Apps Script (background task)
+		// waitUntil ensures the process doesn't terminate by Vercel serverless before the fetch completes
+		waitUntil(
+			fetch(GS_SEND_MESSAGE_URL, {
+				method: 'POST',
+				body: JSON.stringify(result.data)
+			}).catch((err) => console.error('Google Apps Script Error:', err))
+		);
 
-		// Return 201 Created on success
-		return ApiResponse.created();
+		// Return 201 Created on success with the inserted message
+		return ApiResponse.created<Message>(insertedMessage);
 	} catch (err) {
 		console.error('Error creating message:', err);
 		return ApiResponse.internalServerError();

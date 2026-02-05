@@ -1,14 +1,14 @@
 import OpenApiResponse from '$lib/openapi-response';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
-export const seedGet: RouteConfig = {
+export const seedPost: RouteConfig = {
 	path: '/seed',
-	method: 'get',
+	method: 'post',
 	summary: 'Seed Sample Data',
 	description:
 		'Initialize the database with sample data for development and testing purposes. (Seeding in production is forbidden)',
 	responses: {
-		...OpenApiResponse.ok(),
+		...OpenApiResponse.created(),
 		...OpenApiResponse.forbidden(),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()

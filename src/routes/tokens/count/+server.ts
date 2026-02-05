@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { 'sharia-statuses': shariaStatuses, search } = result.data;
+	const { shariaStatuses, search } = result.data;
 
 	try {
 		const filters = [];

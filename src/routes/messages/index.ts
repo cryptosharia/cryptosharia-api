@@ -51,7 +51,7 @@ export const messagesPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.created(),
+		...OpenApiResponse.created(Message),
 		...OpenApiResponse.badRequest(),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()

@@ -11,7 +11,7 @@ export const openapiGet: RouteConfig = {
 			description: 'OpenAPI Specification in JSON',
 			content: {
 				'application/json': {
-					schema: z.object({}).loose()
+					schema: z.object({})
 				}
 			}
 		}

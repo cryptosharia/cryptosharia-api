@@ -38,7 +38,7 @@ export const postsGet: RouteConfig = {
 		query: GetPostsParams
 	},
 	responses: {
-		...OpenApiResponse.ok(z.array(Post).default([])),
+		...OpenApiResponse.ok(z.array(Post)),
 		...OpenApiResponse.badRequest(),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()

@@ -10,7 +10,7 @@ import z from '$lib/zod-openapi';
  */
 export const GetTokensParams = z
 	.object({
-		'sharia-statuses': zQueryArray(z.enum(shariaStatusEnum.enumValues), {
+		shariaStatuses: zQueryArray(z.enum(shariaStatusEnum.enumValues), {
 			description: 'List of sharia statuses to filter by.<br>Example: halal,haram'
 		}),
 		slugs: zQueryArray(z.string(), {
@@ -37,7 +37,7 @@ export const tokensGet: RouteConfig = {
 		query: GetTokensParams
 	},
 	responses: {
-		...OpenApiResponse.ok(z.array(Token).default([])),
+		...OpenApiResponse.ok(z.array(Token)),
 		...OpenApiResponse.badRequest(),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()

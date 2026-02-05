@@ -4,7 +4,7 @@ import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
 export const GetTokensCountParams = GetTokensParams.pick({
-	'sharia-statuses': true,
+	shariaStatuses: true,
 	search: true
 }).openapi('GetTokensCountParams', {
 	description: 'Query parameters for counting tokens with filtering and searching'

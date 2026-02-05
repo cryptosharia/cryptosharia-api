@@ -6,7 +6,7 @@ import { tokensGet } from '../tokens';
 import { tokensCountGet } from '../tokens/count';
 import { tokensQuotesGet } from '../tokens/quotes';
 import { messagesGet, messagesPost } from '../messages';
-import { seedGet } from '../seed';
+import { seedPost } from '../seed';
 import { openapiGet } from '.';
 import { docsGet } from '../(docs)';
 
@@ -20,7 +20,7 @@ const PATHS = [
 	tokensQuotesGet,
 	messagesGet,
 	messagesPost,
-	seedGet
+	seedPost
 ];
 
 export const GET: RequestHandler = async () => {

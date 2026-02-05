@@ -7,7 +7,7 @@ import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
 import { MESSAGES, POSTS, TOKENS } from './data';
 
-export const GET: RequestHandler = async () => {
+export const POST: RequestHandler = async () => {
 	// Only allow seeding in local development or Vercel preview environments
 	// env.VERCEL_ENV is automatically provided by Vercel
 	if (!dev && env.VERCEL_ENV !== 'preview') {
@@ -113,7 +113,7 @@ export const GET: RequestHandler = async () => {
 			await db.insert(schema.messages).values(messageData);
 		}
 
-		return ApiResponse.ok();
+		return ApiResponse.created();
 	} catch (err) {
 		console.error('Seeding failed:', err);
 		return ApiResponse.internalServerError();
