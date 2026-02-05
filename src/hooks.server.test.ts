@@ -19,19 +19,19 @@ describe('API Key Authentication (Hooks Integration)', () => {
 	const client = createApiTestClient<RequestEvent>({ GET: dummyHandler }, { handle });
 
 	it('should allow requests to documentation page (root)', async () => {
-		const { response } = await client.GET('/', {});
+		const { response } = await client.GET('/');
 		expect(response.status).toBe(200);
 		expect(dummyHandler).toHaveBeenCalled();
 	});
 
 	it('should allow requests to OpenAPI Spec', async () => {
-		const { response } = await client.GET('/openapi.json', {});
+		const { response } = await client.GET('/openapi.json');
 		expect(response.status).toBe(200);
 		expect(dummyHandler).toHaveBeenCalled();
 	});
 
 	it('should block requests without an API key', async () => {
-		const { response, error } = await client.GET('/posts', {});
+		const { response, error } = await client.GET('/posts');
 		expect(response.status).toBe(401);
 
 		expect(error?.message).toBe('Unauthorized');

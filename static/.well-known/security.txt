@@ -1,0 +1,8 @@
+# If you find any security vulnerability, please report it to us.
+# Together we keep CryptoSharia safe for everyone.
+
+Contact: mailto:mdaffailhami@gmail.com
+Contact: mailto:cryptoshariaforum@gmail.com
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: id, en
+Canonical: https://api.cryptosharia.id/.well-known/security.txt

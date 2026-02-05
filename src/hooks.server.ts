@@ -25,5 +25,32 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	// 4. Continue to the request handler
-	return resolve(event);
+	const response = await resolve(event);
+
+	// 5. Inject Security Headers
+
+	// Prevents Clickjacking by forbidding the page from being embedded in frames/iframes.
+	response.headers.set('X-Frame-Options', 'DENY');
+
+	// Prevents the browser from 'guessing' the file type (MIME sniffing),
+	// forcing it to use the exact Content-Type defined by the server.
+	response.headers.set('X-Content-Type-Options', 'nosniff');
+
+	// Protects privacy by hiding the full URL path when navigating to other sites,
+	// only sending the domain (origin) for cross-origin requests.
+	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+	// Enables the browser's built-in XSS filter and instructs it to block
+	// the entire page if a cross-site scripting attack is detected.
+	response.headers.set('X-XSS-Protection', '1; mode=block');
+
+	// Content Security Policy (CSP) Report-Only mode.
+	// This helps monitor potential XSS attacks and unauthorized resource loading
+	// without breaking the application (useful for testing Scalar API docs).
+	response.headers.set(
+		'Content-Security-Policy-Report-Only',
+		"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';"
+	);
+
+	return response;
 };
