@@ -7,6 +7,7 @@ import { tokensCountGet } from '../tokens/count';
 import { tokensQuotesGet } from '../tokens/quotes';
 import { messagesGet, messagesPost } from '../messages';
 import { seedPost } from '../seed';
+import { imgbbPost } from '../imgbb';
 import { openapiGet } from '.';
 import { docsGet } from '../(docs)';
 
@@ -20,6 +21,7 @@ const PATHS = [
 	tokensQuotesGet,
 	messagesGet,
 	messagesPost,
+	imgbbPost,
 	seedPost
 ];
 
@@ -48,7 +50,7 @@ export const GET: RequestHandler = async () => {
 			title: 'CryptoSharia API',
 			version: '',
 			description:
-				'API for CryptoSharia Ecosystem<br>Open API Spec: <a href="/openapi.json">openapi.json</a>'
+				'API for CryptoSharia Ecosystem<br>OpenAPI Spec: <a href="/openapi.json">openapi.json</a>'
 		}
 	});
 

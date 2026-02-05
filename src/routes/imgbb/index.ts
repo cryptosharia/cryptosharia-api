@@ -1,0 +1,34 @@
+import { ImgbbImage } from '$lib/db/types';
+import OpenApiResponse from '$lib/openapi-response';
+import z from '$lib/zod-openapi';
+import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
+
+export const imgbbPost: RouteConfig = {
+	path: '/imgbb',
+	method: 'post',
+	summary: 'Upload Image to ImgBB',
+	description: 'Proxies an image upload to the ImgBB service and gets the resulting URLs.',
+	request: {
+		body: {
+			content: {
+				'multipart/form-data': {
+					schema: z.object({
+						image: z.any().openapi({
+							type: 'string',
+							format: 'binary',
+							description: 'The image file to upload'
+						})
+					})
+				}
+			}
+		}
+	},
+	responses: {
+		...OpenApiResponse.created(ImgbbImage),
+		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.unauthorized(),
+		...OpenApiResponse.badGateway(),
+		...OpenApiResponse.internalServerError()
+	},
+	security: [{ ApiKeyAuth: [] }]
+};

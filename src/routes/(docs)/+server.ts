@@ -6,7 +6,11 @@ export const GET: RequestHandler = async ({ url }) => {
 		url: `${url.origin}/openapi.json`,
 		theme: 'elysiajs',
 		pageTitle: 'CryptoSharia API',
-		favicon: `${url.origin}/favicon.svg`
+		favicon: `${url.origin}/favicon.svg`,
+		defaultHttpClient: {
+			targetKey: 'http',
+			clientKey: 'http11'
+		}
 	});
 
 	return render();

@@ -39,7 +39,7 @@ export const messagesGet: RouteConfig = {
 export const messagesPost: RouteConfig = {
 	path: '/messages',
 	method: 'post',
-	summary: 'Create Message',
+	summary: 'Send Message',
 	description: 'Submit a new contact or inquiry message.',
 	request: {
 		body: {

@@ -352,13 +352,37 @@ export const assets = pgTable('assets', {
 	/** File size in bytes (bigint for scale) */
 	size: bigint('size', { mode: 'number' }).notNull(),
 	/** MIME type (e.g. 'image/png') */
-	contentType: varchar('content_type', { length: 100 }),
+	mimeType: varchar('mime_type', { length: 100 }),
 	/** Pixel width (for images) */
 	width: integer('width'),
 	/** Pixel height (for images) */
 	height: integer('height'),
 	/** Storage provider used for this asset */
 	provider: assetProviderEnum('provider').notNull(),
+	...CREATED_BY,
+	...CREATED_AT
+});
+
+export const imgbbImages = pgTable('imgbb_images', {
+	...PK_UUID,
+	/** The unique ID for this asset on ImgBB */
+	imgbbId: varchar('imgbb_id', { length: 255 }).notNull().unique(),
+	/** The title of the asset */
+	title: varchar('title', { length: 255 }).notNull(),
+	/** Direct link to the original asset */
+	url: text('url').notNull(),
+	/** Image width in pixels */
+	width: integer('width').notNull(),
+	/** Image height in pixels */
+	height: integer('height').notNull(),
+	/** File size in bytes (bigint for scale) */
+	size: bigint('size', { mode: 'number' }).notNull(),
+	/** File name */
+	fileName: varchar('file_name', { length: 255 }).notNull(),
+	/** MIME type */
+	mimeType: varchar('mime_type', { length: 100 }).notNull(),
+	/** URL to delete this asset */
+	deleteUrl: text('delete_url').notNull(),
 	...CREATED_BY,
 	...CREATED_AT
 });
