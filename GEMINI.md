@@ -52,7 +52,7 @@ CryptoSharia is a modular digital ecosystem designed for long-term professional 
 
 ---
 
-# CryptoSharia API Specific
+# CryptoSharia API (specific to this project)
 
 ## Identity Model
 
@@ -91,6 +91,13 @@ Access granted or redirect to www
 
 - `domain=.cryptosharia.id` (shared across all subdomains)
 - `httpOnly=true`, `secure=true`, `sameSite=strict`
+
+## Path Parameters
+
+| Endpoint Type     | Identifier             | Example                         |
+| ----------------- | ---------------------- | ------------------------------- |
+| **Public**        | slug, username, ticker | `/posts/:slug`, `/tokens/:slug` |
+| **Private/Admin** | id (UUID)              | `/users/:id`, `/roles/:id`      |
 
 ---
 

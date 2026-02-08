@@ -7,6 +7,7 @@ import createClient from 'openapi-fetch';
 import type { paths } from './api-types';
 import { db } from './db';
 import { users } from './db/tables';
+import { DEV_BASE_URL } from './constants';
 
 /**
  * Creates a mock SvelteKit RequestEvent for unit testing handlers or hooks.
@@ -113,7 +114,7 @@ export function createApiTestClient<T>(
 	}
 ) {
 	return createClient<paths>({
-		baseUrl: 'http://localhost:5173',
+		baseUrl: DEV_BASE_URL,
 		fetch: (input: RequestInfo | URL, init?: RequestInit) => {
 			const fetchWithMiddleware = createVirtualFetch(handlers, options?.handle);
 
