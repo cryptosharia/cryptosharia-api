@@ -220,6 +220,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Token
+         * @description Rotate refresh token and issue a new access token.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AuthRefreshPostBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["AuthRefreshPostResponse"];
+                        };
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/posts": {
         parameters: {
             query?: never;
@@ -926,6 +998,36 @@ export interface components {
         };
         AuthSignoutPostBody: {
             /** @description The refresh token to revoke */
+            refreshToken: string;
+        };
+        /** @description Successful token refresh */
+        AuthRefreshPostResponse: {
+            user: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                email: string;
+                avatarUrl: string | null;
+                /** Format: uuid */
+                roleId: string | null;
+                isActive: boolean;
+                twoFactorSecret: string | null;
+                /** Format: date-time */
+                lastLoginAt: string | null;
+                /** Format: uuid */
+                createdBy: string | null;
+                /** Format: uuid */
+                updatedBy: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string | null;
+            };
+            accessToken: string;
+            refreshToken: string;
+        };
+        AuthRefreshPostBody: {
+            /** @description The opaque refresh token */
             refreshToken: string;
         };
         Post: {

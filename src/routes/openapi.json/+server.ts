@@ -12,12 +12,14 @@ import { openapiGet } from '.';
 import { docsGet } from '../(docs)';
 import { authSigninPost } from '../auth/signin';
 import { authSignoutPost } from '../auth/signout';
+import { authRefreshPost } from '../auth/refresh';
 
 const PATHS = [
 	docsGet,
 	openapiGet,
 	authSigninPost,
 	authSignoutPost,
+	authRefreshPost,
 	postsGet,
 	postsCountGet,
 	tokensGet,
