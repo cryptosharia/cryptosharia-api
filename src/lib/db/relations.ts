@@ -5,6 +5,7 @@ import {
 	permissions,
 	rolePermissions,
 	activityLogs,
+	refreshTokens,
 	tokens,
 	assets,
 	tokenTags,
@@ -31,7 +32,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 		references: [users.id],
 		relationName: 'user_updated_by'
 	}),
-	activityLogs: many(activityLogs)
+	activityLogs: many(activityLogs),
+	refreshTokens: many(refreshTokens)
 }));
 
 /**
@@ -76,6 +78,16 @@ export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
 	user: one(users, {
 		fields: [activityLogs.userId],
+		references: [users.id]
+	})
+}));
+
+/**
+ * Relations for the Refresh Tokens table.
+ */
+export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
+	user: one(users, {
+		fields: [refreshTokens.userId],
 		references: [users.id]
 	})
 }));

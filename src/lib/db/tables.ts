@@ -207,6 +207,24 @@ export const activityLogs = pgTable('activity_logs', {
 });
 
 /**
+ * Stores refresh tokens for session management and revocation.
+ */
+export const refreshTokens = pgTable('refresh_tokens', {
+	...PK_UUID,
+	/** ID of the user this token belongs to */
+	userId: uuid('user_id')
+		.references(() => users.id, { onDelete: 'cascade' })
+		.notNull(),
+	/** The actual refresh token (random string) */
+	token: varchar('token', { length: 64 }).notNull().unique(),
+	/** When this token expires */
+	expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+	/** When this token was revoked (NULL = active) */
+	revokedAt: timestamp('revoked_at', { withTimezone: true }),
+	...CREATED_AT
+});
+
+/**
  * Stores tokens data.
  */
 export const tokens = pgTable('tokens', {
