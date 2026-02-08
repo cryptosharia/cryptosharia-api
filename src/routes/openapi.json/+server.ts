@@ -11,11 +11,13 @@ import { imgbbPost } from '../imgbb';
 import { openapiGet } from '.';
 import { docsGet } from '../(docs)';
 import { authSigninPost } from '../auth/signin';
+import { authSignoutPost } from '../auth/signout';
 
 const PATHS = [
 	docsGet,
 	openapiGet,
 	authSigninPost,
+	authSignoutPost,
 	postsGet,
 	postsCountGet,
 	tokensGet,
