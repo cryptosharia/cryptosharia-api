@@ -69,15 +69,85 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
+                        "application/json": Record<string, never>;
                     };
                 };
             };
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign In
+         * @description Authenticate with email and password. Returns access and refresh tokens.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AuthSigninPostBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["AuthSigninPostResponse"];
+                        };
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -529,7 +599,7 @@ export interface paths {
         };
         put?: never;
         /**
-         * Create Message
+         * Send Message
          * @description Submit a new contact or inquiry message.
          */
         post: {
@@ -576,6 +646,93 @@ export interface paths {
                 };
                 /** @description Internal Server Error */
                 500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/imgbb": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Image to ImgBB
+         * @description Proxies an image upload to the ImgBB service and gets the resulting URLs.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": {
+                        /**
+                         * Format: binary
+                         * @description The image file to upload
+                         */
+                        image?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["ImgbbImage"];
+                        };
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Gateway */
+                502: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -661,6 +818,46 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Successful signin response with tokens and user info */
+        AuthSigninPostResponse: {
+            user: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                email: string;
+                avatarUrl: string | null;
+                /** Format: uuid */
+                roleId: string | null;
+                isActive: boolean;
+                twoFactorSecret: string | null;
+                /** Format: date-time */
+                lastLoginAt: string | null;
+                /** Format: uuid */
+                createdBy: string | null;
+                /** Format: uuid */
+                updatedBy: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string | null;
+            };
+            accessToken: string;
+            refreshToken: string;
+        };
+        ApiResponse: {
+            success: boolean;
+            message: string;
+            errors?: {
+                [key: string]: string[];
+            };
+            data?: unknown;
+        };
+        /** @description Credentials for signing in */
+        AuthSigninPostBody: {
+            /** Format: email */
+            email: string;
+            password: string;
+        };
         Post: {
             /** Format: uuid */
             id: string;
@@ -690,14 +887,6 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
-        };
-        ApiResponse: {
-            success: boolean;
-            message: string;
-            errors?: {
-                [key: string]: string[];
-            };
-            data?: unknown;
         };
         Token: {
             /** Format: uuid */
@@ -759,6 +948,23 @@ export interface components {
             /** Format: email */
             email: string;
             message: string;
+        };
+        ImgbbImage: {
+            /** Format: uuid */
+            id: string;
+            imgbbId: string;
+            title: string;
+            url: string;
+            width: number;
+            height: number;
+            size: number;
+            fileName: string;
+            mimeType: string;
+            deleteUrl: string;
+            /** Format: uuid */
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
         };
     };
     responses: never;

@@ -10,10 +10,12 @@ import { seedPost } from '../seed';
 import { imgbbPost } from '../imgbb';
 import { openapiGet } from '.';
 import { docsGet } from '../(docs)';
+import { authSigninPost } from '../auth/signin';
 
 const PATHS = [
 	docsGet,
 	openapiGet,
+	authSigninPost,
 	postsGet,
 	postsCountGet,
 	tokensGet,
