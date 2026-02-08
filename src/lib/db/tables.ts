@@ -46,26 +46,26 @@ const PUBLISHED_AT = {
  * Standard audit field for the creator.
  */
 const CREATED_BY = {
-	createdBy: uuid('created_by').references(() => admins.id)
+	createdBy: uuid('created_by').references(() => users.id)
 };
 
 /**
  * Standard audit field for the updater.
  */
 const UPDATED_BY = {
-	updatedBy: uuid('updated_by').references(() => admins.id)
+	updatedBy: uuid('updated_by').references(() => users.id)
 };
 
 /**
- * Specialized audit helpers specifically for tables that have circular dependencies (admins, roles).
+ * Specialized audit helpers specifically for tables that have circular dependencies (users, roles).
  * Uses AnyPgColumn to break the TypeScript recursion loop while keeping SQL Foreign Keys.
  */
 const CREATED_BY_CIR = {
-	createdBy: uuid('created_by').references((): AnyPgColumn => admins.id)
+	createdBy: uuid('created_by').references((): AnyPgColumn => users.id)
 };
 
 const UPDATED_BY_CIR = {
-	updatedBy: uuid('updated_by').references((): AnyPgColumn => admins.id)
+	updatedBy: uuid('updated_by').references((): AnyPgColumn => users.id)
 };
 
 // --- Enums ---
@@ -100,6 +100,11 @@ export const postSectionEnum = pgEnum('post_section', [
  */
 export const postTypeEnum = pgEnum('post_type', ['article', 'webinar', 'video', 'headline']);
 
+/**
+ * Password hashing algorithm used for user passwords.
+ */
+export const hashingAlgorithmEnum = pgEnum('hashing_algorithm', ['argon2id']);
+
 // --- Tables ---
 
 /**
@@ -118,7 +123,7 @@ export const permissions = pgTable('permissions', {
 });
 
 /**
- * Stores roles for admins.
+ * Stores roles for users.
  */
 export const roles = pgTable('roles', {
 	...PK_UUID,
@@ -133,19 +138,23 @@ export const roles = pgTable('roles', {
 });
 
 /**
- * Stores internal staff (admins).
+ * Stores users (both regular users and staff).
  */
-export const admins = pgTable('admins', {
+export const users = pgTable('users', {
 	...PK_UUID,
-	/** Full name of the administrator */
+	/** Full name of the user */
 	name: varchar('name', { length: 120 }).notNull(),
 	/** Unique email address for login and notifications */
 	email: varchar('email', { length: 255 }).notNull().unique(),
 	/** Argon2 or Bcrypted password hash */
 	hashedPassword: text('hashed_password').notNull(),
-	/** URL to the admin's profile image (optional) */
+	/** Algorithm used for password hashing */
+	passwordHashingAlgorithm: hashingAlgorithmEnum('password_hashing_algorithm')
+		.notNull()
+		.default('argon2id'),
+	/** URL to the user's profile image (optional) */
 	avatarUrl: text('avatar_url'),
-	/** Reference to the assigned role */
+	/** Reference to the assigned role (NULL = regular user, set = staff/admin) */
 	roleId: uuid('role_id').references((): AnyPgColumn => roles.id),
 	/** Boolean flag to enable/disable account access */
 	isActive: boolean('is_active').notNull().default(true),
@@ -178,12 +187,12 @@ export const rolePermissions = pgTable(
 );
 
 /**
- * Stores audit logs for admins' activities.
+ * Stores audit logs for user activities.
  */
 export const activityLogs = pgTable('activity_logs', {
 	...PK_UUID,
-	/** ID of the admin who performed the action */
-	adminId: uuid('admin_id').references(() => admins.id),
+	/** ID of the user who performed the action */
+	userId: uuid('user_id').references(() => users.id),
 	/** Description of the action (e.g. 'create', 'update', 'delete') */
 	action: varchar('action', { length: 50 }).notNull(),
 	/** Type of entity the action was performed on (e.g. 'tokens', 'posts') */
@@ -192,7 +201,7 @@ export const activityLogs = pgTable('activity_logs', {
 	subjectId: uuid('subject_id'),
 	/** Detailed human-readable description of the event */
 	description: text('description'),
-	/** IP address of the administrator at the time of the action */
+	/** IP address of the user at the time of the action */
 	ipAddress: varchar('ip_address', { length: 45 }),
 	...CREATED_AT
 });

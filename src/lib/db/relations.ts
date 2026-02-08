@@ -1,6 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
-	admins,
+	users,
 	roles,
 	permissions,
 	rolePermissions,
@@ -14,22 +14,22 @@ import {
 } from './tables';
 
 /**
- * Relations for the Admins table.
+ * Relations for the Users table.
  */
-export const adminsRelations = relations(admins, ({ one, many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
 	role: one(roles, {
-		fields: [admins.roleId],
+		fields: [users.roleId],
 		references: [roles.id]
 	}),
-	createdBy: one(admins, {
-		fields: [admins.createdBy],
-		references: [admins.id],
-		relationName: 'admin_created_by'
+	createdBy: one(users, {
+		fields: [users.createdBy],
+		references: [users.id],
+		relationName: 'user_created_by'
 	}),
-	updatedBy: one(admins, {
-		fields: [admins.updatedBy],
-		references: [admins.id],
-		relationName: 'admin_updated_by'
+	updatedBy: one(users, {
+		fields: [users.updatedBy],
+		references: [users.id],
+		relationName: 'user_updated_by'
 	}),
 	activityLogs: many(activityLogs)
 }));
@@ -38,13 +38,13 @@ export const adminsRelations = relations(admins, ({ one, many }) => ({
  * Relations for the Roles table.
  */
 export const rolesRelations = relations(roles, ({ one, many }) => ({
-	createdBy: one(admins, {
+	createdBy: one(users, {
 		fields: [roles.createdBy],
-		references: [admins.id]
+		references: [users.id]
 	}),
-	updatedBy: one(admins, {
+	updatedBy: one(users, {
 		fields: [roles.updatedBy],
-		references: [admins.id]
+		references: [users.id]
 	}),
 	permissions: many(rolePermissions)
 }));
@@ -74,9 +74,9 @@ export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => 
  * Relations for the Activity Logs table.
  */
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
-	admin: one(admins, {
-		fields: [activityLogs.adminId],
-		references: [admins.id]
+	user: one(users, {
+		fields: [activityLogs.userId],
+		references: [users.id]
 	})
 }));
 
@@ -88,13 +88,13 @@ export const tokensRelations = relations(tokens, ({ one, many }) => ({
 		fields: [tokens.logoId],
 		references: [assets.id]
 	}),
-	createdBy: one(admins, {
+	createdBy: one(users, {
 		fields: [tokens.createdBy],
-		references: [admins.id]
+		references: [users.id]
 	}),
-	updatedBy: one(admins, {
+	updatedBy: one(users, {
 		fields: [tokens.updatedBy],
-		references: [admins.id]
+		references: [users.id]
 	}),
 	tags: many(tokenTags)
 }));
@@ -107,13 +107,13 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
 		fields: [posts.coverImageId],
 		references: [assets.id]
 	}),
-	createdBy: one(admins, {
+	createdBy: one(users, {
 		fields: [posts.createdBy],
-		references: [admins.id]
+		references: [users.id]
 	}),
-	updatedBy: one(admins, {
+	updatedBy: one(users, {
 		fields: [posts.updatedBy],
-		references: [admins.id]
+		references: [users.id]
 	}),
 	tags: many(postTags)
 }));
@@ -158,8 +158,8 @@ export const postTagsRelations = relations(postTags, ({ one }) => ({
  * Relations for the Assets table.
  */
 export const assetsRelations = relations(assets, ({ one }) => ({
-	createdBy: one(admins, {
+	createdBy: one(users, {
 		fields: [assets.createdBy],
-		references: [admins.id]
+		references: [users.id]
 	})
 }));

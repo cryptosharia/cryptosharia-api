@@ -6,7 +6,7 @@
 import createClient from 'openapi-fetch';
 import type { paths } from './api-types';
 import { db } from './db';
-import { admins } from './db/tables';
+import { users } from './db/tables';
 
 /**
  * Creates a mock SvelteKit RequestEvent for unit testing handlers or hooks.
@@ -130,23 +130,23 @@ export function createApiTestClient<T>(
 }
 
 /**
- * Factory to create a test admin in the database.
+ * Factory to create a test user in the database.
  *
  * @param overrides - Optional fields to override defaults
- * @returns The created admin record
+ * @returns The created user record
  */
-export async function createTestAdmin(overrides?: Partial<typeof admins.$inferInsert>) {
+export async function createTestUser(overrides?: Partial<typeof users.$inferInsert>) {
 	const random = Math.random().toString(36).substring(7);
 
-	const [admin] = await db
-		.insert(admins)
+	const [user] = await db
+		.insert(users)
 		.values({
-			name: 'Test Admin',
+			name: 'Test User',
 			email: `test-${random}@example.com`,
 			hashedPassword: 'hashed_password',
 			...overrides
 		})
 		.returning();
 
-	return admin;
+	return user;
 }

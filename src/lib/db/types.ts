@@ -12,9 +12,9 @@ export type Permission = z.infer<typeof Permission>;
 export const Role = createSelectSchema(table.roles).openapi('Role');
 export type Role = z.infer<typeof Role>;
 
-// Admins
-export const Admin = createSelectSchema(table.admins).openapi('Admin');
-export type Admin = z.infer<typeof Admin>;
+// Users
+export const User = createSelectSchema(table.users).openapi('User');
+export type User = z.infer<typeof User>;
 
 // Activity Logs
 export const ActivityLog = createSelectSchema(table.activityLogs).openapi('ActivityLog');

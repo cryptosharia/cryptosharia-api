@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as PostsAPI from './+server';
 import { db } from '$lib/db';
 import { posts } from '$lib/db/tables';
-import { createApiTestClient, createTestAdmin } from '$lib/test-utils';
+import { createApiTestClient, createTestUser } from '$lib/test-utils';
 import type { RequestEvent } from './$types';
 
 // Create a type-safe client that talks directly to the whole module
@@ -11,7 +11,7 @@ const client = createApiTestClient<RequestEvent>(PostsAPI);
 describe('Posts API Integration', () => {
 	it('should filter posts by news section', async () => {
 		// 1. Setup: Create admin
-		const admin = await createTestAdmin();
+		const admin = await createTestUser();
 
 		// 2. Setup: Seed database
 		await db.insert(posts).values([
@@ -58,7 +58,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should search posts by title', async () => {
-		const admin = await createTestAdmin();
+		const admin = await createTestUser();
 
 		await db.insert(posts).values({
 			title: 'Unique Secret Topic',
@@ -80,7 +80,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should combine multiple filters (sections AND search)', async () => {
-		const admin = await createTestAdmin();
+		const admin = await createTestUser();
 
 		await db.insert(posts).values([
 			{
@@ -115,7 +115,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should search posts by excerpt', async () => {
-		const admin = await createTestAdmin();
+		const admin = await createTestUser();
 
 		await db.insert(posts).values({
 			title: 'A Post Title',
@@ -138,7 +138,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should handle pagination (limit and page)', async () => {
-		const admin = await createTestAdmin();
+		const admin = await createTestUser();
 
 		// Insert 5 posts
 		const mockPosts = Array.from({ length: 5 }).map((_, i) => ({
@@ -168,7 +168,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should exclude specific slugs', async () => {
-		const admin = await createTestAdmin();
+		const admin = await createTestUser();
 
 		await db.insert(posts).values([
 			{

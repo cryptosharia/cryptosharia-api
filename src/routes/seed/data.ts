@@ -44,7 +44,7 @@ For a cryptocurrency to be considered halal, it must meet several criteria:
 			pathname: 'seed/halal-crypto-basics/800/600',
 			filename: 'halal-crypto-basics.jpg',
 			size: 150000,
-			contentType: 'image/jpeg',
+			mimeType: 'image/jpeg',
 			provider: 'picsum',
 			width: 800,
 			height: 600
@@ -73,7 +73,7 @@ Our analysis is based on classical Islamic jurisprudence combined with modern fi
 			pathname: 'seed/bitcoin-analysis/800/600',
 			filename: 'bitcoin-analysis.jpg',
 			size: 175000,
-			contentType: 'image/jpeg',
+			mimeType: 'image/jpeg',
 			provider: 'picsum',
 			width: 800,
 			height: 600
@@ -106,7 +106,7 @@ Our analysis is based on classical Islamic jurisprudence combined with modern fi
 			pathname: 'seed/webinar-march/800/600',
 			filename: 'webinar-march.jpg',
 			size: 160000,
-			contentType: 'image/jpeg',
+			mimeType: 'image/jpeg',
 			provider: 'picsum',
 			width: 800,
 			height: 600
@@ -131,7 +131,7 @@ Ethereum's successful transition to Proof-of-Stake has significant implications 
 			pathname: 'seed/ethereum-pos/800/600',
 			filename: 'ethereum-pos.jpg',
 			size: 155000,
-			contentType: 'image/jpeg',
+			mimeType: 'image/jpeg',
 			provider: 'picsum',
 			width: 800,
 			height: 600
@@ -163,7 +163,7 @@ Bitcoin is generally considered halal by many Islamic scholars due to its decent
 			pathname: 'seed/btc-logo/128/128',
 			filename: 'btc-logo.png',
 			size: 8000,
-			contentType: 'image/png',
+			mimeType: 'image/png',
 			provider: 'picsum',
 			width: 128,
 			height: 128
@@ -187,7 +187,7 @@ Ethereum is a decentralized platform that enables smart contracts and decentrali
 			pathname: 'seed/eth-logo/128/128',
 			filename: 'eth-logo.png',
 			size: 7500,
-			contentType: 'image/png',
+			mimeType: 'image/png',
 			provider: 'picsum',
 			width: 128,
 			height: 128
@@ -211,7 +211,7 @@ USDC is a fully-backed stablecoin pegged to the US Dollar.`,
 			pathname: 'seed/usdc-logo/128/128',
 			filename: 'usdc-logo.png',
 			size: 6500,
-			contentType: 'image/png',
+			mimeType: 'image/png',
 			provider: 'picsum',
 			width: 128,
 			height: 128
@@ -235,7 +235,7 @@ BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
 			pathname: 'seed/bnb-logo/128/128',
 			filename: 'bnb-logo.png',
 			size: 7000,
-			contentType: 'image/png',
+			mimeType: 'image/png',
 			provider: 'picsum',
 			width: 128,
 			height: 128
@@ -259,7 +259,7 @@ Solana is a high-performance blockchain designed for decentralized applications.
 			pathname: 'seed/sol-logo/128/128',
 			filename: 'sol-logo.png',
 			size: 7200,
-			contentType: 'image/png',
+			mimeType: 'image/png',
 			provider: 'picsum',
 			width: 128,
 			height: 128
