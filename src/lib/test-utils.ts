@@ -11,24 +11,38 @@ import { DEV_BASE_URL } from './constants';
 
 /**
  * Creates a mock SvelteKit RequestEvent for unit testing handlers or hooks.
+ * Now supports both init.body (string) or an actual Request object.
  */
 export function createMockRequestEvent<T>(
 	urlString: string,
-	init?: RequestInit,
+	requestOrInit?: Request | RequestInit,
 	params: Record<string, string> = {}
 ): T {
 	const url = new URL(urlString);
-	const headers = new Headers(init?.headers);
+
+	// Determine if we received a Request object or RequestInit
+	const isRequest = requestOrInit instanceof Request;
+
+	const headers = isRequest
+		? new Headers(requestOrInit.headers)
+		: new Headers(requestOrInit?.headers);
 
 	// Create a minimal Request-like object that satisfies SvelteKit's RequestEvent
-	const request = {
-		url: urlString,
-		method: init?.method || 'GET',
-		headers,
-		json: async () => (init?.body ? JSON.parse(init.body as string) : null),
-		text: async () => (init?.body as string) || '',
-		clone: () => ({ ...request })
-	} as unknown as Request;
+	const request = isRequest
+		? requestOrInit
+		: ({
+				url: urlString,
+				method: requestOrInit?.method || 'GET',
+				headers,
+				json: async () => {
+					const body = requestOrInit?.body;
+					return body ? JSON.parse(body as string) : null;
+				},
+				text: async () => (requestOrInit?.body as string) || '',
+				clone: function () {
+					return { ...this };
+				}
+			} as unknown as Request);
 
 	return {
 		url,
@@ -63,28 +77,24 @@ export function createVirtualFetch<T>(
 ) {
 	return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
 		let urlString: string;
-		const finalInit: RequestInit = { ...init };
+		let requestObject: Request | undefined;
 
 		if (input instanceof Request) {
 			urlString = input.url;
-			finalInit.method = finalInit.method || input.method;
-			const mergedHeaders = new Headers(input.headers);
-			if (init?.headers) {
-				new Headers(init.headers).forEach((v, k) => mergedHeaders.set(k, v));
-			}
-			finalInit.headers = mergedHeaders;
+			requestObject = input;
 		} else {
 			urlString = input.toString();
 		}
 
-		const method = finalInit.method?.toUpperCase() || 'GET';
+		const method = requestObject?.method || init?.method?.toUpperCase() || 'GET';
 
 		const handler = handlers[method];
 		if (!handler) {
 			return new Response(`Method ${method} not implemented`, { status: 405 });
 		}
 
-		const event = createMockRequestEvent<T>(urlString, finalInit);
+		// Pass either the Request object or the init
+		const event = createMockRequestEvent<T>(urlString, requestObject || init);
 
 		const resolve = (ev: T) => {
 			const result = handler(ev);
@@ -117,6 +127,18 @@ export function createApiTestClient<T>(
 		baseUrl: DEV_BASE_URL,
 		fetch: (input: RequestInfo | URL, init?: RequestInit) => {
 			const fetchWithMiddleware = createVirtualFetch(handlers, options?.handle);
+
+			// If input is a Request, we need to merge headers differently
+			if (input instanceof Request) {
+				// Clone the request with additional headers if needed
+				if (options?.headers) {
+					const newHeaders = new Headers(input.headers);
+					Object.entries(options.headers).forEach(([k, v]) => newHeaders.set(k, v));
+					const newRequest = new Request(input, { headers: newHeaders });
+					return fetchWithMiddleware(newRequest, init);
+				}
+				return fetchWithMiddleware(input, init);
+			}
 
 			const mergedInit: RequestInit = { ...init };
 			const headers = new Headers(options?.headers);
