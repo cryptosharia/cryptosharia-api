@@ -4,8 +4,8 @@
  */
 
 import * as jose from 'jose';
-import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '$env/static/private';
-import { JWT_ISSUER, ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from '$lib/constants';
+import { ACCESS_TOKEN_SECRET } from '$env/static/private';
+import { JWT_ISSUER, ACCESS_TOKEN_EXPIRY } from '$lib/constants';
 
 /**
  * Access token payload structure.
@@ -13,14 +13,6 @@ import { JWT_ISSUER, ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from '$lib/cons
 export interface AccessTokenPayload {
 	userId: string;
 	roleId: string | null;
-}
-
-/**
- * Refresh token payload structure.
- */
-export interface RefreshTokenPayload {
-	userId: string;
-	tokenId: string; // Links to refreshTokens table for revocation
 }
 
 /**
@@ -34,20 +26,6 @@ export async function signAccessToken(payload: AccessTokenPayload): Promise<stri
 		.setIssuer(JWT_ISSUER)
 		.setIssuedAt()
 		.setExpirationTime(ACCESS_TOKEN_EXPIRY)
-		.sign(secret);
-}
-
-/**
- * Generate a long-lived refresh token (7 days).
- */
-export async function signRefreshToken(payload: RefreshTokenPayload): Promise<string> {
-	const secret = new TextEncoder().encode(REFRESH_TOKEN_SECRET);
-
-	return await new jose.SignJWT({ ...payload })
-		.setProtectedHeader({ alg: 'HS256' })
-		.setIssuer(JWT_ISSUER)
-		.setIssuedAt()
-		.setExpirationTime(REFRESH_TOKEN_EXPIRY)
 		.sign(secret);
 }
 
@@ -69,24 +47,8 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
 }
 
 /**
- * Verify and decode a refresh token.
- * Returns the payload if valid, throws if invalid/expired.
- */
-export async function verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
-	const secret = new TextEncoder().encode(REFRESH_TOKEN_SECRET);
-
-	const { payload } = await jose.jwtVerify(token, secret, {
-		issuer: JWT_ISSUER
-	});
-
-	return {
-		userId: payload.userId as string,
-		tokenId: payload.tokenId as string
-	};
-}
-
-/**
  * Generate a cryptographically secure random token for refresh token storage.
+ * This is used for opaque tokens that are stored in the database.
  */
 export function generateRandomToken(length: number = 32): string {
 	const array = new Uint8Array(length);

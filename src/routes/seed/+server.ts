@@ -5,7 +5,8 @@ import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
-import { MESSAGES, POSTS, TOKENS } from './data';
+import { MESSAGES, POSTS, TOKENS, USERS } from './data';
+import { hashPassword } from '$lib/auth/password';
 
 export const POST: RequestHandler = async () => {
 	// Only allow seeding in local development or Vercel preview environments
@@ -18,11 +19,25 @@ export const POST: RequestHandler = async () => {
 		console.log('--- Seeding started via API ---');
 
 		// Clear existing data (Cascade will handle relations)
+		await db.delete(schema.refreshTokens);
 		await db.delete(schema.posts);
 		await db.delete(schema.tokens);
 		await db.delete(schema.tags);
 		await db.delete(schema.assets);
 		await db.delete(schema.messages);
+		await db.delete(schema.users);
+
+		// Seed Users
+		for (const userData of USERS) {
+			const hashedPassword = await hashPassword(userData.password);
+			await db.insert(schema.users).values({
+				name: userData.name,
+				email: userData.email,
+				hashedPassword,
+				roleId: userData.roleId
+			});
+		}
+		console.log(`Seeded ${USERS.length} users`);
 
 		// Seed Posts
 		for (const postData of POSTS) {

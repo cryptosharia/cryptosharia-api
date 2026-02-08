@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import ApiResponse from '$lib/api-response';
 import { AuthSigninPostBody, AuthSigninPostResponse } from '.';
 import { verifyPassword } from '$lib/auth/password';
-import { signAccessToken, signRefreshToken, generateRandomToken } from '$lib/auth/jwt';
+import { signAccessToken, generateRandomToken } from '$lib/auth/tokens';
 import z from '$lib/zod-openapi';
 
 /**
@@ -44,31 +44,24 @@ export const POST: RequestHandler = async ({ request }) => {
 			return ApiResponse.unauthorized();
 		}
 
-		// 4. Generate tokens
+		// 4. Generate access token
 		const accessToken = await signAccessToken({
 			userId: user.id,
 			roleId: user.roleId
 		});
 
-		const tokenId = crypto.randomUUID();
-		const storedToken = generateRandomToken();
+		// 5. Generate opaque refresh token
+		const refreshToken = generateRandomToken();
 
 		// Calculate expiry (7 days from now)
 		const expiresAt = new Date();
 		expiresAt.setDate(expiresAt.getDate() + 7);
 
-		// 5. Store refresh token in database
+		// 6. Store refresh token in database
 		await db.insert(refreshTokens).values({
-			id: tokenId,
 			userId: user.id,
-			token: storedToken,
+			token: refreshToken,
 			expiresAt
-		});
-
-		// 6. Sign refresh token JWT (contains tokenId for revocation lookup)
-		const refreshToken = await signRefreshToken({
-			userId: user.id,
-			tokenId
 		});
 
 		// 7. Return response (schema automatically strips sensitive fields)

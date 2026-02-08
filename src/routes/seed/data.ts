@@ -14,7 +14,38 @@ export type SeedToken = Omit<InferInsertModel<typeof schema.tokens>, 'logoId'> &
 
 export type SeedMessage = InferInsertModel<typeof schema.messages>;
 
-// Posts Data
+// User seed type - password will be hashed during seeding
+export type SeedUser = {
+	name: string;
+	email: string;
+	password: string; // Plain text, hashed during seeding
+	roleId?: string | null;
+};
+
+// Dev password for all sample users (easy to remember for testing)
+export const DEV_PASSWORD = 'password123';
+
+// Sample Users
+export const USERS: SeedUser[] = [
+	{
+		name: 'Admin User',
+		email: 'admin@cryptosharia.id',
+		password: DEV_PASSWORD,
+		roleId: null // Will be assigned when roles are seeded
+	},
+	{
+		name: 'Editor User',
+		email: 'editor@cryptosharia.id',
+		password: DEV_PASSWORD,
+		roleId: null
+	},
+	{
+		name: 'Regular User',
+		email: 'user@example.com',
+		password: DEV_PASSWORD,
+		roleId: null
+	}
+];
 export const POSTS: SeedPost[] = [
 	{
 		slug: 'understanding-halal-cryptocurrency-basics',
