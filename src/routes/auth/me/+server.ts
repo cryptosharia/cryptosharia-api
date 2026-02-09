@@ -4,9 +4,6 @@ import { users } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
 import ApiResponse from '$lib/api-response';
 import { AuthMeGetResponse } from '.';
-import z from '$lib/zod-openapi';
-
-type AuthMeResponse = z.infer<typeof AuthMeGetResponse>;
 
 /**
  * GET /auth/me
@@ -19,19 +16,26 @@ export const GET: RequestHandler = async ({ locals }) => {
 	}
 
 	try {
-		// 2. Fetch fresh user data from database
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, locals.user.id)
+		// 2. Fetch fresh user data with role information
+		const userWithRole = await db.query.users.findFirst({
+			where: eq(users.id, locals.user.id),
+			with: {
+				role: true
+			}
 		});
 
-		if (!user) {
+		if (!userWithRole) {
 			return ApiResponse.unauthorized();
 		}
 
-		// 3. Return response (schema automatically strips sensitive fields)
-		return ApiResponse.ok({
-			user: AuthMeGetResponse.shape.user.parse(user)
-		} as AuthMeResponse);
+		// 3. Return response (sanitized via parse)
+		return ApiResponse.ok(
+			AuthMeGetResponse.parse({
+				...userWithRole,
+				role: userWithRole.role?.slug ?? null,
+				permissions: locals.user.permissions
+			})
+		);
 	} catch (error) {
 		console.error('AuthMe error:', error);
 		return ApiResponse.internalServerError();

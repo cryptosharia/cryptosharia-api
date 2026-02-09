@@ -29,25 +29,28 @@ export const POST: RequestHandler = async ({ request }) => {
 	const { email, password } = result.data;
 
 	try {
-		// 2. Find user by email
-		const user = await db.query.users.findFirst({
-			where: eq(users.email, email)
+		// 2. Find user by email with role information
+		const userWithRole = await db.query.users.findFirst({
+			where: eq(users.email, email),
+			with: {
+				role: true
+			}
 		});
 
-		if (!user) {
+		if (!userWithRole) {
 			return ApiResponse.unauthorized();
 		}
 
 		// 3. Verify password
-		const isValid = await verifyPassword(password, user.hashedPassword);
+		const isValid = await verifyPassword(password, userWithRole.hashedPassword);
 		if (!isValid) {
 			return ApiResponse.unauthorized();
 		}
 
 		// 4. Generate access token
 		const accessToken = await signAccessToken({
-			userId: user.id,
-			roleId: user.roleId
+			userId: userWithRole.id,
+			roleId: userWithRole.roleId
 		});
 
 		// 5. Generate opaque refresh token
@@ -59,17 +62,20 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// 6. Store refresh token in database
 		await db.insert(refreshTokens).values({
-			userId: user.id,
+			userId: userWithRole.id,
 			token: refreshToken,
 			expiresAt
 		});
 
-		// 7. Return response (schema automatically strips sensitive fields)
-		return ApiResponse.ok({
-			user: AuthSigninPostResponse.shape.user.parse(user),
-			accessToken,
-			refreshToken
-		} as AuthSigninPostResponse);
+		// 7. Return response (sanitized via parse)
+		return ApiResponse.ok(
+			AuthSigninPostResponse.parse({
+				...userWithRole,
+				role: userWithRole.role?.slug ?? null,
+				accessToken,
+				refreshToken
+			})
+		);
 	} catch (error) {
 		console.error('Signin error:', error);
 		return ApiResponse.internalServerError();

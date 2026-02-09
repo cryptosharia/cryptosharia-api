@@ -1017,27 +1017,25 @@ export interface components {
     schemas: {
         /** @description Successful signin response with tokens and user info */
         AuthSigninPostResponse: {
-            user: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                email: string;
-                avatarUrl: string | null;
-                /** Format: uuid */
-                roleId: string | null;
-                isActive: boolean;
-                twoFactorSecret: string | null;
-                /** Format: date-time */
-                lastLoginAt: string | null;
-                /** Format: uuid */
-                createdBy: string | null;
-                /** Format: uuid */
-                updatedBy: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string | null;
-            };
+            /** Format: uuid */
+            id: string;
+            name: string;
+            email: string;
+            avatarUrl: string | null;
+            isActive: boolean;
+            twoFactorSecret: string | null;
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** Format: uuid */
+            createdBy: string | null;
+            /** Format: uuid */
+            updatedBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string | null;
+            /** @description The enum value of the assigned role */
+            role: string | null;
             accessToken: string;
             refreshToken: string;
         };
@@ -1091,27 +1089,27 @@ export interface components {
         };
         /** @description Successful retrieval of current user info */
         AuthMeGetResponse: {
-            user: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                email: string;
-                avatarUrl: string | null;
-                /** Format: uuid */
-                roleId: string | null;
-                isActive: boolean;
-                twoFactorSecret: string | null;
-                /** Format: date-time */
-                lastLoginAt: string | null;
-                /** Format: uuid */
-                createdBy: string | null;
-                /** Format: uuid */
-                updatedBy: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string | null;
-            };
+            /** Format: uuid */
+            id: string;
+            name: string;
+            email: string;
+            avatarUrl: string | null;
+            isActive: boolean;
+            twoFactorSecret: string | null;
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** Format: uuid */
+            createdBy: string | null;
+            /** Format: uuid */
+            updatedBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string | null;
+            /** @description The slug/name of the assigned role (e.g. "super-admin") */
+            role: string | null;
+            /** @description List of programmatic permission keys */
+            permissions: string[];
         };
         Post: {
             /** Format: uuid */

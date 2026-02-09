@@ -20,13 +20,19 @@ describe('POST /auth/signin', () => {
 		});
 
 		expect(response.status).toBe(200);
-		expect(data?.success).toBe(true);
-		expect(data?.data?.user.id).toBe(user!.id);
-		expect(data?.data?.user.email).toBe(user!.email);
-		expect(data?.data?.accessToken).toBeDefined();
-		expect(data?.data?.refreshToken).toBeDefined();
+
+		if (!data?.data) {
+			throw new Error('No data received');
+		}
+		expect(data.data.id).toBe(user!.id);
+		expect(data.data.email).toBe(user!.email);
+		expect(data.data).toHaveProperty('role');
+		expect(data.data.accessToken).toBeDefined();
+		expect(data.data.refreshToken).toBeDefined();
+
 		// Sensitive fields should be stripped
-		expect((data?.data?.user as Record<string, unknown>).hashedPassword).toBeUndefined();
+		expect(data.data).not.toHaveProperty('hashedPassword');
+		expect(data.data).not.toHaveProperty('roleId');
 	});
 
 	it('should return 401 for invalid email', async () => {
@@ -46,7 +52,7 @@ describe('POST /auth/signin', () => {
 
 		const { error, response } = await client.POST('/auth/signin', {
 			body: {
-				email: user!.email,
+				email: user.email,
 				password: 'wrongPassword123'
 			}
 		});

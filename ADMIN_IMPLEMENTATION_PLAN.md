@@ -49,7 +49,7 @@ This plan outlines the implementation of comprehensive admin functionality for t
 
 ### Authentication & Security
 
-#### [NEW] [tokens.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/lib/auth/tokens.ts)
+#### [NEW] [tokens.ts](src/lib/auth/tokens.ts)
 
 JWT utility functions for token generation, verification, and refresh logic:
 
@@ -58,7 +58,7 @@ JWT utility functions for token generation, verification, and refresh logic:
 - `verifyAccessToken(token: string)` - Verify and decode access token
 - Uses `jose` library with HS256 algorithm (symmetric keys)
 
-#### [NEW] [auth-middleware.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/lib/auth-middleware.ts)
+#### [NEW] [auth-middleware.ts](src/lib/auth-middleware.ts)
 
 Middleware utilities for route protection:
 
@@ -67,7 +67,7 @@ Middleware utilities for route protection:
 - `requireRole(roleSlug: string)` - Check if admin has specific role
 - Extracts admin context and attaches to `event.locals`
 
-#### [NEW] [activity-logger.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/lib/activity-logger.ts)
+#### [NEW] [activity-logger.ts](src/lib/activity-logger.ts)
 
 Activity logging utilities:
 
@@ -75,7 +75,7 @@ Activity logging utilities:
 - Automatic logging wrapper for CRUD operations
 - IP address extraction from request headers
 
-#### [MODIFY] [hooks.server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/hooks.server.ts)
+#### [MODIFY] [hooks.server.ts](src/hooks.server.ts)
 
 Update to support dual authentication:
 
@@ -84,7 +84,7 @@ Update to support dual authentication:
 - Exempt `/auth/signin` from authentication
 - Attach user context to `event.locals.user` when JWT is valid
 
-#### [MODIFY] [app.d.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/app.d.ts)
+#### [MODIFY] [app.d.ts](src/app.d.ts)
 
 Add type definitions for locals:
 
@@ -103,7 +103,7 @@ interface Locals {
 
 ### Authentication Endpoints
 
-#### [NEW] [/auth/signin/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/auth/signin/+server.ts)
+#### [NEW] [/auth/signin/+server.ts](src/routes/auth/signin/+server.ts)
 
 Admin signin endpoint:
 
@@ -115,11 +115,11 @@ Admin signin endpoint:
 - Returns access token, refresh token, and user info
 - Logs successful signin with IP address
 
-#### [NEW] [/auth/signin/index.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/auth/signin/index.ts)
+#### [NEW] [/auth/signin/index.ts](src/routes/auth/signin/index.ts)
 
 OpenAPI specification for signin endpoint.
 
-#### [NEW] [/auth/signout/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/auth/signout/+server.ts)
+#### [NEW] [/auth/signout/+server.ts](src/routes/auth/signout/+server.ts)
 
 Admin signout endpoint:
 
@@ -128,7 +128,7 @@ Admin signout endpoint:
 - Optional: Add token to blacklist (Redis)
 - Logs signout activity
 
-#### [NEW] [/auth/refresh/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/auth/refresh/+server.ts)
+#### [NEW] [/auth/refresh/+server.ts](src/routes/auth/refresh/+server.ts)
 
 Token refresh endpoint:
 
@@ -138,7 +138,7 @@ Token refresh endpoint:
 - Issues new access token and refresh token
 - Rotates refresh tokens for security
 
-#### [NEW] [/auth/me/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/auth/me/+server.ts)
+#### [NEW] [/auth/me/+server.ts](src/routes/auth/me/+server.ts)
 
 Get current admin info:
 
@@ -150,7 +150,7 @@ Get current admin info:
 
 ### User Management Endpoints
 
-#### [NEW] [/users/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/users/+server.ts)
+#### [NEW] [/users/+server.ts](src/routes/users/+server.ts)
 
 List and create users:
 
@@ -163,11 +163,11 @@ List and create users:
   - Hashes password with Argon2
   - Logs creation activity
 
-#### [NEW] [/users/index.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/users/index.ts)
+#### [NEW] [/users/index.ts](src/routes/users/index.ts)
 
 OpenAPI specifications for user list and create endpoints.
 
-#### [NEW] [/users/[id]/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/users/[id]/+server.ts)
+#### [NEW] [/users/[id]/+server.ts](src/routes/users/[id]/+server.ts)
 
 Get, update, and delete specific user:
 
@@ -182,7 +182,7 @@ Get, update, and delete specific user:
   - Prevents self-deletion
   - Logs deletion activity
 
-#### [NEW] [/users/[id]/password/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/users/[id]/password/+server.ts)
+#### [NEW] [/users/[id]/password/+server.ts](src/routes/users/[id]/password/+server.ts)
 
 Change user password:
 
@@ -193,7 +193,7 @@ Change user password:
 - Validates password strength
 - Logs password change activity
 
-#### [NEW] [/users/[id]/avatar/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/users/[id]/avatar/+server.ts)
+#### [NEW] [/users/[id]/avatar/+server.ts](src/routes/users/[id]/avatar/+server.ts)
 
 Upload user avatar:
 
@@ -207,7 +207,7 @@ Upload user avatar:
 
 ### Role Management Endpoints
 
-#### [NEW] [/roles/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/roles/+server.ts)
+#### [NEW] [/roles/+server.ts](src/routes/roles/+server.ts)
 
 List and create roles:
 
@@ -219,7 +219,7 @@ List and create roles:
   - Requires permission: `roles.create`
   - Logs creation activity
 
-#### [NEW] [/roles/[id]/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/roles/[id]/+server.ts)
+#### [NEW] [/roles/[id]/+server.ts](src/routes/roles/[id]/+server.ts)
 
 Get, update, and delete specific role:
 
@@ -234,7 +234,7 @@ Get, update, and delete specific role:
   - Prevents deletion if role is assigned to users
   - Logs deletion activity
 
-#### [NEW] [/roles/[id]/permissions/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/roles/[id]/permissions/+server.ts)
+#### [NEW] [/roles/[id]/permissions/+server.ts](src/routes/roles/[id]/permissions/+server.ts)
 
 Manage role permissions:
 
@@ -250,7 +250,7 @@ Manage role permissions:
 
 Permissions are **static and code-defined**. They are seeded via migration and cannot be created/updated/deleted via API. Only listing is available.
 
-#### [NEW] [/permissions/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/permissions/+server.ts)
+#### [NEW] [/permissions/+server.ts](src/routes/permissions/+server.ts)
 
 List permissions:
 
@@ -262,7 +262,7 @@ List permissions:
 
 ### Activity Logs Endpoints
 
-#### [NEW] [/activity-logs/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/activity-logs/+server.ts)
+#### [NEW] [/activity-logs/+server.ts](src/routes/activity-logs/+server.ts)
 
 List activity logs:
 
@@ -271,7 +271,7 @@ List activity logs:
   - Requires permission: `activity-logs.read`
   - Returns logs with user info joined
 
-#### [NEW] [/activity-logs/[id]/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/activity-logs/[id]/+server.ts)
+#### [NEW] [/activity-logs/[id]/+server.ts](src/routes/activity-logs/[id]/+server.ts)
 
 Get specific activity log:
 
@@ -282,7 +282,7 @@ Get specific activity log:
 
 ### Two-Factor Authentication (Optional)
 
-#### [NEW] [/auth/2fa/setup/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/auth/2fa/setup/+server.ts)
+#### [NEW] [/auth/2fa/setup/+server.ts](src/routes/auth/2fa/setup/+server.ts)
 
 Setup 2FA:
 
@@ -292,7 +292,7 @@ Setup 2FA:
 - Returns QR code data URL and secret
 - Does not enable 2FA until verified
 
-#### [NEW] [/auth/2fa/verify/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/auth/2fa/verify/+server.ts)
+#### [NEW] [/auth/2fa/verify/+server.ts](src/routes/auth/2fa/verify/+server.ts)
 
 Verify and enable 2FA:
 
@@ -302,7 +302,7 @@ Verify and enable 2FA:
 - Saves secret to user's `twoFactorSecret` field
 - Logs 2FA enablement
 
-#### [NEW] [/auth/2fa/disable/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/auth/2fa/disable/+server.ts)
+#### [NEW] [/auth/2fa/disable/+server.ts](src/routes/auth/2fa/disable/+server.ts)
 
 Disable 2FA:
 
@@ -316,7 +316,7 @@ Disable 2FA:
 
 ### Database & Seeding
 
-#### [NEW] [/seed/permissions/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/seed/permissions/+server.ts)
+#### [NEW] [/seed/permissions/+server.ts](src/routes/seed/permissions/+server.ts)
 
 Seed default permissions:
 
@@ -331,7 +331,7 @@ Seed default permissions:
   - `assets`: create, read, delete
   - `activity-logs`: read
 
-#### [NEW] [/seed/admin/+server.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/routes/seed/admin/+server.ts)
+#### [NEW] [/seed/admin/+server.ts](src/routes/seed/admin/+server.ts)
 
 Bootstrap first user:
 
@@ -345,7 +345,7 @@ Bootstrap first user:
 
 ### Database Schema Changes
 
-#### [MODIFY] [db/tables.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/lib/db/tables.ts)
+#### [MODIFY] [db/tables.ts](src/lib/db/tables.ts)
 
 **Rename `admins` table to `users`:**
 
@@ -398,7 +398,7 @@ export const refreshTokens = pgTable('refresh_tokens', {
 
 ### Supporting Libraries & Types
 
-#### [NEW] [password.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/lib/password.ts)
+#### [NEW] [password.ts](src/lib/password.ts)
 
 Password utilities:
 
@@ -407,7 +407,7 @@ Password utilities:
 - `validatePasswordStrength(password: string)` - Validate minimum requirements (8+ chars, uppercase, lowercase, number, special char)
 - `shouldRehash(algorithm: string)` - Check if password should be re-hashed with newer algorithm
 
-#### [MODIFY] [api-types.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/lib/api-types.ts)
+#### [MODIFY] [api-types.ts](src/lib/api-types.ts)
 
 Add Zod schemas and TypeScript types for:
 
@@ -418,7 +418,7 @@ Add Zod schemas and TypeScript types for:
 - `CreatePermissionRequest`, `UpdatePermissionRequest`
 - `ActivityLogFilters`
 
-#### [MODIFY] [db/types.ts](file:///home/mdaffailhami/Dev/cryptosharia/cryptosharia-api/src/lib/db/types.ts)
+#### [MODIFY] [db/types.ts](src/lib/db/types.ts)
 
 Add Zod schemas for database models:
 

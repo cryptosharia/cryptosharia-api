@@ -6,9 +6,14 @@ import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 /**
  * Response schema for GET /auth/me.
  */
-export const AuthMeGetResponse = z
-	.object({
-		user: User.omit({ hashedPassword: true, passwordHashingAlgorithm: true })
+export const AuthMeGetResponse = User.omit({
+	hashedPassword: true,
+	passwordHashingAlgorithm: true,
+	roleId: true
+})
+	.extend({
+		role: z.string().nullable().describe('The slug/name of the assigned role (e.g. "super-admin")'),
+		permissions: z.array(z.string()).describe('List of programmatic permission keys')
 	})
 	.openapi('AuthMeGetResponse', {
 		description: 'Successful retrieval of current user info'

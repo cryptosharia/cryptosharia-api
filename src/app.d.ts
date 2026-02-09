@@ -7,6 +7,7 @@ declare global {
 			user?: {
 				id: string;
 				roleId: string | null;
+				permissions: string[];
 			};
 		}
 		// interface PageData {}

@@ -27,11 +27,11 @@ export default class ApiResponse {
 		);
 	}
 
-	static forbidden(): Response {
+	static forbidden(message = 'Forbidden'): Response {
 		return Response.json(
 			{
 				success: false,
-				message: 'Forbidden'
+				message
 			} satisfies ApiResponseType,
 			{ status: 403 }
 		);
@@ -48,11 +48,11 @@ export default class ApiResponse {
 		);
 	}
 
-	static unauthorized(): Response {
+	static unauthorized(message = 'Unauthorized'): Response {
 		return Response.json(
 			{
 				success: false,
-				message: 'Unauthorized'
+				message
 			} satisfies ApiResponseType,
 			{ status: 401 }
 		);

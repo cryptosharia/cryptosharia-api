@@ -5,7 +5,7 @@
 
 import * as jose from 'jose';
 import { ACCESS_TOKEN_SECRET } from '$env/static/private';
-import { JWT_ISSUER, ACCESS_TOKEN_EXPIRY } from '$lib/constants';
+import { JWT_ISSUER } from '$lib/constants';
 
 /**
  * Access token payload structure.
@@ -25,7 +25,7 @@ export async function signAccessToken(payload: AccessTokenPayload): Promise<stri
 		.setProtectedHeader({ alg: 'HS256' })
 		.setIssuer(JWT_ISSUER)
 		.setIssuedAt()
-		.setExpirationTime(ACCESS_TOKEN_EXPIRY)
+		.setExpirationTime('15m')
 		.sign(secret);
 }
 

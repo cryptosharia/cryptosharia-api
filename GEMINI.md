@@ -63,6 +63,13 @@ CryptoSharia is a modular digital ecosystem designed for long-term professional 
 - `role_id = "<role_name>"` → Staff/Admin (user features + admin dashboard access)
 - Admins can also use all user features (subscribe, purchase, etc.)
 
+## Identification Layering
+
+Follow a strict separation between machine-to-machine and human-to-human identification:
+
+1.  **Internal Layer (Database, JWTs, Hooks, Internal Params)**: Always use **UUIDs** for identifiers. This ensures high-performance indexing and maintains logic stability even if public-facing names or slugs are renamed.
+2.  **External Layer (API Responses, Frontend Routing)**: Provide human-readable identifiers (slugs, names, tickers) instead of UUIDs. This improves ergonomics, SEO, and readability for consumers.
+
 ## Access Control
 
 - **Permissions** are only for staff/admin actions (CMS management, user management).

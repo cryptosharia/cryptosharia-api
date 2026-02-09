@@ -18,9 +18,13 @@ export const AuthSigninPostBody = z
 /**
  * Response schema for POST /auth/signin.
  */
-export const AuthSigninPostResponse = z
-	.object({
-		user: User.omit({ hashedPassword: true, passwordHashingAlgorithm: true }),
+export const AuthSigninPostResponse = User.omit({
+	hashedPassword: true,
+	passwordHashingAlgorithm: true,
+	roleId: true
+})
+	.extend({
+		role: z.string().nullable().describe('The enum value of the assigned role'),
 		accessToken: z.string(),
 		refreshToken: z.string()
 	})

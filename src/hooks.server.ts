@@ -2,6 +2,7 @@ import { env } from '$env/dynamic/private';
 import ApiResponse from '$lib/api-response';
 import type { Handle } from '@sveltejs/kit';
 import { verifyAccessToken } from '$lib/auth/tokens';
+import { getUserPermissions } from '$lib/auth/permissions';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
@@ -31,9 +32,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const token = authHeader.split(' ')[1];
 		try {
 			const payload = await verifyAccessToken(token);
+
+			// Fetch permissions if roleId exists (staff/admin)
+			let permissions: string[] = [];
+			if (payload.roleId) {
+				permissions = await getUserPermissions(payload.roleId);
+			}
+
 			event.locals.user = {
 				id: payload.userId,
-				roleId: payload.roleId
+				roleId: payload.roleId,
+				permissions: permissions
 			};
 		} catch {
 			// Token exists but is invalid/expired. We don't block yet,

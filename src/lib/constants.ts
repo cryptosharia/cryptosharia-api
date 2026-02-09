@@ -14,9 +14,5 @@ export const COOKIE_DOMAIN = `.${BASE_DOMAIN}`;
 /** JWT issuer claim */
 export const JWT_ISSUER = API_DOMAIN;
 
-/** Token expiration times */
-export const ACCESS_TOKEN_EXPIRY = '15m';
-export const REFRESH_TOKEN_EXPIRY = '7d';
-
 /** Development base URL */
 export const DEV_BASE_URL = 'http://localhost:5173';
