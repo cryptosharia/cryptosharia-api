@@ -292,6 +292,65 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Current User
+         * @description Retrieve profile information for the currently authenticated user.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["AuthMeGetResponse"];
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/posts": {
         parameters: {
             query?: never;
@@ -1029,6 +1088,30 @@ export interface components {
         AuthRefreshPostBody: {
             /** @description The opaque refresh token */
             refreshToken: string;
+        };
+        /** @description Successful retrieval of current user info */
+        AuthMeGetResponse: {
+            user: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                email: string;
+                avatarUrl: string | null;
+                /** Format: uuid */
+                roleId: string | null;
+                isActive: boolean;
+                twoFactorSecret: string | null;
+                /** Format: date-time */
+                lastLoginAt: string | null;
+                /** Format: uuid */
+                createdBy: string | null;
+                /** Format: uuid */
+                updatedBy: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string | null;
+            };
         };
         Post: {
             /** Format: uuid */

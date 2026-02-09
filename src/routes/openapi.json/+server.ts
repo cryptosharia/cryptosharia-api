@@ -13,6 +13,7 @@ import { docsGet } from '../(docs)';
 import { authSigninPost } from '../auth/signin';
 import { authSignoutPost } from '../auth/signout';
 import { authRefreshPost } from '../auth/refresh';
+import { authMeGet } from '../auth/me';
 
 const PATHS = [
 	docsGet,
@@ -20,6 +21,7 @@ const PATHS = [
 	authSigninPost,
 	authSignoutPost,
 	authRefreshPost,
+	authMeGet,
 	postsGet,
 	postsCountGet,
 	tokensGet,

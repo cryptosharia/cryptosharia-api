@@ -5,6 +5,7 @@
 
 import createClient from 'openapi-fetch';
 import type { paths } from './api-types';
+import type { ResolveOptions } from '@sveltejs/kit';
 import { db } from './db';
 import { users } from './db/tables';
 import { DEV_BASE_URL } from './constants';
@@ -72,7 +73,7 @@ export function createVirtualFetch<T>(
 	handlers: Record<string, (event: T) => Response | Promise<Response>>,
 	handle?: (args: {
 		event: T;
-		resolve: (event: T) => Response | Promise<Response>;
+		resolve: (event: T, opts?: ResolveOptions) => Response | Promise<Response>;
 	}) => Response | Promise<Response>
 ) {
 	return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -119,7 +120,7 @@ export function createApiTestClient<T>(
 		headers?: Record<string, string>;
 		handle?: (args: {
 			event: T;
-			resolve: (event: T) => Response | Promise<Response>;
+			resolve: (event: T, opts?: ResolveOptions) => Response | Promise<Response>;
 		}) => Response | Promise<Response>;
 	}
 ) {

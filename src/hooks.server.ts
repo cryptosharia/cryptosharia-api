@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import ApiResponse from '$lib/api-response';
 import type { Handle } from '@sveltejs/kit';
+import { verifyAccessToken } from '$lib/auth/tokens';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
@@ -17,11 +18,27 @@ export const handle: Handle = async ({ event, resolve }) => {
 		.filter(([key]) => key.startsWith('CS_API_KEY_'))
 		.map(([, value]) => value);
 
-	// 3. Check for Api-Key header
+	// 3. Check for Api-Key header (Mandatory for all 1st party platforms)
 	const apiKey = event.request.headers.get('Api-Key');
 
 	if (!apiKey || !validApiKeys.includes(apiKey)) {
 		return ApiResponse.unauthorized();
+	}
+
+	// 4. Extract and verify JWT if present in Authorization header
+	const authHeader = event.request.headers.get('Authorization');
+	if (authHeader && authHeader.startsWith('Bearer ')) {
+		const token = authHeader.split(' ')[1];
+		try {
+			const payload = await verifyAccessToken(token);
+			event.locals.user = {
+				id: payload.userId,
+				roleId: payload.roleId
+			};
+		} catch {
+			// Token exists but is invalid/expired. We don't block yet,
+			// individual routes decide if they require auth
+		}
 	}
 
 	// 4. Continue to the request handler
