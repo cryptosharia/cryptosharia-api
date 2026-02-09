@@ -1,42 +1,17 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import * as MeAPI from './+server';
+import { describe, it, expect } from 'vitest';
 import { createApiTestClient, createTestUser } from '$lib/test-utils';
-import type { RequestEvent } from '@sveltejs/kit';
 import { signAccessToken } from '$lib/auth/tokens';
-import { handle } from '../../../hooks.server';
 
-// 1. Mock the environment variables for hooks.
-// Since we are using the real 'hooks.server.ts' middleware in this test (via the 'handle' option),
-// we need to provide a fake list of valid API Keys that the middleware can find.
-// The middleware logic looks for any env variable starting with 'CS_API_KEY_'.
-vi.mock('$env/dynamic/private', () => ({
-	env: {
-		CS_API_KEY_ADMIN: 'admin-secret-key'
-	}
-}));
-
-// 2. Create the client with the handle and default API key
-const client = createApiTestClient<RequestEvent>(
-	{ GET: MeAPI.GET as (event: RequestEvent) => Response | Promise<Response> },
-	{
-		handle,
-		headers: { 'Api-Key': 'admin-secret-key' }
-	}
-);
+const client = createApiTestClient();
 
 describe('GET /auth/me', () => {
-	let testUser: Awaited<ReturnType<typeof createTestUser>>;
-	let accessToken: string;
-
-	beforeEach(async () => {
-		testUser = await createTestUser();
-		accessToken = await signAccessToken({
+	it('should return user info with valid access token', async () => {
+		const testUser = await createTestUser();
+		const accessToken = await signAccessToken({
 			userId: testUser.id,
 			roleId: testUser.roleId
 		});
-	});
 
-	it('should return user info with valid access token', async () => {
 		const { data, response } = await client.GET('/auth/me', {
 			headers: {
 				Authorization: `Bearer ${accessToken}`

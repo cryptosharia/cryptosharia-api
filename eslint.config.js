@@ -10,6 +10,9 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
+	{
+		ignores: ['src/lib/api-types.ts']
+	},
 	js.configs.recommended,
 	...ts.configs.recommended,
 	prettier,

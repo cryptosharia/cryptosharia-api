@@ -1,45 +1,21 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import * as SigninAPI from './+server';
+import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
-import { users, refreshTokens } from '$lib/db/tables';
-import { createApiTestClient } from '$lib/test-utils';
-import { hashPassword } from '$lib/auth/password';
-import type { RequestEvent } from './$types';
+import { refreshTokens } from '$lib/db/tables';
+import { createApiTestClient, createTestUser } from '$lib/test-utils';
 import { eq } from 'drizzle-orm';
+import { hashPassword } from '$lib/auth/password';
 
-const client = createApiTestClient<RequestEvent>(SigninAPI);
+const client = createApiTestClient();
 
 describe('POST /auth/signin', () => {
-	const testPassword = 'testPassword123';
-	let testUserId: string;
-
-	beforeEach(async () => {
-		// Clean up and setup fresh user for each test
-		await db.delete(refreshTokens);
-
-		// Create a test user with known credentials
-		const hashedPassword = await hashPassword(testPassword);
-		const [user] = await db
-			.insert(users)
-			.values({
-				email: `test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`,
-				name: 'Test User',
-				hashedPassword
-			})
-			.returning();
-		testUserId = user.id;
-	});
-
 	it('should return tokens and user info on successful signin', async () => {
-		// Get the user we just created
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, testUserId)
-		});
+		const password = 'mypassword321';
+		const user = await createTestUser({ hashedPassword: await hashPassword(password) });
 
 		const { data, response } = await client.POST('/auth/signin', {
 			body: {
-				email: user!.email,
-				password: testPassword
+				email: user.email,
+				password: password
 			}
 		});
 
@@ -66,9 +42,7 @@ describe('POST /auth/signin', () => {
 	});
 
 	it('should return 401 for invalid password', async () => {
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, testUserId)
-		});
+		const user = await createTestUser();
 
 		const { error, response } = await client.POST('/auth/signin', {
 			body: {
@@ -104,24 +78,23 @@ describe('POST /auth/signin', () => {
 	});
 
 	it('should store refresh token in database on successful signin', async () => {
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, testUserId)
-		});
+		const password = 'mypassword321';
+		const user = await createTestUser({ hashedPassword: await hashPassword(password) });
 
 		await client.POST('/auth/signin', {
 			body: {
-				email: user!.email,
-				password: testPassword
+				email: user.email,
+				password: password
 			}
 		});
 
 		// Check database
 		const storedTokens = await db.query.refreshTokens.findMany({
-			where: eq(refreshTokens.userId, testUserId)
+			where: eq(refreshTokens.userId, user!.id)
 		});
 
 		expect(storedTokens).toHaveLength(1);
-		expect(storedTokens[0].userId).toBe(testUserId);
+		expect(storedTokens[0].userId).toBe(user!.id);
 		expect(storedTokens[0].expiresAt).toBeDefined();
 		expect(storedTokens[0].revokedAt).toBeNull();
 	});

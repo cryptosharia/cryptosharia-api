@@ -21,10 +21,7 @@ export default defineConfig({
 					environment: 'node',
 					fileParallelism: false, // Ensures tests run one at a time to avoid DB deadlocks
 					include: ['src/**/*.{test,spec}.{js,ts}'],
-					setupFiles: ['./src/vitest.setup.ts'],
-					env: {
-						DATABASE_URL: 'postgres://root:mysecretpassword@localhost:5432/local_test'
-					}
+					setupFiles: ['./src/vitest.setup.ts']
 				}
 			}
 		]

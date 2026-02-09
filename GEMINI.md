@@ -101,6 +101,27 @@ Access granted or redirect to www
 
 ---
 
+# E2E Testing Workflow
+
+The project uses an automated E2E testing system to ensure API reliability.
+
+## Test Suite Execution
+
+Run the entire suite (DB creation, sync, test, cleanup) with one command:
+
+```bash
+npm test
+```
+
+## Core Principles:
+
+1.  **Isolation**: Tests run against a dedicated `local_test` database which is dropped after each run.
+2.  **Single Source of Truth**: All test configurations are managed in `.env.test`.
+3.  **Real HTTP**: Tests use a real Vite server and the `openapi-fetch` client for authentic integration testing.
+4.  **Authentic Data**: Use `createTestUser()` from `src/lib/test-utils.ts` for creating test users.
+
+---
+
 # Svelte & SvelteKit Documentation Rules
 
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:

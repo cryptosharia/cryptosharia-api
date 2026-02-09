@@ -1,49 +1,42 @@
 import { describe, it, expect } from 'vitest';
-import * as PostsAPI from './+server';
 import { db } from '$lib/db';
 import { posts } from '$lib/db/tables';
-import { createApiTestClient, createTestUser } from '$lib/test-utils';
-import type { RequestEvent } from './$types';
+import { createApiTestClient } from '$lib/test-utils';
 
-// Create a type-safe client that talks directly to the whole module
-const client = createApiTestClient<RequestEvent>(PostsAPI);
+// Create a type-safe client
+const client = createApiTestClient();
 
 describe('Posts API Integration', () => {
 	it('should filter posts by news section', async () => {
-		// 1. Setup: Create admin
-		const admin = await createTestUser();
-
-		// 2. Setup: Seed database
+		// 1. Setup: Seed database
 		await db.insert(posts).values([
 			{
 				title: 'Crypto News Today',
 				slug: 'crypto-news-today',
 				section: 'news',
 				type: 'article',
-				content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-				createdBy: admin.id
+				content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
 			},
 			{
 				title: 'Learn SvelteKit',
 				slug: 'learn-sveltekit',
 				section: 'education',
 				type: 'article',
-				content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-				createdBy: admin.id
+				content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
 			}
 		]);
 
-		// 3. Act: Use the clean, type-safe openapi-fetch client
+		// 2. Act: Use the clean, type-safe openapi-fetch client
 		const { data, response } = await client.GET('/posts', {
 			params: {
 				query: { sections: ['news'] }
 			}
 		});
 
-		// 4. Assert
+		// 3. Assert
 		expect(response.status).toBe(200);
 		expect(data?.data).toHaveLength(1);
-		expect(data?.data[0].section).toBe('news');
+		expect(data?.data?.[0].section).toBe('news');
 	});
 
 	it('should return empty array when no posts match filters', async () => {
@@ -58,15 +51,12 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should search posts by title', async () => {
-		const admin = await createTestUser();
-
 		await db.insert(posts).values({
 			title: 'Unique Secret Topic',
 			slug: 'unique-topic',
 			section: 'news',
 			type: 'article',
-			content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-			createdBy: admin.id
+			content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
 		});
 
 		const { data } = await client.GET('/posts', {
@@ -80,24 +70,20 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should combine multiple filters (sections AND search)', async () => {
-		const admin = await createTestUser();
-
 		await db.insert(posts).values([
 			{
 				title: 'Bitcoin in Activity',
 				slug: 'btc-activity',
 				section: 'activity',
 				type: 'article',
-				content: '...',
-				createdBy: admin.id
+				content: '...'
 			},
 			{
 				title: 'Bitcoin in News',
 				slug: 'btc-news',
 				section: 'news',
 				type: 'article',
-				content: '...',
-				createdBy: admin.id
+				content: '...'
 			}
 		]);
 
@@ -115,16 +101,13 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should search posts by excerpt', async () => {
-		const admin = await createTestUser();
-
 		await db.insert(posts).values({
 			title: 'A Post Title',
 			slug: 'post-with-excerpt',
 			section: 'news',
 			type: 'article',
 			excerpt: 'This is a unique SummaryKeyword that should be found.',
-			content: '...',
-			createdBy: admin.id
+			content: '...'
 		});
 
 		const { data } = await client.GET('/posts', {
@@ -138,16 +121,13 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should handle pagination (limit and page)', async () => {
-		const admin = await createTestUser();
-
 		// Insert 5 posts
 		const mockPosts = Array.from({ length: 5 }).map((_, i) => ({
 			title: `Post ${i + 1}`,
 			slug: `post-${i + 1}`,
 			section: 'news' as const,
 			type: 'article' as const,
-			content: '...',
-			createdBy: admin.id
+			content: '...'
 		}));
 
 		await db.insert(posts).values(mockPosts);
@@ -168,24 +148,20 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should exclude specific slugs', async () => {
-		const admin = await createTestUser();
-
 		await db.insert(posts).values([
 			{
 				title: 'Post A',
 				slug: 'post-a',
 				section: 'news',
 				type: 'article',
-				content: '...',
-				createdBy: admin.id
+				content: '...'
 			},
 			{
 				title: 'Post B',
 				slug: 'post-b',
 				section: 'news',
 				type: 'article',
-				content: '...',
-				createdBy: admin.id
+				content: '...'
 			}
 		]);
 

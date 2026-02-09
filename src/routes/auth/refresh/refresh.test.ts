@@ -1,30 +1,22 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import * as RefreshAPI from './+server';
+import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
 import { createApiTestClient, createTestUser } from '$lib/test-utils';
-import type { RequestEvent } from './$types';
 import { eq } from 'drizzle-orm';
 import { generateRandomToken } from '$lib/auth/tokens';
 
-const client = createApiTestClient<RequestEvent>(RefreshAPI);
+const client = createApiTestClient();
 
 describe('POST /auth/refresh', () => {
-	let testUserId: string;
-
-	beforeEach(async () => {
-		const user = await createTestUser();
-		testUserId = user.id;
-	});
-
 	it('should rotate token and return new tokens', async () => {
+		const user = await createTestUser();
 		// 1. Create a "session" in the database
 		const oldToken = generateRandomToken();
 		const expiresAt = new Date();
 		expiresAt.setDate(expiresAt.getDate() + 7);
 
 		await db.insert(refreshTokens).values({
-			userId: testUserId,
+			userId: user.id,
 			token: oldToken,
 			expiresAt
 		});
@@ -51,17 +43,18 @@ describe('POST /auth/refresh', () => {
 			where: eq(refreshTokens.token, data!.data!.refreshToken)
 		});
 		expect(newToken).toBeDefined();
-		expect(newToken?.userId).toBe(testUserId);
+		expect(newToken?.userId).toBe(user.id);
 	});
 
 	it('should return 401 for revoked token', async () => {
+		const user = await createTestUser();
 		const token = generateRandomToken();
 		const revokedAt = new Date();
 		const expiresAt = new Date();
 		expiresAt.setDate(expiresAt.getDate() + 7);
 
 		await db.insert(refreshTokens).values({
-			userId: testUserId,
+			userId: user.id,
 			token,
 			expiresAt,
 			revokedAt
@@ -75,12 +68,13 @@ describe('POST /auth/refresh', () => {
 	});
 
 	it('should return 401 for expired token', async () => {
+		const user = await createTestUser();
 		const token = generateRandomToken();
 		const expiresAt = new Date();
 		expiresAt.setDate(expiresAt.getDate() - 1); // Expired yesterday
 
 		await db.insert(refreshTokens).values({
-			userId: testUserId,
+			userId: user.id,
 			token,
 			expiresAt
 		});
