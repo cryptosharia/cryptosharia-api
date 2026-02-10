@@ -5,9 +5,10 @@ import z from '$lib/zod-openapi';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { messages } from '$lib/db/tables';
-import { MessagesGetQuery, MessagesGetItem, MessagesPostBody } from './index';
-import { and, desc, ilike, inArray, or, sql } from 'drizzle-orm';
+import { MessagesGetQuery, MessagesGetItem, MessagesPostBody, MessagesPostQuery } from './index';
+import { and, ilike, inArray, or, count } from 'drizzle-orm';
 import { waitUntil } from '@vercel/functions';
+import type { PaginatedData } from '$lib/types';
 
 /**
  * GET /messages
@@ -45,27 +46,26 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		const where = filters.length > 0 ? and(...filters) : undefined;
 
-		const [messagesList, [{ count }]] = await Promise.all([
+		const [messagesList, [countResult]] = await Promise.all([
 			db.query.messages.findMany({
 				where,
 				limit,
 				offset,
-				orderBy: [desc(messages.createdAt)]
+				orderBy: (t, { desc }) => [desc(t.createdAt)]
 			}),
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(messages)
-				.where(where)
+			db.select({ value: count() }).from(messages).where(where)
 		]);
 
-		return ApiResponse.ok(
+		const total = Number(countResult.value);
+
+		return ApiResponse.ok<PaginatedData<MessagesGetItem>>(
 			{
 				items: messagesList.map((m) => MessagesGetItem.parse({ ...m })),
 				pagination: {
-					total: Number(count),
+					total,
 					limit,
 					page,
-					pages: Math.ceil(Number(count) / limit)
+					totalPages: Math.ceil(total / limit)
 				}
 			},
 			'Messages retrieved successfully'
@@ -81,32 +81,37 @@ export const GET: RequestHandler = async ({ url }) => {
  * Creates a new message (contact form submission).
  */
 export const POST: RequestHandler = async (event) => {
-	const { request, fetch } = event;
+	const { request, fetch, url } = event;
 	try {
+		const queryParams = Object.fromEntries(url.searchParams);
 		const body = await request.json();
-		const result = MessagesPostBody.safeParse(body);
 
-		if (!result.success) {
+		const queryResult = MessagesPostQuery.safeParse(queryParams);
+		const bodyResult = MessagesPostBody.safeParse(body);
+
+		if (!bodyResult.success) {
 			return ApiResponse.badRequest(
-				z.flattenError(result.error).fieldErrors as Record<string, string[]>
+				z.flattenError(bodyResult.error).fieldErrors as Record<string, string[]>
 			);
 		}
 
-		// 1. Insert into local database
-		const [insertedMessage] = await db.insert(messages).values(result.data).returning();
+		// 1. Insert into database
+		const insertData = bodyResult.data;
+		const [insertedMessage] = await db.insert(messages).values(insertData).returning();
 
-		// 2. Send to Google Apps Script (background task)
-		waitUntil(
-			fetch(GS_SEND_MESSAGE_URL, {
-				method: 'POST',
-				body: JSON.stringify(result.data)
-			}).catch((err) => console.error('Google Apps Script Error:', err))
-		);
+		// 2. Forward request to Google Apps Script (background task)
+		const notify = queryResult.success ? queryResult.data.notify : true;
 
-		return ApiResponse.created(
-			Message.parse({ ...insertedMessage }),
-			'Message sent successfully'
-		);
+		if (notify) {
+			waitUntil(
+				fetch(GS_SEND_MESSAGE_URL, {
+					method: 'POST',
+					body: JSON.stringify(insertData)
+				}).catch((err) => console.error('Google Apps Script Error:', err))
+			);
+		}
+
+		return ApiResponse.created(Message.parse({ ...insertedMessage }), 'Message sent successfully');
 	} catch (err) {
 		console.error('Error creating message:', err);
 		return ApiResponse.internalServerError();

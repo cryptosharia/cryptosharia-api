@@ -1,6 +1,6 @@
 import * as table from './tables';
 import { createSelectSchema } from 'drizzle-zod';
-import z from 'zod';
+import z from '$lib/zod-openapi';
 
 // --- Entity Schemas (OpenAPI Ready) ---
 
@@ -43,5 +43,12 @@ export type Post = z.infer<typeof Post>;
 // --- Specialized Schemas (Custom Validation) ---
 
 // Messages (Contact Form)
-export const Message = createSelectSchema(table.messages);
+export const Message = createSelectSchema(table.messages, {
+	name: (s) => s.trim().min(1),
+	message: (s) => s.min(10).max(5000)
+}) // Use extend to fix the z.string().email() deprecation
+	.extend({
+		email: z.email().max(255)
+	});
+
 export type Message = z.infer<typeof Message>;

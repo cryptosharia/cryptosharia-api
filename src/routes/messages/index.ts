@@ -33,7 +33,22 @@ export const MessagesPostBody = Message.pick({
 	email: true,
 	message: true
 }).openapi('MessagesPostBody');
+
 export type MessagesPostBody = z.infer<typeof MessagesPostBody>;
+
+export const MessagesPostQuery = z
+	.object({
+		notify: z
+			.preprocess((val) => {
+				if (val === 'true') return true;
+				if (val === 'false') return false;
+				return val;
+			}, z.boolean())
+			.default(true)
+			.describe('Whether to trigger an external notification (e.g. email)')
+	})
+	.openapi('MessagesPostQuery');
+export type MessagesPostQuery = z.infer<typeof MessagesPostQuery>;
 
 export const messagesGet: RouteConfig = {
 	path: '/messages',
@@ -56,8 +71,9 @@ export const messagesPost: RouteConfig = {
 	path: '/messages',
 	method: 'post',
 	summary: 'Send Message',
-	description: 'Submit a new contact or inquiry message.',
+	description: 'Create a new message from the contact form.',
 	request: {
+		query: MessagesPostQuery,
 		body: {
 			content: {
 				'application/json': {

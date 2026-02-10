@@ -13,11 +13,11 @@ import { hashPassword } from './auth/password';
 /**
  * Creates a type-safe openapi-fetch client for real HTTP requests.
  */
-export function createApiTestClient() {
+export function createApiTestClient({ useApiKey = true }: { useApiKey?: boolean } = {}) {
 	return createClient<paths>({
 		baseUrl: env.TEST_URL,
 		headers: {
-			'Api-Key': env.CS_API_KEY_TEST!
+			'Api-Key': useApiKey ? env.CS_API_KEY_TEST : undefined
 		}
 	});
 }

@@ -937,11 +937,14 @@ export interface paths {
         put?: never;
         /**
          * Send Message
-         * @description Submit a new contact or inquiry message.
+         * @description Create a new message from the contact form.
          */
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Whether to trigger an external notification (e.g. email) */
+                    notify?: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -963,6 +966,7 @@ export interface paths {
                                 /** Format: uuid */
                                 id: string;
                                 name: string;
+                                /** Format: email */
                                 email: string;
                                 message: string;
                                 /** Format: date-time */
@@ -1438,6 +1442,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
+            /** Format: email */
             email: string;
             message: string;
             /** Format: date-time */
@@ -1445,6 +1450,7 @@ export interface components {
         };
         MessagesPostBody: {
             name: string;
+            /** Format: email */
             email: string;
             message: string;
         };
