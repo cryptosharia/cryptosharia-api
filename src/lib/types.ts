@@ -37,6 +37,21 @@ export const UserMetadata = z
 
 export type UserMetadata = z.infer<typeof UserMetadata>;
 
+// --- Role Metadata ---
+
+/**
+ * Shared schema for role metadata.
+ */
+export const RoleMetadata = z
+	.object({
+		id: z.uuid(),
+		name: z.string(),
+		slug: z.string()
+	})
+	.openapi('RoleMetadata');
+
+export type RoleMetadata = z.infer<typeof RoleMetadata>;
+
 // --- Pagination Types ---
 
 export const Pagination = z
@@ -65,3 +80,23 @@ export type PaginatedData<T> = {
 	items: T[];
 	pagination: Pagination;
 };
+
+// --- Asset Metadata ---
+
+/**
+ * Shared schema for asset information in API responses.
+ */
+export const AssetMetadata = z
+	.object({
+		id: z.uuid(),
+		url: z.url(),
+		filename: z.string(),
+		size: z.number(),
+		mimeType: z.string().nullable().optional(),
+		width: z.number().nullable().optional(),
+		height: z.number().nullable().optional()
+	})
+	.openapi('AssetMetadata');
+
+export type AssetMetadata = z.infer<typeof AssetMetadata>;
+

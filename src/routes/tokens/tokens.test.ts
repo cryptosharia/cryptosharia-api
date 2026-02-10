@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
-import { tokens } from '$lib/db/tables';
+import { tokens, assets } from '$lib/db/tables';
 import { createApiTestClient } from '$lib/test-utils';
 
 const client = createApiTestClient();
@@ -244,7 +244,7 @@ describe('Tokens API Integration', () => {
 		expect(response.status).toBe(404);
 	});
 
-	it('should allow finding any token by UUID (Internal)', async () => {
+	it('should allow finding any token by UUID', async () => {
 		const slug = 'internal-token-slug';
 		const [token] = await db
 			.insert(tokens)
@@ -267,5 +267,44 @@ describe('Tokens API Integration', () => {
 		expect(response.status).toBe(200);
 		expect(data?.data?.slug).toBe(slug);
 		expect(data?.data?.status).toBe('draft');
+	});
+
+	it('should return final form for logo if assigned', async () => {
+		// 1. Setup: Create an asset and a token referencing it
+		const [asset] = await db
+			.insert(assets)
+			.values({
+				pathname: 'test/path/logo.png',
+				filename: 'logo.png',
+				size: 512,
+				mimeType: 'image/png',
+				provider: 'picsum',
+				width: 128,
+				height: 128
+			})
+			.returning();
+
+		const slug = 'token-with-logo';
+		await db.insert(tokens).values({
+			name: 'Token with Logo',
+			ticker: 'TWL',
+			slug,
+			shariaStatus: 'halal',
+			rank: 10,
+			status: 'published',
+			logoId: asset.id
+		});
+
+		// 2. Act
+		const { data } = await client.GET('/tokens/{slug}', {
+			params: { path: { slug } }
+		});
+
+		// 3. Assert
+		const token = data?.data;
+		expect(token?.logo).toBeDefined();
+		expect(token?.logo?.id).toBe(asset.id);
+		expect(token?.logo?.url).toContain('picsum.photos');
+		expect(token?.logo?.url).toContain('test/path/logo.png');
 	});
 });

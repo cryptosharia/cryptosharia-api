@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
-import { posts } from '$lib/db/tables';
+import { posts, assets } from '$lib/db/tables';
 import { createApiTestClient } from '$lib/test-utils';
 
 // Create a type-safe client
@@ -324,7 +324,7 @@ describe('Posts API Integration', () => {
 		}
 	});
 
-	it('should find any post by UUID using the uuid matcher (Internal)', async () => {
+	it('should find any post by UUID using the uuid matcher', async () => {
 		const slug = 'matcher-draft-slug';
 		const [post] = await db
 			.insert(posts)
@@ -369,5 +369,44 @@ describe('Posts API Integration', () => {
 		});
 
 		expect(response.status).toBe(404);
+	});
+
+	it('should return final form for coverImage if assigned', async () => {
+		// 1. Setup: Create an asset and a post referencing it
+		const [asset] = await db
+			.insert(assets)
+			.values({
+				pathname: 'test/path/image.jpg',
+				filename: 'image.jpg',
+				size: 1024,
+				mimeType: 'image/jpeg',
+				provider: 'picsum',
+				width: 800,
+				height: 600
+			})
+			.returning();
+
+		const slug = 'post-with-image';
+		await db.insert(posts).values({
+			title: 'Post with Image',
+			slug,
+			section: 'news',
+			type: 'article',
+			status: 'published',
+			content: '...',
+			coverImageId: asset.id
+		});
+
+		// 2. Act
+		const { data } = await client.GET('/posts/{slug}', {
+			params: { path: { slug } }
+		});
+
+		// 3. Assert
+		const post = data?.data;
+		expect(post?.coverImage).toBeDefined();
+		expect(post?.coverImage?.id).toBe(asset.id);
+		expect(post?.coverImage?.url).toContain('picsum.photos');
+		expect(post?.coverImage?.url).toContain('test/path/image.jpg');
 	});
 });

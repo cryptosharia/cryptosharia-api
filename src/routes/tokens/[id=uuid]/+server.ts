@@ -4,6 +4,7 @@ import { tokens } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
 import { TokensGetData } from '../[slug]';
 import ApiResponse from '$lib/api-response';
+import { getAssetUrl } from '$lib/assets';
 
 export const GET: RequestHandler = async ({ params }: { params: { id: string } }) => {
 	const { id } = params;
@@ -11,7 +12,11 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 	try {
 		const token = await db.query.tokens.findFirst({
 			where: eq(tokens.id, id),
+			columns: {
+				logoId: false
+			},
 			with: {
+				logo: true,
 				createdBy: {
 					columns: {
 						id: true,
@@ -33,7 +38,23 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 			return ApiResponse.notFound();
 		}
 
-		return ApiResponse.ok<TokensGetData>(token as TokensGetData, 'Token retrieved successfully (Internal)');
+		return ApiResponse.ok<TokensGetData>(
+			{
+				...token,
+				logo: token.logo
+					? {
+							id: token.logo.id,
+							url: getAssetUrl(token.logo),
+							filename: token.logo.filename,
+							size: token.logo.size,
+							mimeType: token.logo.mimeType,
+							width: token.logo.width,
+							height: token.logo.height
+						}
+					: null
+			} as TokensGetData,
+			'Token retrieved successfully'
+		);
 	} catch (err) {
 		console.error('Error fetching token by ID:', err);
 		return ApiResponse.internalServerError();

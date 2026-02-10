@@ -1166,14 +1166,14 @@ export interface components {
             twoFactorSecret: string | null;
             /** Format: date-time */
             lastLoginAt: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            /** Format: uuid */
-            updatedBy: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
+            /** Format: uuid */
+            createdBy: string | null;
+            /** Format: uuid */
+            updatedBy: string | null;
             /** @description The enum value of the assigned role */
             role: string | null;
             accessToken: string;
@@ -1211,14 +1211,14 @@ export interface components {
                 twoFactorSecret: string | null;
                 /** Format: date-time */
                 lastLoginAt: string | null;
-                /** Format: uuid */
-                createdBy: string | null;
-                /** Format: uuid */
-                updatedBy: string | null;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
                 updatedAt: string | null;
+                /** Format: uuid */
+                createdBy: string | null;
+                /** Format: uuid */
+                updatedBy: string | null;
             };
             accessToken: string;
             refreshToken: string;
@@ -1238,19 +1238,25 @@ export interface components {
             twoFactorSecret: string | null;
             /** Format: date-time */
             lastLoginAt: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            /** Format: uuid */
-            updatedBy: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
-            /** @description The slug/name of the assigned role (e.g. "super-admin") */
-            role: string | null;
+            /** Format: uuid */
+            createdBy: string | null;
+            /** Format: uuid */
+            updatedBy: string | null;
+            role: components["schemas"]["RoleMetadata"];
             /** @description List of programmatic permission keys */
             permissions: string[];
         };
+        /** @description The metadata of the assigned role */
+        RoleMetadata: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+        } | null;
         PaginatedPostsGetItem: {
             items: components["schemas"]["PostsGetItem"][];
             pagination: components["schemas"]["Pagination"];
@@ -1261,8 +1267,6 @@ export interface components {
             title: string;
             slug: string;
             excerpt: string | null;
-            /** Format: uuid */
-            coverImageId: string | null;
             /** @enum {string} */
             section: "news" | "education" | "research" | "activity";
             /** @enum {string} */
@@ -1275,12 +1279,13 @@ export interface components {
             externalLink: string | null;
             /** Format: date-time */
             publishedAt: string | null;
-            createdBy: components["schemas"]["UserMetadata"];
-            updatedBy: components["schemas"]["UserMetadata"];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
+            createdBy: components["schemas"]["UserMetadata"];
+            updatedBy: components["schemas"]["UserMetadata"];
+            coverImage: components["schemas"]["AssetMetadata"];
         };
         UserMetadata: {
             /** Format: uuid */
@@ -1288,6 +1293,17 @@ export interface components {
             name: string;
             /** Format: email */
             email: string;
+        } | null;
+        AssetMetadata: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uri */
+            url: string;
+            filename: string;
+            size: number;
+            mimeType?: string | null;
+            width?: number | null;
+            height?: number | null;
         } | null;
         Pagination: {
             /** @description Total number of items matching the filters */
@@ -1299,19 +1315,13 @@ export interface components {
             /** @description Total number of pages */
             totalPages: number;
         };
-        PostsGetData: components["schemas"]["Post"] & {
-            createdBy?: components["schemas"]["UserMetadata"];
-            updatedBy?: components["schemas"]["UserMetadata"];
-        };
-        Post: {
+        PostsGetData: {
             /** Format: uuid */
             id: string;
             title: string;
             slug: string;
             excerpt: string | null;
             content: string | null;
-            /** Format: uuid */
-            coverImageId: string | null;
             /** @enum {string} */
             section: "news" | "education" | "research" | "activity";
             /** @enum {string} */
@@ -1324,14 +1334,13 @@ export interface components {
             externalLink: string | null;
             /** Format: date-time */
             publishedAt: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            /** Format: uuid */
-            updatedBy: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
+            createdBy: components["schemas"]["UserMetadata"];
+            updatedBy: components["schemas"]["UserMetadata"];
+            coverImage: components["schemas"]["AssetMetadata"];
         };
         PaginatedTokensGetItem: {
             items: components["schemas"]["TokensGetItem"][];
@@ -1351,22 +1360,17 @@ export interface components {
             brandColorHex: string | null;
             tradingviewSymbol: string | null;
             website: string | null;
-            /** Format: uuid */
-            logoId: string | null;
             /** Format: date-time */
             publishedAt: string | null;
-            createdBy: components["schemas"]["UserMetadata"];
-            updatedBy: components["schemas"]["UserMetadata"];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
+            createdBy: components["schemas"]["UserMetadata"];
+            updatedBy: components["schemas"]["UserMetadata"];
+            logo: components["schemas"]["AssetMetadata"];
         };
-        TokensGetData: components["schemas"]["Token"] & {
-            createdBy?: components["schemas"]["UserMetadata"];
-            updatedBy?: components["schemas"]["UserMetadata"];
-        };
-        Token: {
+        TokensGetData: {
             /** Format: uuid */
             id: string;
             slug: string;
@@ -1380,19 +1384,16 @@ export interface components {
             brandColorHex: string | null;
             tradingviewSymbol: string | null;
             website: string | null;
-            /** Format: uuid */
-            logoId: string | null;
             content: string | null;
             /** Format: date-time */
             publishedAt: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            /** Format: uuid */
-            updatedBy: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
+            createdBy: components["schemas"]["UserMetadata"];
+            updatedBy: components["schemas"]["UserMetadata"];
+            logo: components["schemas"]["AssetMetadata"];
         };
         TokenQuote: {
             slug: string;
@@ -1439,10 +1440,10 @@ export interface components {
             fileName: string;
             mimeType: string;
             deleteUrl: string;
-            /** Format: uuid */
-            createdBy: string | null;
             /** Format: date-time */
             createdAt: string;
+            /** Format: uuid */
+            createdBy: string | null;
         };
     };
     responses: never;

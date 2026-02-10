@@ -47,6 +47,12 @@ export const GET: RequestHandler = async () => {
 		name: 'Api-Key',
 		description: 'API Key for authenticated access to CryptoSharia Ecosystem services.'
 	});
+	registry.registerComponent('securitySchemes', 'BearerAuth', {
+		type: 'http',
+		scheme: 'bearer',
+		bearerFormat: 'JWT',
+		description: 'JWT Bearer token for user authentication.'
+	});
 
 	// Register paths
 	for (const path of PATHS) {

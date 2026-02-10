@@ -83,7 +83,7 @@ export const contentStatusEnum = pgEnum('content_status', ['draft', 'published',
 /**
  * Storage provider for assets.
  */
-export const assetProviderEnum = pgEnum('asset_provider', ['local', 'picsum', 'vercel_blob']);
+export const assetProviderEnum = pgEnum('asset_provider', ['picsum', 'vercel_blob']);
 
 /**
  * Post section categories.
@@ -131,10 +131,10 @@ export const roles = pgTable('roles', {
 	name: varchar('name', { length: 50 }).notNull(),
 	/** Unique URL-friendly identifier for the role */
 	slug: varchar('slug', { length: 50 }).notNull().unique(),
+	...CREATED_AT,
+	...UPDATED_AT,
 	...CREATED_BY_CIR,
 	...UPDATED_BY_CIR,
-	...CREATED_AT,
-	...UPDATED_AT
 });
 
 /**
@@ -162,10 +162,10 @@ export const users = pgTable('users', {
 	twoFactorSecret: text('two_factor_secret'),
 	/** Timestamp of the most recent successful login */
 	lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+	...CREATED_AT,
+	...UPDATED_AT,
 	...CREATED_BY_CIR,
 	...UPDATED_BY_CIR,
-	...CREATED_AT,
-	...UPDATED_AT
 });
 
 /**
@@ -252,10 +252,10 @@ export const tokens = pgTable('tokens', {
 	/** Detailed Sharia analysis or project description (Markdown) */
 	content: text('content'),
 	...PUBLISHED_AT,
+	...CREATED_AT,
+	...UPDATED_AT,
 	...CREATED_BY,
 	...UPDATED_BY,
-	...CREATED_AT,
-	...UPDATED_AT
 });
 
 /**
@@ -286,10 +286,10 @@ export const posts = pgTable('posts', {
 	/** Link to external source or full article */
 	externalLink: text('external_link'),
 	...PUBLISHED_AT,
+	...CREATED_AT,
+	...UPDATED_AT,
 	...CREATED_BY,
 	...UPDATED_BY,
-	...CREATED_AT,
-	...UPDATED_AT
 });
 
 /**
@@ -303,10 +303,10 @@ export const tags = pgTable('tags', {
 	slug: varchar('slug', { length: 50 }).notNull().unique(),
 	/** Detailed context about this tag */
 	description: text('description'),
+	...CREATED_AT,
+	...UPDATED_AT,
 	...CREATED_BY,
 	...UPDATED_BY,
-	...CREATED_AT,
-	...UPDATED_AT
 });
 
 /**
@@ -386,8 +386,8 @@ export const assets = pgTable('assets', {
 	height: integer('height'),
 	/** Storage provider used for this asset */
 	provider: assetProviderEnum('provider').notNull(),
+	...CREATED_AT,
 	...CREATED_BY,
-	...CREATED_AT
 });
 
 export const imgbbImages = pgTable('imgbb_images', {
@@ -410,6 +410,6 @@ export const imgbbImages = pgTable('imgbb_images', {
 	mimeType: varchar('mime_type', { length: 100 }).notNull(),
 	/** URL to delete this asset */
 	deleteUrl: text('delete_url').notNull(),
+	...CREATED_AT,
 	...CREATED_BY,
-	...CREATED_AT
 });

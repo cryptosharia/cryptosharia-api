@@ -2,7 +2,7 @@ import { shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
 import { zQueryArray } from '$lib/utils';
 import OpenApiResponse from '$lib/openapi-response';
 import { Token } from '$lib/db/types';
-import { PaginatedData, UserMetadata } from '$lib/types';
+import { PaginatedData, UserMetadata, AssetMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
@@ -32,11 +32,13 @@ export const TokensGetQuery = z
 	});
 
 export const TokensGetItem = Token.omit({
-	content: true
+	content: true,
+	logoId: true
 })
 	.extend({
+		logo: AssetMetadata.nullable(),
 		createdBy: UserMetadata.nullable(),
-		updatedBy: UserMetadata.nullable()
+		updatedBy: UserMetadata.nullable(),
 	})
 	.openapi('TokensGetItem');
 export type TokensGetItem = z.infer<typeof TokensGetItem>;

@@ -1,6 +1,7 @@
 import z from '$lib/zod-openapi';
 import OpenApiResponse from '$lib/openapi-response';
 import { User } from '$lib/db/types';
+import { RoleMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 /**
@@ -12,7 +13,7 @@ export const AuthMeGetResponse = User.omit({
 	roleId: true
 })
 	.extend({
-		role: z.string().nullable().describe('The slug/name of the assigned role (e.g. "super-admin")'),
+		role: RoleMetadata.nullable().describe('The metadata of the assigned role'),
 		permissions: z.array(z.string()).describe('List of programmatic permission keys')
 	})
 	.openapi('AuthMeGetResponse', {
@@ -32,5 +33,5 @@ export const authMeGet: RouteConfig = {
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
 	},
-	security: [{ ApiKeyAuth: [] }]
+	security: [{ ApiKeyAuth: [], BearerAuth: [] }]
 };

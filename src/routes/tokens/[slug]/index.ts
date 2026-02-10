@@ -1,12 +1,15 @@
 import { Token } from '$lib/db/types';
-import { UserMetadata } from '$lib/types';
+import { UserMetadata, AssetMetadata } from '$lib/types';
 import OpenApiResponse from '$lib/openapi-response';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
-export const TokensGetData = Token.extend({
+export const TokensGetData = Token.omit({
+	logoId: true
+}).extend({
 	createdBy: UserMetadata.nullable(),
-	updatedBy: UserMetadata.nullable()
+	updatedBy: UserMetadata.nullable(),
+	logo: AssetMetadata.nullable()
 }).openapi('TokensGetData');
 export type TokensGetData = z.infer<typeof TokensGetData>;
 

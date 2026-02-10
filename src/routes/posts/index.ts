@@ -2,7 +2,7 @@ import { postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables
 import { zQueryArray } from '$lib/utils';
 import OpenApiResponse from '$lib/openapi-response';
 import { Post } from '$lib/db/types';
-import { PaginatedData, UserMetadata } from '$lib/types';
+import { PaginatedData, UserMetadata, AssetMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
@@ -31,11 +31,13 @@ export const PostsGetQuery = z
 	.openapi('PostsGetQuery');
 
 export const PostsGetItem = Post.omit({
-	content: true
+	content: true,
+	coverImageId: true
 })
 	.extend({
+		coverImage: AssetMetadata.nullable(),
 		createdBy: UserMetadata.nullable(),
-		updatedBy: UserMetadata.nullable()
+		updatedBy: UserMetadata.nullable(),
 	})
 	.openapi('PostsGetItem');
 export type PostsGetItem = z.infer<typeof PostsGetItem>;
