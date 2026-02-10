@@ -1,12 +1,16 @@
-import { postSectionEnum, postTypeEnum } from '$lib/db/tables';
+import { postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables';
 import { zQueryArray } from '$lib/utils';
 import OpenApiResponse from '$lib/openapi-response';
 import { Post } from '$lib/db/types';
+import { PaginatedData, UserMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
-export const GetPostsParams = z
+export const PostsGetQuery = z
 	.object({
+		statuses: zQueryArray(z.enum(contentStatusEnum.enumValues), {
+			description: 'List of content statuses to filter by.<br>Example: published,draft'
+		}).default(['published']),
 		sections: zQueryArray(z.enum(postSectionEnum.enumValues), {
 			description: 'List of post sections to filter by.<br>Example: news,education,activity'
 		}),
@@ -17,28 +21,35 @@ export const GetPostsParams = z
 			description:
 				'List of post slugs to filter by.<br>Example: this-is-a-post,this-is-another-post'
 		}),
-		search: z.string().optional(),
-		limit: z.coerce.number().min(1).max(100).default(10),
-		page: z.coerce.number().min(1).default(1),
 		exclude: zQueryArray(z.string(), {
 			description: 'List of post slugs to exclude.<br>Example: this-is-a-post,this-is-another-post'
-		})
+		}),
+		search: z.string().optional(),
+		limit: z.coerce.number().min(1).max(100).default(10),
+		page: z.coerce.number().min(1).default(1)
 	})
-	.openapi('GetPostsParams', {
-		description: 'Query parameters for fetching posts with filtering, searching, and pagination'
-	});
+	.openapi('PostsGetQuery');
+
+export const PostsGetItem = Post.omit({
+	content: true
+})
+	.extend({
+		createdBy: UserMetadata.nullable(),
+		updatedBy: UserMetadata.nullable()
+	})
+	.openapi('PostsGetItem');
+export type PostsGetItem = z.infer<typeof PostsGetItem>;
 
 export const postsGet: RouteConfig = {
 	path: '/posts',
 	method: 'get',
 	summary: 'List Posts',
-	description:
-		'Retrieve a list of blog posts with support for sections and types filtering, searching, and pagination.',
+	description: 'Retrieve a list of posts with filtering, searching, and pagination support.',
 	request: {
-		query: GetPostsParams
+		query: PostsGetQuery
 	},
 	responses: {
-		...OpenApiResponse.ok(z.array(Post)),
+		...OpenApiResponse.ok(PaginatedData(PostsGetItem, 'PostsGetItem')),
 		...OpenApiResponse.badRequest(),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()

@@ -1,66 +1,115 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { Token } from '$lib/db/types';
+import { TokensGetQuery, TokensGetItem } from '.';
 import ApiResponse from '$lib/api-response';
-import { GetTokensParams } from '.';
+import { PaginatedData } from '$lib/types';
 import z from '$lib/zod-openapi';
-import { shariaStatusEnum } from '$lib/db/tables';
+import { tokens, shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
+import { and, ilike, inArray, notInArray, or, count } from 'drizzle-orm';
 
 /**
  * Handles GET requests to fetch tokens with filtering, searching, and pagination.
  */
 export const GET: RequestHandler = async ({ url }) => {
 	// 1. Validate query parameters using Zod
-	const params = Object.fromEntries(url.searchParams);
-	const result = GetTokensParams.safeParse(params);
+	const params = Object.fromEntries(
+		Array.from(url.searchParams.keys()).map((key) => [
+			key,
+			url.searchParams.getAll(key).length > 1
+				? url.searchParams.getAll(key)
+				: url.searchParams.get(key)
+		])
+	);
+	const result = TokensGetQuery.safeParse(params);
 
 	// If validation fails, return a 400 Bad Request
 	if (!result.success) {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { shariaStatuses, slugs, search, limit, page, exclude } = result.data;
+	const { shariaStatuses, slugs, search, limit, page, exclude, statuses } = result.data;
 	const offset = (page - 1) * limit;
 
 	try {
-		// 2. Fetch tokens from the database
-		const tokensList = await db.query.tokens.findMany({
-			where: (tokens, { or, ilike, and, notInArray, inArray }) => {
-				const filters = [];
+		// 2. Define filters for the query
+		const getFilters = (table: typeof tokens) => {
+			const filters = [];
 
-				if (shariaStatuses && shariaStatuses.length > 0) {
-					filters.push(
-						inArray(
-							tokens.shariaStatus,
-							shariaStatuses as (typeof shariaStatusEnum.enumValues)[number][]
-						)
-					);
-				}
+			if (shariaStatuses && shariaStatuses.length > 0) {
+				filters.push(
+					inArray(
+						table.shariaStatus,
+						shariaStatuses as (typeof shariaStatusEnum.enumValues)[number][]
+					)
+				);
+			}
 
-				if (slugs && slugs.length > 0) {
-					filters.push(inArray(tokens.slug, slugs as string[]));
-				}
+			if (slugs && slugs.length > 0) {
+				filters.push(inArray(table.slug, slugs as string[]));
+			}
 
-				if (search) {
-					const query = `%${search}%`;
-					filters.push(
-						or(ilike(tokens.name, query), ilike(tokens.ticker, query), ilike(tokens.slug, query))
-					);
-				}
+			if (search) {
+				const query = `%${search}%`;
+				filters.push(
+					or(ilike(table.name, query), ilike(table.ticker, query), ilike(table.slug, query))
+				);
+			}
 
-				if (exclude && (exclude as string[]).length > 0) {
-					filters.push(notInArray(tokens.slug, exclude as string[]));
-				}
+			if (exclude && (exclude as string[]).length > 0) {
+				filters.push(notInArray(table.slug, exclude as string[]));
+			}
 
-				return filters.length > 0 ? and(...filters) : undefined;
-			},
-			limit,
-			offset,
-			orderBy: (tokens, { asc }) => [asc(tokens.rank)]
+			// 🔓 Filter by status (default to published for safety)
+			const statusesToFilter = (
+				statuses && statuses.length > 0 ? statuses : ['published']
+			) as (typeof contentStatusEnum.enumValues)[number][];
+			filters.push(inArray(table.status, statusesToFilter));
+
+			return filters.length > 0 ? and(...filters) : undefined;
+		};
+
+		// 3. Fetch data and count in parallel
+		const [tokensList, [countResult]] = await Promise.all([
+			db.query.tokens.findMany({
+				where: getFilters(tokens),
+				limit,
+				offset,
+				columns: {
+					content: false
+				},
+				with: {
+					createdBy: {
+						columns: {
+							id: true,
+							name: true,
+							email: true
+						}
+					},
+					updatedBy: {
+						columns: {
+							id: true,
+							name: true,
+							email: true
+						}
+					}
+				},
+				orderBy: (table, { asc }) => [asc(table.rank)]
+			}),
+			db.select({ value: count() }).from(tokens).where(getFilters(tokens))
+		]);
+
+		const total = countResult.value;
+
+		// 4. Return the paginated success response
+		return ApiResponse.ok<PaginatedData<TokensGetItem>>({
+			items: tokensList as TokensGetItem[],
+			pagination: {
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit)
+			}
 		});
-
-		// 3. Return the success response
-		return ApiResponse.ok<Token[]>(tokensList as Token[]);
 	} catch (err) {
 		console.error('Error fetching tokens:', err);
 		return ApiResponse.internalServerError();

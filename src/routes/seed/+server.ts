@@ -28,16 +28,24 @@ export const POST: RequestHandler = async () => {
 		await db.delete(schema.users);
 
 		// Seed Users
+		const seededUsers: Record<string, string> = {};
 		for (const userData of USERS) {
 			const hashedPassword = await hashPassword(userData.password);
-			await db.insert(schema.users).values({
-				name: userData.name,
-				email: userData.email,
-				hashedPassword,
-				roleId: userData.roleId
-			});
+			const [user] = await db
+				.insert(schema.users)
+				.values({
+					name: userData.name,
+					email: userData.email,
+					hashedPassword,
+					roleId: userData.roleId
+				})
+				.returning({ id: schema.users.id });
+			seededUsers[userData.name] = user.id;
 		}
 		console.log(`Seeded ${USERS.length} users`);
+
+		const adminId = seededUsers['Admin User'];
+		const editorId = seededUsers['Editor User'];
 
 		// Seed Posts
 		for (const postData of POSTS) {
@@ -53,10 +61,15 @@ export const POST: RequestHandler = async () => {
 				coverImageId = asset.id;
 			}
 
-			// 2. Insert Post
+			// 2. Insert Post with audit metadata
 			const [insertedPost] = await db
 				.insert(schema.posts)
-				.values({ ...postFields, coverImageId })
+				.values({
+					...postFields,
+					coverImageId,
+					createdBy: adminId,
+					updatedBy: editorId
+				})
 				.returning({ id: schema.posts.id });
 
 			// 3. Handle tags
@@ -95,10 +108,15 @@ export const POST: RequestHandler = async () => {
 				logoId = asset.id;
 			}
 
-			// 2. Insert Token
+			// 2. Insert Token with audit metadata
 			const [insertedToken] = await db
 				.insert(schema.tokens)
-				.values({ ...tokenFields, logoId })
+				.values({
+					...tokenFields,
+					logoId,
+					createdBy: adminId,
+					updatedBy: editorId
+				})
 				.returning({ id: schema.tokens.id });
 
 			// 3. Handle tags

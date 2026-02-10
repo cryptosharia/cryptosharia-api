@@ -167,6 +167,50 @@ Ethereum's successful transition to Proof-of-Stake has significant implications 
 			width: 800,
 			height: 600
 		}
+	},
+	{
+		slug: 'draft-post-unreleased',
+		section: 'news',
+		title: '[DRAFT] Upcoming Platform Features',
+		excerpt: 'A glimpse into the future of CryptoSharia.',
+		content: 'This post is under construction...',
+		type: 'article',
+		status: 'draft',
+		isFeatured: false,
+		eventDate: null,
+		externalLink: null,
+		tags: ['Internal', 'Draft'],
+		coverImage: {
+			pathname: 'seed/draft-post/800/600',
+			filename: 'draft-post.jpg',
+			size: 50000,
+			mimeType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
+	},
+	{
+		slug: 'archived-token-review',
+		section: 'research',
+		title: '[ARCHIVED] Legacy Token Review 2022',
+		excerpt: 'Old research archive.',
+		content: 'This research is now outdated.',
+		type: 'article',
+		status: 'archived',
+		isFeatured: false,
+		eventDate: null,
+		externalLink: null,
+		tags: ['Archive', 'History'],
+		coverImage: {
+			pathname: 'seed/archive/800/600',
+			filename: 'archive.jpg',
+			size: 100000,
+			mimeType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
 	}
 ];
 
@@ -295,6 +339,32 @@ Solana is a high-performance blockchain designed for decentralized applications.
 			width: 128,
 			height: 128
 		}
+	},
+	{
+		slug: 'draft-coin',
+		rank: 1000,
+		name: 'Draft Coin',
+		ticker: 'DRAFT',
+		shariaStatus: 'syubhat',
+		brandColorHex: '#CCCCCC',
+		tradingviewSymbol: null,
+		website: null,
+		content: 'Coming soon...',
+		status: 'draft',
+		tags: ['Test']
+	},
+	{
+		slug: 'old-coin',
+		rank: 9999,
+		name: 'Old Coin',
+		ticker: 'OLD',
+		shariaStatus: 'haram',
+		brandColorHex: '#000000',
+		tradingviewSymbol: null,
+		website: null,
+		content: 'Delisted.',
+		status: 'archived',
+		tags: ['Archive']
 	}
 ];
 

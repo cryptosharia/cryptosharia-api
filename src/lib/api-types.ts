@@ -360,22 +360,24 @@ export interface paths {
         };
         /**
          * List Posts
-         * @description Retrieve a list of blog posts with support for sections and types filtering, searching, and pagination.
+         * @description Retrieve a list of posts with filtering, searching, and pagination support.
          */
         get: {
             parameters: {
                 query?: {
+                    /** @description List of content statuses to filter by.<br>Example: published,draft */
+                    statuses?: ("draft" | "published" | "archived")[];
                     /** @description List of post sections to filter by.<br>Example: news,education,activity */
                     sections?: ("news" | "education" | "research" | "activity")[];
                     /** @description List of post types to filter by.<br>Example: article,video,webinar */
                     types?: ("article" | "webinar" | "video" | "headline")[];
                     /** @description List of post slugs to filter by.<br>Example: this-is-a-post,this-is-another-post */
                     slugs?: string[];
+                    /** @description List of post slugs to exclude.<br>Example: this-is-a-post,this-is-another-post */
+                    exclude?: string[];
                     search?: string;
                     limit?: number;
                     page?: number;
-                    /** @description List of post slugs to exclude.<br>Example: this-is-a-post,this-is-another-post */
-                    exclude?: string[];
                 };
                 header?: never;
                 path?: never;
@@ -390,7 +392,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["Post"][];
+                            data: components["schemas"]["PaginatedPostsGetItem"];
                         };
                     };
                 };
@@ -431,7 +433,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/posts/count": {
+    "/posts/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -439,20 +441,17 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Count Posts
-         * @description Get the total count of blog posts matching the specified criteria.
+         * Get Post by ID
+         * @description Retrieve any post using its UUID regardless of its status.
          */
         get: {
             parameters: {
-                query?: {
-                    /** @description List of post sections to filter by.<br>Example: news,education,activity */
-                    sections?: ("news" | "education" | "research" | "activity")[];
-                    /** @description List of post types to filter by.<br>Example: article,video,webinar */
-                    types?: ("article" | "webinar" | "video" | "headline")[];
-                    search?: string;
-                };
+                query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    /** @description The UUID of the post */
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
@@ -464,13 +463,12 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiResponse"] & {
-                            /** @example 42 */
-                            data: number;
+                            data: components["schemas"]["PostsGetData"];
                         };
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -478,8 +476,79 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/posts/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Published Post by Slug
+         * @description Retrieve a single published post using its slug.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The slug of the post */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["PostsGetData"];
+                        };
+                    };
+                };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -515,20 +584,22 @@ export interface paths {
         };
         /**
          * List Tokens
-         * @description Retrieve a list of cryptocurrency tokens with support for sharia status filtering, searching, and pagination.
+         * @description Retrieve a list of cryptocurrency tokens with filtering, searching, and pagination support.
          */
         get: {
             parameters: {
                 query?: {
+                    /** @description List of content statuses to filter by.<br>Example: published,draft */
+                    statuses?: ("draft" | "published" | "archived")[];
                     /** @description List of sharia statuses to filter by.<br>Example: halal,haram */
                     shariaStatuses?: ("halal" | "haram" | "syubhat")[];
                     /** @description List of token slugs to filter by.<br>Example: bitcoin,ethereum,sui */
                     slugs?: string[];
+                    /** @description List of token slugs to exclude.<br>Example: bitcoin,ethereum,sui */
+                    exclude?: string[];
                     search?: string;
                     limit?: number;
                     page?: number;
-                    /** @description List of token slugs to exclude.<br>Example: bitcoin,ethereum,sui */
-                    exclude?: string[];
                 };
                 header?: never;
                 path?: never;
@@ -543,7 +614,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["Token"][];
+                            data: components["schemas"]["PaginatedTokensGetItem"];
                         };
                     };
                 };
@@ -584,7 +655,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/tokens/count": {
+    "/tokens/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -592,18 +663,17 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Count Tokens
-         * @description Get the total count of tokens matching the specified criteria.
+         * Get Token by ID
+         * @description Retrieve any cryptocurrency token using its UUID regardless of its status.
          */
         get: {
             parameters: {
-                query?: {
-                    /** @description List of sharia statuses to filter by.<br>Example: halal,haram */
-                    shariaStatuses?: ("halal" | "haram" | "syubhat")[];
-                    search?: string;
-                };
+                query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    /** @description The UUID of the cryptocurrency token */
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
@@ -615,13 +685,12 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiResponse"] & {
-                            /** @example 42 */
-                            data: number;
+                            data: components["schemas"]["TokensGetData"];
                         };
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -629,8 +698,79 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tokens/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Published Token by Slug
+         * @description Retrieve a single published cryptocurrency token using its slug.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The slug of the cryptocurrency token */
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["TokensGetData"];
+                        };
+                    };
+                };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1111,6 +1251,58 @@ export interface components {
             /** @description List of programmatic permission keys */
             permissions: string[];
         };
+        PaginatedPostsGetItem: {
+            items: components["schemas"]["PostsGetItem"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        PostsGetItem: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            slug: string;
+            excerpt: string | null;
+            /** Format: uuid */
+            coverImageId: string | null;
+            /** @enum {string} */
+            section: "news" | "education" | "research" | "activity";
+            /** @enum {string} */
+            type: "article" | "webinar" | "video" | "headline";
+            /** @enum {string} */
+            status: "draft" | "published" | "archived";
+            isFeatured: boolean;
+            /** Format: date-time */
+            eventDate: string | null;
+            externalLink: string | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            createdBy: components["schemas"]["UserMetadata"];
+            updatedBy: components["schemas"]["UserMetadata"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string | null;
+        };
+        UserMetadata: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: email */
+            email: string;
+        } | null;
+        Pagination: {
+            /** @description Total number of items matching the filters */
+            total: number;
+            /** @description Current page number */
+            page: number;
+            /** @description Number of items per page */
+            limit: number;
+            /** @description Total number of pages */
+            totalPages: number;
+        };
+        PostsGetData: components["schemas"]["Post"] & {
+            createdBy?: components["schemas"]["UserMetadata"];
+            updatedBy?: components["schemas"]["UserMetadata"];
+        };
         Post: {
             /** Format: uuid */
             id: string;
@@ -1140,6 +1332,39 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
+        };
+        PaginatedTokensGetItem: {
+            items: components["schemas"]["TokensGetItem"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        TokensGetItem: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            rank: number | null;
+            name: string;
+            ticker: string;
+            /** @enum {string} */
+            shariaStatus: "halal" | "haram" | "syubhat";
+            /** @enum {string} */
+            status: "draft" | "published" | "archived";
+            brandColorHex: string | null;
+            tradingviewSymbol: string | null;
+            website: string | null;
+            /** Format: uuid */
+            logoId: string | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            createdBy: components["schemas"]["UserMetadata"];
+            updatedBy: components["schemas"]["UserMetadata"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string | null;
+        };
+        TokensGetData: components["schemas"]["Token"] & {
+            createdBy?: components["schemas"]["UserMetadata"];
+            updatedBy?: components["schemas"]["UserMetadata"];
         };
         Token: {
             /** Format: uuid */
