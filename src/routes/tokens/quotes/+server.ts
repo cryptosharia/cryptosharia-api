@@ -4,12 +4,12 @@ import { tokens } from '$lib/db/tables';
 import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
 import z from '$lib/zod-openapi';
-import { GetTokensQuotesParams, TokenQuote } from '.';
+import { TokensQuotesGetQuery, TokensQuotesGetItem } from '.';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url, fetch }) => {
 	const params = Object.fromEntries(url.searchParams);
-	const result = GetTokensQuotesParams.safeParse(params);
+	const result = TokensQuotesGetQuery.safeParse(params);
 
 	if (!result.success) {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
@@ -57,7 +57,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		const quotes = await Promise.all(
 			(Object.values(cmcData) as CMCQuote[]).map(async (quote) => {
 				// Normalize data structure
-				const data: z.infer<typeof TokenQuote> = {
+				const data: z.infer<typeof TokensQuotesGetItem> = {
 					slug: quote.slug,
 					rank: quote.cmc_rank,
 					infiniteSupply: quote.infinite_supply,
@@ -78,7 +78,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			})
 		);
 
-		return ApiResponse.ok<z.infer<typeof TokenQuote>[]>(quotes);
+		return ApiResponse.ok<z.infer<typeof TokensQuotesGetItem>[]>(quotes);
 	} catch (error) {
 		console.error('/tokens/quotes Error:', error);
 		return ApiResponse.internalServerError();

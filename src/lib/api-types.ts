@@ -827,7 +827,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["TokenQuote"][];
+                            data: components["schemas"]["TokensQuotesGetItem"][];
                         };
                     };
                 };
@@ -1395,7 +1395,7 @@ export interface components {
             updatedBy: components["schemas"]["UserMetadata"];
             logo: components["schemas"]["AssetMetadata"];
         };
-        TokenQuote: {
+        TokensQuotesGetItem: {
             slug: string;
             rank: number;
             infiniteSupply: boolean;

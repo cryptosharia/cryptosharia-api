@@ -6,7 +6,7 @@ import z from '$lib/zod-openapi';
 /**
  * Response schema for a token quote.
  */
-export const TokenQuote = z
+export const TokensQuotesGetItem = z
 	.object({
 		slug: z.string(),
 		rank: z.number(),
@@ -18,16 +18,20 @@ export const TokenQuote = z
 		marketCapDominance: z.number(),
 		percentChange24h: z.number()
 	})
-	.openapi('TokenQuote');
+	.openapi('TokensQuotesGetItem');
 
-export const GetTokensQuotesParams = z
+export type TokensQuotesGetItem = z.infer<typeof TokensQuotesGetItem>;
+
+export const TokensQuotesGetQuery = z
 	.object({
 		slugs: zQueryArray(z.string(), {
 			description: 'List of token slugs to get quotes for.<br>Example: bitcoin,ethereum,sui',
 			required: true
 		})
 	})
-	.openapi('GetTokensQuotesParams');
+	.openapi('TokensQuotesGetQuery');
+
+export type TokensQuotesGetQuery = z.infer<typeof TokensQuotesGetQuery>;
 
 export const tokensQuotesGet: RouteConfig = {
 	path: '/tokens/quotes',
@@ -35,10 +39,10 @@ export const tokensQuotesGet: RouteConfig = {
 	summary: 'Get Token Quotes',
 	description: 'Fetch real-time quotes and market data for specific tokens from CoinMarketCap.',
 	request: {
-		query: GetTokensQuotesParams
+		query: TokensQuotesGetQuery
 	},
 	responses: {
-		...OpenApiResponse.ok(z.array(TokenQuote)),
+		...OpenApiResponse.ok(z.array(TokensQuotesGetItem)),
 		...OpenApiResponse.badRequest(),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.badGateway(),
