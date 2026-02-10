@@ -1,11 +1,14 @@
 import { zQueryArray } from '$lib/utils';
 import OpenApiResponse from '$lib/openapi-response';
-import { InsertMessage, Message } from '$lib/db/types';
+import { Message } from '$lib/db/types';
+import { PaginatedData } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import z from '$lib/zod-openapi';
 
-// Schema for GET query parameters
-export const GetMessagesParams = z
+/**
+ * Zod schema for validating message query parameters.
+ */
+export const MessagesGetQuery = z
 	.object({
 		search: z.string().optional(),
 		senders: zQueryArray(z.email(), {
@@ -15,9 +18,22 @@ export const GetMessagesParams = z
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1)
 	})
-	.openapi('GetMessagesParams', {
+	.openapi('MessagesGetQuery', {
 		description: 'Query parameters for fetching messages with filtering and pagination'
 	});
+
+export const MessagesGetItem = Message.openapi('MessagesGetItem');
+export type MessagesGetItem = z.infer<typeof MessagesGetItem>;
+
+/**
+ * Zod schema for sending a new message.
+ */
+export const MessagesPostRequest = Message.pick({
+	name: true,
+	email: true,
+	message: true
+}).openapi('MessagesPostRequest');
+export type MessagesPostRequest = z.infer<typeof MessagesPostRequest>;
 
 export const messagesGet: RouteConfig = {
 	path: '/messages',
@@ -26,10 +42,10 @@ export const messagesGet: RouteConfig = {
 	description:
 		'Retrieve a list of messages with support for search, sender filtering, and pagination.',
 	request: {
-		query: GetMessagesParams
+		query: MessagesGetQuery
 	},
 	responses: {
-		...OpenApiResponse.ok(z.array(Message)),
+		...OpenApiResponse.ok(PaginatedData(MessagesGetItem, 'MessagesGetItem')),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
 	},
@@ -45,7 +61,7 @@ export const messagesPost: RouteConfig = {
 		body: {
 			content: {
 				'application/json': {
-					schema: InsertMessage
+					schema: MessagesPostRequest
 				}
 			}
 		}
