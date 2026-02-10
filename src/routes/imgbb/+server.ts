@@ -3,6 +3,7 @@ import { IMGBB_API_KEY } from '$env/static/private';
 import ApiResponse from '$lib/api-response';
 import { db } from '$lib/db';
 import { imgbbImages } from '$lib/db/tables';
+import { ImgbbImage } from '$lib/db/types';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -69,8 +70,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			})
 			.returning();
 
-		// Return the URLs from the IMGBB response
-		return ApiResponse.ok(asset);
+		// Return the URLs from the IMGBB response sanitized via parse
+		return ApiResponse.ok(ImgbbImage.parse({ ...asset }), 'Image uploaded successfully');
 	} catch (err) {
 		console.error('Error uploading to IMGBB:', err);
 		return ApiResponse.internalServerError();

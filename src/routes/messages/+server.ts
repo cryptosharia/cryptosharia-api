@@ -5,7 +5,7 @@ import z from '$lib/zod-openapi';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { messages } from '$lib/db/tables';
-import { MessagesGetQuery, MessagesGetItem, MessagesPostRequest } from './index';
+import { MessagesGetQuery, MessagesGetItem, MessagesPostBody } from './index';
 import { and, desc, ilike, inArray, or, sql } from 'drizzle-orm';
 import { waitUntil } from '@vercel/functions';
 
@@ -84,7 +84,7 @@ export const POST: RequestHandler = async (event) => {
 	const { request, fetch } = event;
 	try {
 		const body = await request.json();
-		const result = MessagesPostRequest.safeParse(body);
+		const result = MessagesPostBody.safeParse(body);
 
 		if (!result.success) {
 			return ApiResponse.badRequest(

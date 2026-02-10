@@ -104,10 +104,12 @@ Follow a strict separation between machine-to-machine and human-to-human identif
 
 ### Schema Naming Convention
 Follow the `[Resource][Action][Type]` pattern for Zod schemas to ensure semantic OpenAPI documentation:
-- **`PostsGetItem`**: Listing schema (omits heavy fields like `content`).
-- **`PostsGetData`**: Detail schema (includes full content).
-- **`TokensQuotesGetQuery`**: URL search parameters (query).
-- **`AuthMeGetResponse`**: Full response schema for a specific endpoint.
+- **`Query`**: URL search parameters (e.g., `MessagesGetQuery`).
+- **`Params`**: URL path parameters (e.g., `PostsIdGetParams`).
+- **`Body`**: JSON request body (e.g., `AuthSigninPostBody`, `MessagesPostBody`).
+- **`Data`**: Detail response data (e.g., `PostsGetData`).
+- **`Item`**: Individual item schema for list responses (e.g., `PostsGetItem`).
+- **`Response`**: Full response object for unique endpoint structures (e.g., `AuthMeGetResponse`).
 
 ## Metadata Schemas
 Shared metadata structures must use official Zod shorthands (e.g., `z.uuid()`, `z.url()`, `z.email()`):

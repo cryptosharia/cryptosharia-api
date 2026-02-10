@@ -28,12 +28,12 @@ export type MessagesGetItem = z.infer<typeof MessagesGetItem>;
 /**
  * Zod schema for sending a new message.
  */
-export const MessagesPostRequest = Message.pick({
+export const MessagesPostBody = Message.pick({
 	name: true,
 	email: true,
 	message: true
-}).openapi('MessagesPostRequest');
-export type MessagesPostRequest = z.infer<typeof MessagesPostRequest>;
+}).openapi('MessagesPostBody');
+export type MessagesPostBody = z.infer<typeof MessagesPostBody>;
 
 export const messagesGet: RouteConfig = {
 	path: '/messages',
@@ -61,7 +61,7 @@ export const messagesPost: RouteConfig = {
 		body: {
 			content: {
 				'application/json': {
-					schema: MessagesPostRequest
+					schema: MessagesPostBody
 				}
 			}
 		}

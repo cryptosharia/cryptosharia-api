@@ -910,7 +910,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["Message"][];
+                            data: components["schemas"]["PaginatedMessagesGetItem"];
                         };
                     };
                 };
@@ -948,7 +948,7 @@ export interface paths {
             };
             requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["InsertMessage"];
+                    "application/json": components["schemas"]["MessagesPostBody"];
                 };
             };
             responses: {
@@ -959,7 +959,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["Message"];
+                            data: {
+                                /** Format: uuid */
+                                id: string;
+                                name: string;
+                                email: string;
+                                message: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                            };
                         };
                     };
                 };
@@ -1037,7 +1045,23 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["ImgbbImage"];
+                            data: {
+                                /** Format: uuid */
+                                id: string;
+                                imgbbId: string;
+                                title: string;
+                                url: string;
+                                width: number;
+                                height: number;
+                                size: number;
+                                fileName: string;
+                                mimeType: string;
+                                deleteUrl: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: uuid */
+                                createdBy: string | null;
+                            };
                         };
                     };
                 };
@@ -1266,7 +1290,7 @@ export interface components {
             id: string;
             title: string;
             slug: string;
-            excerpt: string | null;
+            excerpt: string;
             /** @enum {string} */
             section: "news" | "education" | "research" | "activity";
             /** @enum {string} */
@@ -1304,7 +1328,7 @@ export interface components {
             mimeType?: string | null;
             width?: number | null;
             height?: number | null;
-        } | null;
+        };
         Pagination: {
             /** @description Total number of items matching the filters */
             total: number;
@@ -1320,8 +1344,8 @@ export interface components {
             id: string;
             title: string;
             slug: string;
-            excerpt: string | null;
-            content: string | null;
+            excerpt: string;
+            content: string;
             /** @enum {string} */
             section: "news" | "education" | "research" | "activity";
             /** @enum {string} */
@@ -1350,16 +1374,16 @@ export interface components {
             /** Format: uuid */
             id: string;
             slug: string;
-            rank: number | null;
+            rank: number;
             name: string;
             ticker: string;
             /** @enum {string} */
             shariaStatus: "halal" | "haram" | "syubhat";
             /** @enum {string} */
             status: "draft" | "published" | "archived";
-            brandColorHex: string | null;
+            excerpt: string;
             tradingviewSymbol: string | null;
-            website: string | null;
+            website: string;
             /** Format: date-time */
             publishedAt: string | null;
             /** Format: date-time */
@@ -1374,17 +1398,17 @@ export interface components {
             /** Format: uuid */
             id: string;
             slug: string;
-            rank: number | null;
+            rank: number;
             name: string;
             ticker: string;
             /** @enum {string} */
             shariaStatus: "halal" | "haram" | "syubhat";
             /** @enum {string} */
             status: "draft" | "published" | "archived";
-            brandColorHex: string | null;
+            excerpt: string;
             tradingviewSymbol: string | null;
-            website: string | null;
-            content: string | null;
+            website: string;
+            content: string;
             /** Format: date-time */
             publishedAt: string | null;
             /** Format: date-time */
@@ -1406,7 +1430,11 @@ export interface components {
             marketCapDominance: number;
             percentChange24h: number;
         };
-        Message: {
+        PaginatedMessagesGetItem: {
+            items: components["schemas"]["MessagesGetItem"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        MessagesGetItem: {
             /** Format: uuid */
             id: string;
             name: string;
@@ -1415,35 +1443,10 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
-        /**
-         * @example {
-         *       "name": "Ngetes API",
-         *       "email": "ngetes@wadidaw.uwu",
-         *       "message": "Ngetes from\nCryptoSharia API"
-         *     }
-         */
-        InsertMessage: {
+        MessagesPostBody: {
             name: string;
-            /** Format: email */
             email: string;
             message: string;
-        };
-        ImgbbImage: {
-            /** Format: uuid */
-            id: string;
-            imgbbId: string;
-            title: string;
-            url: string;
-            width: number;
-            height: number;
-            size: number;
-            fileName: string;
-            mimeType: string;
-            deleteUrl: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: uuid */
-            createdBy: string | null;
         };
     };
     responses: never;

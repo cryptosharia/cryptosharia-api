@@ -4,7 +4,7 @@ import { tokens } from '$lib/db/tables';
 import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
 import z from '$lib/zod-openapi';
-import { TokensQuotesGetQuery, TokensQuotesGetItem } from '.';
+import { TokensQuotesGetQuery, TokensQuotesGetItem } from '..';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url, fetch }) => {
@@ -78,7 +78,10 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			})
 		);
 
-		return ApiResponse.ok<z.infer<typeof TokensQuotesGetItem>[]>(quotes);
+		return ApiResponse.ok(
+			quotes.map((q) => TokensQuotesGetItem.parse({ ...q })),
+			'Token quotes retrieved successfully'
+		);
 	} catch (error) {
 		console.error('/tokens/quotes Error:', error);
 		return ApiResponse.internalServerError();

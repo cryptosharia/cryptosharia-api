@@ -3,7 +3,7 @@ import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
 import { eq, and, isNull } from 'drizzle-orm';
 import ApiResponse from '$lib/api-response';
-import { AuthSignoutPostBody } from '.';
+import { AuthSignoutPostBody } from '..';
 import z from '$lib/zod-openapi';
 
 /**

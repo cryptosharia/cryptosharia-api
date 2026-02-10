@@ -3,7 +3,7 @@ import { db } from '$lib/db';
 import { users } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
 import ApiResponse from '$lib/api-response';
-import { AuthMeGetResponse } from '.';
+import { AuthMeGetResponse } from '..';
 
 /**
  * GET /auth/me
