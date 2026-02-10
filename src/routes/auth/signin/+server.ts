@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import ApiResponse from '$lib/api-response';
 import { AuthSigninPostBody, AuthSigninPostResponse } from '.';
 import { verifyPassword } from '$lib/auth/password';
-import { signAccessToken, generateRandomToken } from '$lib/auth/tokens';
+import { signAccessToken, createRefreshToken } from '$lib/auth/tokens';
 import z from '$lib/zod-openapi';
 
 /**
@@ -54,18 +54,10 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		// 5. Generate opaque refresh token
-		const refreshToken = generateRandomToken();
-
-		// Calculate expiry (7 days from now)
-		const expiresAt = new Date();
-		expiresAt.setDate(expiresAt.getDate() + 7);
+		const refreshToken = createRefreshToken(userWithRole.id);
 
 		// 6. Store refresh token in database
-		await db.insert(refreshTokens).values({
-			userId: userWithRole.id,
-			token: refreshToken,
-			expiresAt
-		});
+		await db.insert(refreshTokens).values(refreshToken);
 
 		// 7. Return response (sanitized via parse)
 		return ApiResponse.ok(
@@ -73,7 +65,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				...userWithRole,
 				role: userWithRole.role?.slug ?? null,
 				accessToken,
-				refreshToken
+				refreshToken: refreshToken.token
 			}),
 			'Signed in successfully'
 		);

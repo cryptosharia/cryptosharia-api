@@ -55,3 +55,16 @@ export function generateRandomToken(length: number = 32): string {
 	crypto.getRandomValues(array);
 	return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
+export function createRefreshToken(userId: string) {
+	const token = generateRandomToken();
+	const expiresAt = new Date();
+
+	expiresAt.setDate(expiresAt.getDate() + 15);
+
+	return {
+		userId,
+		token,
+		expiresAt
+	};
+}

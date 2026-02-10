@@ -4,7 +4,7 @@ import { refreshTokens } from '$lib/db/tables';
 import { eq, and, isNull, gt } from 'drizzle-orm';
 import ApiResponse from '$lib/api-response';
 import { AuthRefreshPostBody, AuthRefreshPostResponse } from '.';
-import { signAccessToken, generateRandomToken } from '$lib/auth/tokens';
+import { signAccessToken, createRefreshToken } from '$lib/auth/tokens';
 import z from '$lib/zod-openapi';
 
 type AuthRefreshResponse = z.infer<typeof AuthRefreshPostResponse>;
@@ -62,23 +62,17 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		// Generate a new opaque refresh token
-		const newRefreshToken = generateRandomToken();
-		const expiresAt = new Date();
-		expiresAt.setDate(expiresAt.getDate() + 7);
+		const refreshToken = createRefreshToken(user.id);
 
 		// Store the new refresh token
-		await db.insert(refreshTokens).values({
-			userId: user.id,
-			token: newRefreshToken,
-			expiresAt
-		});
+		await db.insert(refreshTokens).values(refreshToken);
 
 		// 4. Return response
 		return ApiResponse.ok(
 			{
 				user: AuthRefreshPostResponse.shape.user.parse(user),
 				accessToken,
-				refreshToken: newRefreshToken
+				refreshToken: refreshToken.token
 			} as AuthRefreshResponse,
 			'Token refreshed successfully'
 		);
