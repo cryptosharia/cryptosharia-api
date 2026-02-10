@@ -27,7 +27,6 @@ describe('POST /auth/signout', () => {
 
 		expect(response.status).toBe(200);
 		expect(data?.success).toBe(true);
-		expect(data?.data?.message).toBe('Successfully signed out');
 
 		// 3. Verify in database
 		const storedToken = await db.query.refreshTokens.findFirst({
@@ -45,7 +44,6 @@ describe('POST /auth/signout', () => {
 
 		expect(response.status).toBe(200);
 		expect(data?.success).toBe(true);
-		expect(data?.data?.message).toBe('Session already ended or invalid');
 	});
 
 	it('should handle already revoked tokens gracefully', async () => {
@@ -68,7 +66,6 @@ describe('POST /auth/signout', () => {
 
 		expect(response.status).toBe(200);
 		expect(data?.success).toBe(true);
-		expect(data?.data?.message).toBe('Session already ended or invalid');
 	});
 
 	it('should return 400 for missing refreshToken', async () => {

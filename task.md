@@ -41,6 +41,7 @@
 - [x] Implement activity logging utility <!-- id: 106 -->
 - [x] Standardize Identification Layering (UUID internal, Slug external) <!-- id: 106.1 -->
 - [x] Refine `/auth/me` & `/auth/signin` for flat response structure <!-- id: 106.2 -->
+- [x] Standardize API Response Messages (Phase 2.6) [x] <!-- id: 106.3 -->
 
 ## Phase 3: User CRUD Endpoints
 

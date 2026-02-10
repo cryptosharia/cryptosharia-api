@@ -36,9 +36,10 @@ export const POST: RequestHandler = async ({ request }) => {
 			.returning();
 
 		// We return success even if no token was found/revoked to keep it idempotent
-		return ApiResponse.ok({
-			message: revokedToken ? 'Successfully signed out' : 'Session already ended or invalid'
-		});
+		return ApiResponse.ok(
+			undefined,
+			revokedToken ? 'Signed out successfully' : 'Session already ended or invalid'
+		);
 	} catch (error) {
 		console.error('Signout error:', error);
 		return ApiResponse.internalServerError();

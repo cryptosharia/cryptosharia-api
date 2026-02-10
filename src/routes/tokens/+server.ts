@@ -101,15 +101,18 @@ export const GET: RequestHandler = async ({ url }) => {
 		const total = countResult.value;
 
 		// 4. Return the paginated success response
-		return ApiResponse.ok<PaginatedData<TokensGetItem>>({
-			items: tokensList as TokensGetItem[],
-			pagination: {
-				total,
-				page,
-				limit,
-				totalPages: Math.ceil(total / limit)
-			}
-		});
+		return ApiResponse.ok<PaginatedData<TokensGetItem>>(
+			{
+				items: tokensList as TokensGetItem[],
+				pagination: {
+					total,
+					page,
+					limit,
+					totalPages: Math.ceil(total / limit)
+				}
+			},
+			'Tokens retrieved successfully'
+		);
 	} catch (err) {
 		console.error('Error fetching tokens:', err);
 		return ApiResponse.internalServerError();

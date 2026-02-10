@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ params }) => {
 			return ApiResponse.notFound();
 		}
 
-		return ApiResponse.ok<TokensGetData>(token as TokensGetData);
+		return ApiResponse.ok<TokensGetData>(token as TokensGetData, 'Token retrieved successfully');
 	} catch (err) {
 		console.error('Error fetching token by slug:', err);
 		return ApiResponse.internalServerError();

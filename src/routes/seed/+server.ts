@@ -12,7 +12,7 @@ export const POST: RequestHandler = async () => {
 	// Only allow seeding in local development or Vercel preview environments
 	// env.VERCEL_ENV is automatically provided by Vercel
 	if (!dev && env.VERCEL_ENV !== 'preview') {
-		return ApiResponse.forbidden();
+		return ApiResponse.forbidden('Seeding is forbidden in production environment');
 	}
 
 	try {
@@ -146,7 +146,7 @@ export const POST: RequestHandler = async () => {
 			await db.insert(schema.messages).values(messageData);
 		}
 
-		return ApiResponse.created();
+		return ApiResponse.created(undefined, 'Sample data seeded successfully');
 	} catch (err) {
 		console.error('Seeding failed:', err);
 		return ApiResponse.internalServerError();

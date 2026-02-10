@@ -5,22 +5,22 @@ import type { ApiResponse as ApiResponseType } from '$lib/types';
  * Automatically uses standard HTTP status messages based on status codes.
  */
 export default class ApiResponse {
-	static ok<T>(data?: T): Response {
+	static ok<T>(data?: T, message = 'OK'): Response {
 		return Response.json(
 			{
 				success: true,
-				message: 'OK',
+				message,
 				data
 			} satisfies ApiResponseType<T>,
 			{ status: 200 }
 		);
 	}
 
-	static created<T>(data?: T): Response {
+	static created<T>(data?: T, message = 'Created'): Response {
 		return Response.json(
 			{
 				success: true,
-				message: 'Created',
+				message,
 				data
 			} satisfies ApiResponseType<T>,
 			{ status: 201 }

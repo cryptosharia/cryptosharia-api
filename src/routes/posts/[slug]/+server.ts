@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ params }) => {
 			return ApiResponse.notFound();
 		}
 
-		return ApiResponse.ok<PostsGetData>(post as PostsGetData);
+		return ApiResponse.ok<PostsGetData>(post as PostsGetData, 'Post retrieved successfully');
 	} catch (err) {
 		console.error('Error fetching post by slug:', err);
 		return ApiResponse.internalServerError();

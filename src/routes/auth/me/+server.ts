@@ -34,7 +34,8 @@ export const GET: RequestHandler = async ({ locals }) => {
 				...userWithRole,
 				role: userWithRole.role?.slug ?? null,
 				permissions: locals.user.permissions
-			})
+			}),
+			'User profile retrieved successfully'
 		);
 	} catch (error) {
 		console.error('AuthMe error:', error);

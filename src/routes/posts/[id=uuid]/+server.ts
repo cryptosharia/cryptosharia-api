@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 			return ApiResponse.notFound();
 		}
 
-		return ApiResponse.ok<PostsGetData>(post as PostsGetData);
+		return ApiResponse.ok<PostsGetData>(post as PostsGetData, 'Post retrieved successfully (Internal)');
 	} catch (err) {
 		console.error('Error fetching post by ID:', err);
 		return ApiResponse.internalServerError();

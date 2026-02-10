@@ -108,15 +108,18 @@ export const GET: RequestHandler = async ({ url }) => {
 		const total = countResult.value;
 
 		// 4. Return the paginated success response
-		return ApiResponse.ok<PaginatedData<PostsGetItem>>({
-			items: postsList as PostsGetItem[],
-			pagination: {
-				total,
-				page,
-				limit,
-				totalPages: Math.ceil(total / limit)
-			}
-		});
+		return ApiResponse.ok<PaginatedData<PostsGetItem>>(
+			{
+				items: postsList as PostsGetItem[],
+				pagination: {
+					total,
+					page,
+					limit,
+					totalPages: Math.ceil(total / limit)
+				}
+			},
+			'Posts retrieved successfully'
+		);
 	} catch (err) {
 		console.error('Error fetching posts:', err);
 		return ApiResponse.internalServerError();

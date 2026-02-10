@@ -74,7 +74,8 @@ export const POST: RequestHandler = async ({ request }) => {
 				role: userWithRole.role?.slug ?? null,
 				accessToken,
 				refreshToken
-			})
+			}),
+			'Signed in successfully'
 		);
 	} catch (error) {
 		console.error('Signin error:', error);

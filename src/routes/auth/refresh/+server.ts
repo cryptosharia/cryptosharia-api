@@ -74,11 +74,14 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		// 4. Return response
-		return ApiResponse.ok({
-			user: AuthRefreshPostResponse.shape.user.parse(user),
-			accessToken,
-			refreshToken: newRefreshToken
-		} as AuthRefreshResponse);
+		return ApiResponse.ok(
+			{
+				user: AuthRefreshPostResponse.shape.user.parse(user),
+				accessToken,
+				refreshToken: newRefreshToken
+			} as AuthRefreshResponse,
+			'Token refreshed successfully'
+		);
 	} catch (error) {
 		console.error('Refresh error:', error);
 		return ApiResponse.internalServerError();

@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 			return ApiResponse.notFound();
 		}
 
-		return ApiResponse.ok<TokensGetData>(token as TokensGetData);
+		return ApiResponse.ok<TokensGetData>(token as TokensGetData, 'Token retrieved successfully (Internal)');
 	} catch (err) {
 		console.error('Error fetching token by ID:', err);
 		return ApiResponse.internalServerError();
