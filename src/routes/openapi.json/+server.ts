@@ -1,11 +1,7 @@
 import type { RequestHandler } from './$types';
 import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import { postsGet } from '../posts';
-import { postsIdGet } from '../posts/[id=uuid]';
-import { postsSlugGet } from '../posts/[slug]';
-import { tokensGet } from '../tokens';
-import { tokensIdGet } from '../tokens/[id=uuid]';
-import { tokensSlugGet } from '../tokens/[slug]';
+import { postsGet, postsIdGet, postsSlugGet } from '../posts';
+import { tokensGet, tokensIdGet, tokensSlugGet } from '../tokens';
 import { tokensQuotesGet } from '../tokens/quotes';
 import { messagesGet, messagesPost } from '../messages';
 import { seedPost } from '../seed';

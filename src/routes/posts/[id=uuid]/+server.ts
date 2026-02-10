@@ -2,9 +2,9 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { posts } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
-import { PostsGetData } from '../[slug]';
+import { PostsGetData } from '..';
 import ApiResponse from '$lib/api-response';
-import { getAssetUrl } from '$lib/assets';
+import { toAssetMetadata } from '$lib/assets';
 
 export const GET: RequestHandler = async ({ params }: { params: { id: string } }) => {
 	const { id } = params;
@@ -39,20 +39,10 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 		}
 
 		return ApiResponse.ok<PostsGetData>(
-			{
+			PostsGetData.parse({
 				...post,
-				coverImage: post.coverImage
-					? {
-							id: post.coverImage.id,
-							url: getAssetUrl(post.coverImage),
-							filename: post.coverImage.filename,
-							size: post.coverImage.size,
-							mimeType: post.coverImage.mimeType,
-							width: post.coverImage.width,
-							height: post.coverImage.height
-						}
-					: null
-			} as PostsGetData,
+				coverImage: toAssetMetadata(post.coverImage)
+			}),
 			'Post retrieved successfully'
 		);
 	} catch (err) {

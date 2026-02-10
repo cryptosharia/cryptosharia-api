@@ -4,12 +4,12 @@ import * as schema from '$lib/db/tables';
 // Seed Data Types
 export type SeedPost = Omit<InferInsertModel<typeof schema.posts>, 'coverImageId'> & {
 	tags: string[];
-	coverImage?: InferInsertModel<typeof schema.assets>;
+	coverImage: InferInsertModel<typeof schema.assets>;
 };
 
 export type SeedToken = Omit<InferInsertModel<typeof schema.tokens>, 'logoId'> & {
 	tags: string[];
-	logo?: InferInsertModel<typeof schema.assets>;
+	logo: InferInsertModel<typeof schema.assets>;
 };
 
 export type SeedMessage = InferInsertModel<typeof schema.messages>;
@@ -46,6 +46,7 @@ export const USERS: SeedUser[] = [
 		roleId: null
 	}
 ];
+
 export const POSTS: SeedPost[] = [
 	{
 		slug: 'understanding-halal-cryptocurrency-basics',
@@ -67,6 +68,7 @@ For a cryptocurrency to be considered halal, it must meet several criteria:
 4. **Transparency**: The technology and operations must be transparent`,
 		type: 'article',
 		status: 'published',
+		publishedAt: new Date('2024-01-01T00:00:00Z'),
 		isFeatured: true,
 		eventDate: null,
 		externalLink: null,
@@ -96,6 +98,7 @@ This research examines Bitcoin's compliance with Islamic financial principles.
 Our analysis is based on classical Islamic jurisprudence combined with modern financial understanding.`,
 		type: 'article',
 		status: 'published',
+		publishedAt: new Date('2024-01-01T00:00:00Z'),
 		isFeatured: false,
 		eventDate: null,
 		externalLink: null,
@@ -129,6 +132,7 @@ Our analysis is based on classical Islamic jurisprudence combined with modern fi
 - Q&A Session with Scholars`,
 		type: 'webinar',
 		status: 'published',
+		publishedAt: new Date('2024-03-15T00:00:00Z'),
 		isFeatured: true,
 		eventDate: new Date('2024-03-15T19:00:00Z'),
 		externalLink: 'https://example.com/webinar',
@@ -154,6 +158,7 @@ Our analysis is based on classical Islamic jurisprudence combined with modern fi
 Ethereum's successful transition to Proof-of-Stake has significant implications for its sharia compliance status.`,
 		type: 'headline',
 		status: 'published',
+		publishedAt: new Date('2024-03-01T00:00:00Z'),
 		isFeatured: false,
 		eventDate: null,
 		externalLink: null,
@@ -222,7 +227,7 @@ export const TOKENS: SeedToken[] = [
 		name: 'Bitcoin',
 		ticker: 'BTC',
 		shariaStatus: 'halal',
-		brandColorHex: '#F7931A',
+		excerpt: 'The first and most well-known cryptocurrency, often referred to as digital gold.',
 		tradingviewSymbol: 'INDEX:BTCUSD',
 		website: 'https://bitcoin.org',
 		content: `# Bitcoin (BTC)
@@ -233,6 +238,7 @@ Bitcoin is the first and most well-known cryptocurrency, created by Satoshi Naka
 
 Bitcoin is generally considered halal by many Islamic scholars due to its decentralized nature and absence of interest-bearing mechanisms.`,
 		status: 'published',
+		publishedAt: new Date('2024-01-01T00:00:00Z'),
 		tags: ['Currency', 'Proof of Work', 'Store of Value', 'Decentralized'],
 		logo: {
 			pathname: 'seed/btc-logo/128/128',
@@ -250,13 +256,14 @@ Bitcoin is generally considered halal by many Islamic scholars due to its decent
 		name: 'Ethereum',
 		ticker: 'ETH',
 		shariaStatus: 'halal',
-		brandColorHex: '#627EEA',
+		excerpt: 'A decentralized platform that enables smart contracts and decentralized applications.',
 		tradingviewSymbol: 'INDEX:ETHUSD',
 		website: 'https://ethereum.org',
 		content: `# Ethereum (ETH)
 
 Ethereum is a decentralized platform that enables smart contracts and decentralized applications.`,
 		status: 'published',
+		publishedAt: new Date('2024-01-01T00:02:00Z'),
 		tags: ['Platform', 'Smart Contracts', 'Proof of Stake', 'DeFi'],
 		logo: {
 			pathname: 'seed/eth-logo/128/128',
@@ -274,13 +281,14 @@ Ethereum is a decentralized platform that enables smart contracts and decentrali
 		name: 'USD Coin',
 		ticker: 'USDC',
 		shariaStatus: 'halal',
-		brandColorHex: '#2775CA',
+		excerpt: 'A fully-backed stablecoin pegged to the US Dollar.',
 		tradingviewSymbol: 'CRYPTO:USDCUSD',
 		website: 'https://www.circle.com/en/usdc',
 		content: `# USD Coin (USDC)
 
 USDC is a fully-backed stablecoin pegged to the US Dollar.`,
 		status: 'published',
+		publishedAt: new Date('2024-01-01T00:03:00Z'),
 		tags: ['Stablecoin', 'Fiat-Backed', 'USD', 'Payments'],
 		logo: {
 			pathname: 'seed/usdc-logo/128/128',
@@ -298,13 +306,14 @@ USDC is a fully-backed stablecoin pegged to the US Dollar.`,
 		name: 'BNB',
 		ticker: 'BNB',
 		shariaStatus: 'syubhat',
-		brandColorHex: '#F3BA2F',
+		excerpt: 'The native cryptocurrency of the BNB Chain ecosystem.',
 		tradingviewSymbol: 'BINANCE:BNBUSDT',
 		website: 'https://www.bnbchain.org',
 		content: `# BNB
 
 BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
 		status: 'published',
+		publishedAt: new Date('2024-01-01T00:04:00Z'),
 		tags: ['Exchange Token', 'BNB Chain', 'Utility Token'],
 		logo: {
 			pathname: 'seed/bnb-logo/128/128',
@@ -322,13 +331,14 @@ BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
 		name: 'Solana',
 		ticker: 'SOL',
 		shariaStatus: 'halal',
-		brandColorHex: '#14F195',
+		excerpt: 'A high-performance blockchain designed for decentralized applications.',
 		tradingviewSymbol: 'BINANCE:SOLUSDT',
 		website: 'https://solana.com',
 		content: `# Solana (SOL)
 
 Solana is a high-performance blockchain designed for decentralized applications.`,
 		status: 'published',
+		publishedAt: new Date('2024-01-01T00:05:00Z'),
 		tags: ['Platform', 'Proof of Stake', 'High Performance', 'DeFi'],
 		logo: {
 			pathname: 'seed/sol-logo/128/128',
@@ -346,12 +356,21 @@ Solana is a high-performance blockchain designed for decentralized applications.
 		name: 'Draft Coin',
 		ticker: 'DRAFT',
 		shariaStatus: 'syubhat',
-		brandColorHex: '#CCCCCC',
+		excerpt: 'Summary of draft coin.',
 		tradingviewSymbol: null,
-		website: null,
+		website: 'https://example.com/draft',
 		content: 'Coming soon...',
 		status: 'draft',
-		tags: ['Test']
+		tags: ['Test'],
+		logo: {
+			pathname: 'seed/draft-logo/128/128',
+			filename: 'draft-logo.png',
+			size: 1000,
+			mimeType: 'image/png',
+			provider: 'picsum',
+			width: 128,
+			height: 128
+		}
 	},
 	{
 		slug: 'old-coin',
@@ -359,12 +378,21 @@ Solana is a high-performance blockchain designed for decentralized applications.
 		name: 'Old Coin',
 		ticker: 'OLD',
 		shariaStatus: 'haram',
-		brandColorHex: '#000000',
+		excerpt: 'Old research summary.',
 		tradingviewSymbol: null,
-		website: null,
+		website: 'https://example.com/old',
 		content: 'Delisted.',
 		status: 'archived',
-		tags: ['Archive']
+		tags: ['Archive'],
+		logo: {
+			pathname: 'seed/old-logo/128/128',
+			filename: 'old-logo.png',
+			size: 1000,
+			mimeType: 'image/png',
+			provider: 'picsum',
+			width: 128,
+			height: 128
+		}
 	}
 ];
 

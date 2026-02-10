@@ -92,6 +92,29 @@ Follow a strict separation between machine-to-machine and human-to-human identif
 1.  **Internal Layer (Database, JWTs, Hooks, Internal Params)**: Always use **UUIDs** for identifiers. This ensures high-performance indexing and maintains logic stability even if public-facing names or slugs are renamed.
 2.  **External Layer (API Responses, Frontend Routing)**: Provide human-readable identifiers (slugs, names, tickers) instead of UUIDs. This improves ergonomics, SEO, and readability for consumers.
 
+## API Response Standards
+
+### Response Object Mapping
+- **Schema-Driven Mapping**: ALWAYS use Zod schemas (e.g., `PostsGetItem.parse()`) to map API responses. This guarantees:
+    - **Whitelisting**: Only defined fields are included; the spread operator (`...rest`) is allowed ONLY when wrapped in a `.parse()` call that handles the filtering.
+    - **Safety**: Accidental leakage of internal fields (hashes, raw IDs) is prevented by the Zod schema's definition.
+    - **Stability**: API responses remain consistent with the OpenAPI spec regardless of internal database changes.
+- **Metadata Expansion**: Relations (coverImage, logo, role, createdBy) must be expanded into standardized metadata objects. Use centralized helpers like `toAssetMetadata(asset)` in `$lib/assets` to keep mapping logic concise.
+- **Centralized Definitions**: API schemas and OpenAPI `RouteConfig` objects must be centralized in the module's root `index.ts` (e.g., `src/routes/posts/index.ts`) to serve as a single source of truth for the entire module.
+
+### Schema Naming Convention
+Follow the `[Resource][Action][Type]` pattern for Zod schemas to ensure semantic OpenAPI documentation:
+- **`PostsGetItem`**: Listing schema (omits heavy fields like `content`).
+- **`PostsGetData`**: Detail schema (includes full content).
+- **`TokensQuotesGetQuery`**: URL search parameters (query).
+- **`AuthMeGetResponse`**: Full response schema for a specific endpoint.
+
+## Metadata Schemas
+Shared metadata structures must use official Zod shorthands (e.g., `z.uuid()`, `z.url()`, `z.email()`):
+- **`UserMetadata`**: `id`, `name`, `email`.
+- **`AssetMetadata`**: `id`, `url`, `filename`, `size`, `mimeType`, `width`, `height`.
+- **`RoleMetadata`**: `id`, `name`, `slug`.
+
 ## Access Control
 
 - **Permissions** are only for staff/admin actions (CMS management, user management).

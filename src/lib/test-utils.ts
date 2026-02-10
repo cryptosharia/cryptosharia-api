@@ -45,3 +45,23 @@ export async function createTestUser(overrides?: Partial<typeof users.$inferInse
 
 	return user;
 }
+
+/**
+ * Factory to create a test asset in the database.
+ */
+export async function createTestAsset() {
+	const { assets } = await import('./db/tables');
+	const [asset] = await db
+		.insert(assets)
+		.values({
+			pathname: 'test/image.jpg',
+			filename: 'image.jpg',
+			size: 100,
+			mimeType: 'image/jpeg',
+			provider: 'picsum',
+			width: 100,
+			height: 100
+		})
+		.returning();
+	return asset;
+}

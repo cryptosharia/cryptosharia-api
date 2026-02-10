@@ -232,7 +232,7 @@ export const tokens = pgTable('tokens', {
 	/** Unique URL-friendly identifier for the token */
 	slug: varchar('slug', { length: 100 }).notNull().unique(),
 	/** Global market capitalization rank (optional) */
-	rank: integer('rank'),
+	rank: integer('rank').notNull(),
 	/** Full display name of the cryptocurrency (e.g. 'Bitcoin') */
 	name: varchar('name', { length: 100 }).notNull(),
 	/** Short symbol (e.g. 'BTC') */
@@ -241,16 +241,16 @@ export const tokens = pgTable('tokens', {
 	shariaStatus: shariaStatusEnum('sharia_status').notNull(),
 	/** Current editorial status of the token metadata */
 	status: contentStatusEnum('status').notNull().default('draft'),
-	/** Primary brand color in HEX format */
-	brandColorHex: varchar('brand_color_hex', { length: 7 }),
+	/** Brief summary of the token */
+	excerpt: text('excerpt').notNull(),
 	/** TradingView symbol for technical charts (e.g. 'BINANCE:BTCUSDT') */
 	tradingviewSymbol: varchar('tradingview_symbol', { length: 64 }),
 	/** Official project website URL */
-	website: text('website'),
+	website: text('website').notNull(),
 	/** Reference to the token's logo asset */
-	logoId: uuid('logo_id').references(() => assets.id),
+	logoId: uuid('logo_id').references(() => assets.id).notNull(),
 	/** Detailed Sharia analysis or project description (Markdown) */
-	content: text('content'),
+	content: text('content').notNull(),
 	...PUBLISHED_AT,
 	...CREATED_AT,
 	...UPDATED_AT,
@@ -268,11 +268,11 @@ export const posts = pgTable('posts', {
 	/** Unique URL-friendly slug */
 	slug: varchar('slug', { length: 255 }).notNull().unique(),
 	/** Brief summary of the content for listings */
-	excerpt: text('excerpt'),
+	excerpt: text('excerpt').notNull(),
 	/** Main content of the post (HTML or Markdown) */
-	content: text('content'),
+	content: text('content').notNull(),
 	/** Reference to the main cover image asset */
-	coverImageId: uuid('cover_image_id').references(() => assets.id),
+	coverImageId: uuid('cover_image_id').references(() => assets.id).notNull(),
 	/** Logical section or category */
 	section: postSectionEnum('section').notNull(),
 	/** Document type */

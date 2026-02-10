@@ -4,7 +4,7 @@ import { PaginatedData } from '$lib/types';
 import ApiResponse from '$lib/api-response';
 import { PostsGetQuery, PostsGetItem } from '.';
 import z from '$lib/zod-openapi';
-import { getAssetUrl } from '$lib/assets';
+import { toAssetMetadata } from '$lib/assets';
 import { posts, postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables';
 import { and, count, ilike, inArray, notInArray, or } from 'drizzle-orm';
 
@@ -113,20 +113,12 @@ export const GET: RequestHandler = async ({ url }) => {
 		// 4. Return the paginated success response
 		return ApiResponse.ok<PaginatedData<PostsGetItem>>(
 			{
-				items: postsList.map(({ ...p }) => ({
-					...p,
-					coverImage: p.coverImage
-						? {
-								id: p.coverImage.id,
-								url: getAssetUrl(p.coverImage),
-								filename: p.coverImage.filename,
-								size: p.coverImage.size,
-								mimeType: p.coverImage.mimeType,
-								width: p.coverImage.width,
-								height: p.coverImage.height
-							}
-						: null
-				})) as PostsGetItem[],
+				items: postsList.map((p) =>
+					PostsGetItem.parse({
+						...p,
+						coverImage: toAssetMetadata(p.coverImage)
+					})
+				),
 				pagination: {
 					total,
 					page,

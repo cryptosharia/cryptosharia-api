@@ -32,13 +32,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 		return ApiResponse.ok(
 			AuthMeGetResponse.parse({
 				...userWithRole,
-				role: userWithRole.role
-					? {
-							id: userWithRole.role.id,
-							name: userWithRole.role.name,
-							slug: userWithRole.role.slug
-						}
-					: null,
+				role: userWithRole.role ? { ...userWithRole.role } : null,
 				permissions: locals.user.permissions
 			}),
 			'User profile retrieved successfully'

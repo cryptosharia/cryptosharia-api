@@ -1,48 +1,67 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
 import { tokens, assets } from '$lib/db/tables';
-import { createApiTestClient } from '$lib/test-utils';
+import { createApiTestClient, createTestAsset } from '$lib/test-utils';
 
 const client = createApiTestClient();
 
 describe('Tokens API Integration', () => {
-	const seedData = [
-		{
-			name: 'Bitcoin',
-			ticker: 'BTC',
-			slug: 'bitcoin',
-			shariaStatus: 'halal' as const,
-			rank: 1,
-			status: 'published' as const
-		},
-		{
-			name: 'Ethereum',
-			ticker: 'ETH',
-			slug: 'ethereum',
-			shariaStatus: 'halal' as const,
-			rank: 2,
-			status: 'published' as const
-		},
-		{
-			name: 'XRP',
-			ticker: 'XRP',
-			slug: 'ripple',
-			shariaStatus: 'syubhat' as const,
-			rank: 5,
-			status: 'published' as const
-		},
-		{
-			name: 'Cardano',
-			ticker: 'ADA',
-			slug: 'cardano',
-			shariaStatus: 'halal' as const,
-			rank: 10,
-			status: 'published' as const
-		}
-	];
+	const createTokenSeed = async () => {
+		const asset = await createTestAsset();
+		return [
+			{
+				name: 'Bitcoin',
+				ticker: 'BTC',
+				slug: 'bitcoin',
+				shariaStatus: 'halal' as const,
+				rank: 1,
+				status: 'published' as const,
+				excerpt: 'Digital gold.',
+				content: 'Bitcoin content.',
+				website: 'https://bitcoin.org',
+				logoId: asset.id
+			},
+			{
+				name: 'Ethereum',
+				ticker: 'ETH',
+				slug: 'ethereum',
+				shariaStatus: 'halal' as const,
+				rank: 2,
+				status: 'published' as const,
+				excerpt: 'Smart contracts.',
+				content: 'Ethereum content.',
+				website: 'https://ethereum.org',
+				logoId: asset.id
+			},
+			{
+				name: 'XRP',
+				ticker: 'XRP',
+				slug: 'ripple',
+				shariaStatus: 'syubhat' as const,
+				rank: 5,
+				status: 'published' as const,
+				excerpt: 'Ripple.',
+				content: 'XRP content.',
+				website: 'https://ripple.com',
+				logoId: asset.id
+			},
+			{
+				name: 'Cardano',
+				ticker: 'ADA',
+				slug: 'cardano',
+				shariaStatus: 'halal' as const,
+				rank: 10,
+				status: 'published' as const,
+				excerpt: 'Proof of stake.',
+				content: 'Cardano content.',
+				website: 'https://cardano.org',
+				logoId: asset.id
+			}
+		];
+	};
 
 	it('should filter tokens by sharia status', async () => {
-		await db.insert(tokens).values(seedData);
+		await db.insert(tokens).values(await createTokenSeed());
 
 		const { data, response } = await client.GET('/tokens', {
 			params: {
@@ -56,7 +75,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should filter by multiple slugs', async () => {
-		await db.insert(tokens).values(seedData);
+		await db.insert(tokens).values(await createTokenSeed());
 
 		const { data, response } = await client.GET('/tokens', {
 			params: {
@@ -71,7 +90,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should exclude specific slugs', async () => {
-		await db.insert(tokens).values(seedData);
+		await db.insert(tokens).values(await createTokenSeed());
 
 		const { data, response } = await client.GET('/tokens', {
 			params: {
@@ -86,7 +105,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should search tokens by name or ticker', async () => {
-		await db.insert(tokens).values(seedData);
+		await db.insert(tokens).values(await createTokenSeed());
 
 		const { data, response } = await client.GET('/tokens', {
 			params: {
@@ -100,7 +119,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should combine multiple filters (shariaStatuses AND search)', async () => {
-		await db.insert(tokens).values(seedData);
+		await db.insert(tokens).values(await createTokenSeed());
 
 		const { data, response } = await client.GET('/tokens', {
 			params: {
@@ -117,7 +136,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should handle pagination', async () => {
-		await db.insert(tokens).values(seedData);
+		await db.insert(tokens).values(await createTokenSeed());
 
 		const { data, response } = await client.GET('/tokens', {
 			params: {
@@ -132,6 +151,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should exclude content from list results and include in single item', async () => {
+		const asset = await createTestAsset();
 		await db.insert(tokens).values({
 			name: 'Detailed Token',
 			ticker: 'DET',
@@ -139,7 +159,10 @@ describe('Tokens API Integration', () => {
 			shariaStatus: 'halal',
 			rank: 10,
 			status: 'published',
-			content: 'Secret Content'
+			excerpt: '...',
+			content: 'Secret Content',
+			website: 'https://example.com',
+			logoId: asset.id
 		});
 
 		const { data: listData } = await client.GET('/tokens');
@@ -166,6 +189,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should filter tokens by status (including archived)', async () => {
+		const asset = await createTestAsset();
 		await db.insert(tokens).values([
 			{
 				name: 'Archived Coin',
@@ -173,7 +197,11 @@ describe('Tokens API Integration', () => {
 				slug: 'archived-coin',
 				shariaStatus: 'halal' as const,
 				rank: 100,
-				status: 'archived' as const
+				status: 'archived' as const,
+				excerpt: '...',
+				content: '...',
+				website: 'https://example.com',
+				logoId: asset.id
 			}
 		]);
 
@@ -191,13 +219,18 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should include audit metadata as objects in response', async () => {
+		const asset = await createTestAsset();
 		await db.insert(tokens).values({
 			name: 'Metadata Object Token',
 			ticker: 'MTO',
 			slug: 'meta-obj-token',
 			shariaStatus: 'halal',
 			rank: 1,
-			status: 'published'
+			status: 'published',
+			excerpt: '...',
+			content: '...',
+			website: 'https://example.com',
+			logoId: asset.id
 		});
 
 		const { data } = await client.GET('/tokens');
@@ -225,6 +258,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should NOT allow finding a draft token by slug', async () => {
+		const asset = await createTestAsset();
 		const slug = 'draft-token-slug';
 		await db.insert(tokens).values({
 			name: 'Draft Token',
@@ -232,7 +266,11 @@ describe('Tokens API Integration', () => {
 			ticker: 'DRAFT',
 			status: 'draft',
 			shariaStatus: 'syubhat',
-			content: '...'
+			excerpt: '...',
+			content: '...',
+			rank: 1000,
+			website: 'https://example.com',
+			logoId: asset.id
 		});
 
 		const { response } = await client.GET('/tokens/{slug}', {
@@ -245,6 +283,7 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should allow finding any token by UUID', async () => {
+		const asset = await createTestAsset();
 		const slug = 'internal-token-slug';
 		const [token] = await db
 			.insert(tokens)
@@ -254,7 +293,11 @@ describe('Tokens API Integration', () => {
 				ticker: 'INT',
 				status: 'draft',
 				shariaStatus: 'syubhat',
-				content: '...'
+				excerpt: '...',
+				content: '...',
+				rank: 1001,
+				website: 'https://example.com',
+				logoId: asset.id
 			})
 			.returning({ id: tokens.id });
 
@@ -292,6 +335,9 @@ describe('Tokens API Integration', () => {
 			shariaStatus: 'halal',
 			rank: 10,
 			status: 'published',
+			excerpt: '...',
+			content: '...',
+			website: 'https://example.com',
 			logoId: asset.id
 		});
 

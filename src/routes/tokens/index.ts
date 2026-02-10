@@ -36,12 +36,23 @@ export const TokensGetItem = Token.omit({
 	logoId: true
 })
 	.extend({
-		logo: AssetMetadata.nullable(),
+		logo: AssetMetadata,
 		createdBy: UserMetadata.nullable(),
 		updatedBy: UserMetadata.nullable(),
 	})
 	.openapi('TokensGetItem');
 export type TokensGetItem = z.infer<typeof TokensGetItem>;
+
+export const TokensGetData = Token.omit({
+	logoId: true
+})
+	.extend({
+		logo: AssetMetadata,
+		createdBy: UserMetadata.nullable(),
+		updatedBy: UserMetadata.nullable()
+	})
+	.openapi('TokensGetData');
+export type TokensGetData = z.infer<typeof TokensGetData>;
 
 export const tokensGet: RouteConfig = {
 	path: '/tokens',
@@ -55,6 +66,52 @@ export const tokensGet: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(PaginatedData(TokensGetItem, 'TokensGetItem')),
 		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.unauthorized(),
+		...OpenApiResponse.internalServerError()
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+export const TokensSlugGetParams = z
+	.object({
+		slug: z.string().describe('The slug of the cryptocurrency token')
+	})
+	.openapi('TokensSlugGetParams');
+
+export const tokensSlugGet: RouteConfig = {
+	path: '/tokens/{slug}',
+	method: 'get',
+	summary: 'Get Published Token by Slug',
+	description: 'Retrieve a single published cryptocurrency token using its slug.',
+	request: {
+		params: TokensSlugGetParams
+	},
+	responses: {
+		...OpenApiResponse.ok(TokensGetData),
+		...OpenApiResponse.notFound(),
+		...OpenApiResponse.unauthorized(),
+		...OpenApiResponse.internalServerError()
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+export const TokensIdGetParams = z
+	.object({
+		id: z.uuid().describe('The UUID of the cryptocurrency token')
+	})
+	.openapi('TokensIdGetParams');
+
+export const tokensIdGet: RouteConfig = {
+	path: '/tokens/{id}',
+	method: 'get',
+	summary: 'Get Token by ID',
+	description: 'Retrieve any cryptocurrency token using its UUID regardless of its status.',
+	request: {
+		params: TokensIdGetParams
+	},
+	responses: {
+		...OpenApiResponse.ok(TokensGetData),
+		...OpenApiResponse.notFound(),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
 	},

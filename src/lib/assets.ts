@@ -30,3 +30,19 @@ export function getAssetUrl(asset: AssetRecord): string {
 			return pathname;
 	}
 }
+
+/**
+ * Transforms a raw database asset into AssetMetadata form with a computed URL.
+ */
+export function toAssetMetadata(asset: Asset | null | undefined) {
+	if (!asset) return null;
+	return {
+		id: asset.id,
+		url: getAssetUrl(asset),
+		filename: asset.filename,
+		size: asset.size,
+		mimeType: asset.mimeType,
+		width: asset.width,
+		height: asset.height
+	};
+}

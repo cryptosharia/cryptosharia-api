@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
 import { posts, assets } from '$lib/db/tables';
-import { createApiTestClient } from '$lib/test-utils';
+import { createApiTestClient, createTestAsset } from '$lib/test-utils';
 
 // Create a type-safe client
 const client = createApiTestClient();
@@ -9,6 +9,7 @@ const client = createApiTestClient();
 describe('Posts API Integration', () => {
 	it('should filter posts by news section', async () => {
 		// 1. Setup: Seed database
+		const asset = await createTestAsset();
 		await db.insert(posts).values([
 			{
 				title: 'Crypto News Today',
@@ -16,7 +17,9 @@ describe('Posts API Integration', () => {
 				section: 'news',
 				type: 'article',
 				status: 'published' as const,
-				content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+				content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+				excerpt: 'Summary of news.',
+				coverImageId: asset.id
 			},
 			{
 				title: 'Learn SvelteKit',
@@ -24,7 +27,9 @@ describe('Posts API Integration', () => {
 				section: 'education',
 				type: 'article',
 				status: 'published' as const,
-				content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+				content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+				excerpt: 'Summary of education.',
+				coverImageId: asset.id
 			}
 		]);
 
@@ -53,13 +58,16 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should search posts by title', async () => {
+		const asset = await createTestAsset();
 		await db.insert(posts).values({
 			title: 'Unique Secret Topic',
 			slug: 'unique-topic',
 			section: 'news',
 			type: 'article',
 			status: 'published' as const,
-			content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+			content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+			excerpt: 'Summary of secret topic.',
+			coverImageId: asset.id
 		});
 
 		const { data } = await client.GET('/posts', {
@@ -73,6 +81,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should combine multiple filters (sections AND search)', async () => {
+		const asset = await createTestAsset();
 		await db.insert(posts).values([
 			{
 				title: 'Bitcoin in Activity',
@@ -80,7 +89,9 @@ describe('Posts API Integration', () => {
 				section: 'activity',
 				type: 'article',
 				status: 'published' as const,
-				content: '...'
+				content: '...',
+				excerpt: 'Summary of activity.',
+				coverImageId: asset.id
 			},
 			{
 				title: 'Bitcoin in News',
@@ -88,7 +99,9 @@ describe('Posts API Integration', () => {
 				section: 'news',
 				type: 'article',
 				status: 'published' as const,
-				content: '...'
+				content: '...',
+				excerpt: 'Summary of news.',
+				coverImageId: asset.id
 			}
 		]);
 
@@ -106,6 +119,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should search posts by excerpt', async () => {
+		const asset = await createTestAsset();
 		await db.insert(posts).values({
 			title: 'A Post Title',
 			slug: 'post-with-excerpt',
@@ -113,7 +127,8 @@ describe('Posts API Integration', () => {
 			type: 'article',
 			excerpt: 'This is a unique SummaryKeyword that should be found.',
 			status: 'published' as const,
-			content: '...'
+			content: '...',
+			coverImageId: asset.id
 		});
 
 		const { data } = await client.GET('/posts', {
@@ -128,13 +143,16 @@ describe('Posts API Integration', () => {
 
 	it('should handle pagination (limit and page)', async () => {
 		// Insert 5 posts
+		const asset = await createTestAsset();
 		const mockPosts = Array.from({ length: 5 }).map((_, i) => ({
 			title: `Post ${i + 1}`,
 			slug: `post-${i + 1}`,
 			section: 'news' as const,
 			type: 'article' as const,
 			status: 'published' as const,
-			content: '...'
+			content: '...',
+			excerpt: `Excerpt ${i + 1}`,
+			coverImageId: asset.id
 		}));
 
 		await db.insert(posts).values(mockPosts);
@@ -157,6 +175,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should exclude specific slugs', async () => {
+		const asset = await createTestAsset();
 		await db.insert(posts).values([
 			{
 				title: 'Post A',
@@ -164,7 +183,9 @@ describe('Posts API Integration', () => {
 				section: 'news',
 				type: 'article',
 				status: 'published' as const,
-				content: '...'
+				content: '...',
+				excerpt: 'Summary A',
+				coverImageId: asset.id
 			},
 			{
 				title: 'Post B',
@@ -172,7 +193,9 @@ describe('Posts API Integration', () => {
 				section: 'news',
 				type: 'article',
 				status: 'published' as const,
-				content: '...'
+				content: '...',
+				excerpt: 'Summary B',
+				coverImageId: asset.id
 			}
 		]);
 
@@ -187,13 +210,16 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should get a single post by slug', async () => {
+		const asset = await createTestAsset();
 		const testPost = {
 			title: 'Single Post Test',
 			slug: 'single-post-test',
 			section: 'news' as const,
 			type: 'article' as const,
 			status: 'published' as const,
-			content: 'This is a single post content.'
+			content: 'This is a single post content.',
+			excerpt: 'Summary of single post.',
+			coverImageId: asset.id
 		};
 
 		await db.insert(posts).values(testPost);
@@ -221,6 +247,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should exclude content field from list but include it in single post', async () => {
+		const asset = await createTestAsset();
 		const testSlug = 'content-test-post';
 		await db.insert(posts).values({
 			title: 'Content Test',
@@ -228,7 +255,9 @@ describe('Posts API Integration', () => {
 			section: 'news',
 			type: 'article',
 			status: 'published' as const,
-			content: 'This secret content should not be in the list!'
+			content: 'This secret content should not be in the list!',
+			excerpt: 'Summary of content test.',
+			coverImageId: asset.id
 		});
 
 		// 1. Verify it's NOT in the list
@@ -248,6 +277,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should filter posts by status (including draft for authorized users)', async () => {
+		const asset = await createTestAsset();
 		await db.insert(posts).values([
 			{
 				title: 'Published Post',
@@ -255,7 +285,9 @@ describe('Posts API Integration', () => {
 				section: 'news',
 				type: 'article',
 				status: 'published' as const,
-				content: '...'
+				content: '...',
+				excerpt: 'Summary of published.',
+				coverImageId: asset.id
 			},
 			{
 				title: 'Draft Post',
@@ -263,7 +295,9 @@ describe('Posts API Integration', () => {
 				section: 'news',
 				type: 'article',
 				status: 'draft' as const,
-				content: '...'
+				content: '...',
+				excerpt: 'Summary of draft.',
+				coverImageId: asset.id
 			}
 		]);
 
@@ -291,13 +325,16 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should include audit metadata as objects in response', async () => {
+		const asset = await createTestAsset();
 		await db.insert(posts).values({
 			title: 'Metadata Object Test',
 			slug: 'metadata-obj-test',
 			section: 'news',
 			type: 'article',
 			status: 'published',
-			content: '...'
+			content: '...',
+			excerpt: 'Summary of metadata test.',
+			coverImageId: asset.id
 		});
 
 		const { data } = await client.GET('/posts');
@@ -326,6 +363,7 @@ describe('Posts API Integration', () => {
 
 	it('should find any post by UUID using the uuid matcher', async () => {
 		const slug = 'matcher-draft-slug';
+		const asset = await createTestAsset();
 		const [post] = await db
 			.insert(posts)
 			.values({
@@ -334,7 +372,9 @@ describe('Posts API Integration', () => {
 				section: 'news',
 				type: 'article',
 				status: 'draft',
-				content: '...'
+				content: '...',
+				excerpt: 'Summary of matcher test.',
+				coverImageId: asset.id
 			})
 			.returning({ id: posts.id });
 
@@ -351,6 +391,7 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should NOT allow finding a draft by slug (falls through to [slug])', async () => {
+		const asset = await createTestAsset();
 		const slug = 'matcher-draft-slug-2';
 		await db.insert(posts).values({
 			title: 'Matcher Draft Test 2',
@@ -358,7 +399,9 @@ describe('Posts API Integration', () => {
 			section: 'news',
 			type: 'article',
 			status: 'draft',
-			content: '...'
+			content: '...',
+			excerpt: 'Summary of matcher test 2.',
+			coverImageId: asset.id
 		});
 
 		// Test Slug lookup (should match [slug] but return 404 because status is draft)
@@ -394,6 +437,7 @@ describe('Posts API Integration', () => {
 			type: 'article',
 			status: 'published',
 			content: '...',
+			excerpt: 'Summary of image post.',
 			coverImageId: asset.id
 		});
 

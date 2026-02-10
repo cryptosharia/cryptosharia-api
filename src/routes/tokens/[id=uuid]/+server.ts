@@ -2,9 +2,9 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { tokens } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
-import { TokensGetData } from '../[slug]';
+import { TokensGetData } from '..';
 import ApiResponse from '$lib/api-response';
-import { getAssetUrl } from '$lib/assets';
+import { toAssetMetadata } from '$lib/assets';
 
 export const GET: RequestHandler = async ({ params }: { params: { id: string } }) => {
 	const { id } = params;
@@ -39,20 +39,10 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 		}
 
 		return ApiResponse.ok<TokensGetData>(
-			{
+			TokensGetData.parse({
 				...token,
-				logo: token.logo
-					? {
-							id: token.logo.id,
-							url: getAssetUrl(token.logo),
-							filename: token.logo.filename,
-							size: token.logo.size,
-							mimeType: token.logo.mimeType,
-							width: token.logo.width,
-							height: token.logo.height
-						}
-					: null
-			} as TokensGetData,
+				logo: toAssetMetadata(token.logo)
+			}),
 			'Token retrieved successfully'
 		);
 	} catch (err) {

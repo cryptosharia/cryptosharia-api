@@ -4,7 +4,7 @@ import { TokensGetQuery, TokensGetItem } from '.';
 import ApiResponse from '$lib/api-response';
 import { PaginatedData } from '$lib/types';
 import z from '$lib/zod-openapi';
-import { getAssetUrl } from '$lib/assets';
+import { toAssetMetadata } from '$lib/assets';
 import { tokens, shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
 import { and, ilike, inArray, notInArray, or, count } from 'drizzle-orm';
 
@@ -106,20 +106,12 @@ export const GET: RequestHandler = async ({ url }) => {
 		// 4. Return the paginated success response
 		return ApiResponse.ok<PaginatedData<TokensGetItem>>(
 			{
-				items: tokensList.map((t) => ({
-					...t,
-					logo: t.logo
-						? {
-								id: t.logo.id,
-								url: getAssetUrl(t.logo),
-								filename: t.logo.filename,
-								size: t.logo.size,
-								mimeType: t.logo.mimeType,
-								width: t.logo.width,
-								height: t.logo.height
-							}
-						: null
-				})) as TokensGetItem[],
+				items: tokensList.map((t) =>
+					TokensGetItem.parse({
+						...t,
+						logo: toAssetMetadata(t.logo)
+					})
+				),
 				pagination: {
 					total,
 					page,

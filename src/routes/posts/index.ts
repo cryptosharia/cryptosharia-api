@@ -35,12 +35,23 @@ export const PostsGetItem = Post.omit({
 	coverImageId: true
 })
 	.extend({
-		coverImage: AssetMetadata.nullable(),
+		coverImage: AssetMetadata,
 		createdBy: UserMetadata.nullable(),
 		updatedBy: UserMetadata.nullable(),
 	})
 	.openapi('PostsGetItem');
 export type PostsGetItem = z.infer<typeof PostsGetItem>;
+
+export const PostsGetData = Post.omit({
+	coverImageId: true
+})
+	.extend({
+		coverImage: AssetMetadata,
+		createdBy: UserMetadata.nullable(),
+		updatedBy: UserMetadata.nullable()
+	})
+	.openapi('PostsGetData');
+export type PostsGetData = z.infer<typeof PostsGetData>;
 
 export const postsGet: RouteConfig = {
 	path: '/posts',
@@ -53,6 +64,52 @@ export const postsGet: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(PaginatedData(PostsGetItem, 'PostsGetItem')),
 		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.unauthorized(),
+		...OpenApiResponse.internalServerError()
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+export const PostsSlugGetParams = z
+	.object({
+		slug: z.string().describe('The slug of the post')
+	})
+	.openapi('PostsSlugGetParams');
+
+export const postsSlugGet: RouteConfig = {
+	path: '/posts/{slug}',
+	method: 'get',
+	summary: 'Get Published Post by Slug',
+	description: 'Retrieve a single published post using its slug.',
+	request: {
+		params: PostsSlugGetParams
+	},
+	responses: {
+		...OpenApiResponse.ok(PostsGetData),
+		...OpenApiResponse.notFound(),
+		...OpenApiResponse.unauthorized(),
+		...OpenApiResponse.internalServerError()
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+export const PostsIdGetParams = z
+	.object({
+		id: z.uuid().describe('The UUID of the post')
+	})
+	.openapi('PostsIdGetParams');
+
+export const postsIdGet: RouteConfig = {
+	path: '/posts/{id}',
+	method: 'get',
+	summary: 'Get Post by ID',
+	description: 'Retrieve any post using its UUID regardless of its status.',
+	request: {
+		params: PostsIdGetParams
+	},
+	responses: {
+		...OpenApiResponse.ok(PostsGetData),
+		...OpenApiResponse.notFound(),
 		...OpenApiResponse.unauthorized(),
 		...OpenApiResponse.internalServerError()
 	},

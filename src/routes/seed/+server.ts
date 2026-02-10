@@ -51,15 +51,11 @@ export const POST: RequestHandler = async () => {
 		for (const postData of POSTS) {
 			const { tags: tagNames, coverImage, ...postFields } = postData;
 
-			// 1. Create cover image asset if provided
-			let coverImageId: string | undefined;
-			if (coverImage) {
-				const [asset] = await db
-					.insert(schema.assets)
-					.values(coverImage)
-					.returning({ id: schema.assets.id });
-				coverImageId = asset.id;
-			}
+			const [asset] = await db
+				.insert(schema.assets)
+				.values(coverImage)
+				.returning({ id: schema.assets.id });
+			const coverImageId = asset.id;
 
 			// 2. Insert Post with audit metadata
 			const [insertedPost] = await db
@@ -98,15 +94,11 @@ export const POST: RequestHandler = async () => {
 		for (const tokenData of TOKENS) {
 			const { tags: tagNames, logo, ...tokenFields } = tokenData;
 
-			// 1. Create logo asset if provided
-			let logoId: string | undefined;
-			if (logo) {
-				const [asset] = await db
-					.insert(schema.assets)
-					.values(logo)
-					.returning({ id: schema.assets.id });
-				logoId = asset.id;
-			}
+			const [asset] = await db
+				.insert(schema.assets)
+				.values(logo)
+				.returning({ id: schema.assets.id });
+			const logoId = asset.id;
 
 			// 2. Insert Token with audit metadata
 			const [insertedToken] = await db
