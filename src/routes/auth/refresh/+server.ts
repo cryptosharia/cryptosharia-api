@@ -7,8 +7,6 @@ import { AuthRefreshPostBody, AuthRefreshPostResponse } from '..';
 import { signAccessToken, createRefreshToken } from '$lib/auth/tokens';
 import z from '$lib/zod-openapi';
 
-type AuthRefreshResponse = z.infer<typeof AuthRefreshPostResponse>;
-
 /**
  * POST /auth/refresh
  * Rotate refresh token and issue new access token.
@@ -69,11 +67,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// 4. Return response
 		return ApiResponse.ok(
-			{
-				user: AuthRefreshPostResponse.shape.user.parse(user),
+			AuthRefreshPostResponse.parse({
+				user,
 				accessToken,
 				refreshToken: refreshToken.token
-			} as AuthRefreshResponse,
+			}),
 			'Token refreshed successfully'
 		);
 	} catch (error) {

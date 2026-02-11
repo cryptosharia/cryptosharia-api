@@ -10,7 +10,10 @@ const client = createApiTestClient();
 describe('POST /auth/signin', () => {
 	it('should return tokens and user info on successful signin', async () => {
 		const password = 'mypassword321';
-		const user = await createTestUser({ hashedPassword: await hashPassword(password) });
+		const user = await createTestUser({
+			hashedPassword: await hashPassword(password),
+			isEmailVerified: true
+		});
 
 		const { data, response } = await client.POST('/auth/signin', {
 			body: {
@@ -24,15 +27,17 @@ describe('POST /auth/signin', () => {
 		if (!data?.data) {
 			throw new Error('No data received');
 		}
-		expect(data.data.id).toBe(user!.id);
-		expect(data.data.email).toBe(user!.email);
-		expect(data.data).toHaveProperty('role');
-		expect(data.data.accessToken).toBeDefined();
-		expect(data.data.refreshToken).toBeDefined();
 
-		// Sensitive fields should be stripped
-		expect(data.data).not.toHaveProperty('hashedPassword');
-		expect(data.data).not.toHaveProperty('roleId');
+		const loginData = data.data;
+		expect(loginData.user.id).toBe(user!.id);
+		expect(loginData.user.email).toBe(user!.email);
+		expect(loginData.accessToken).toBeDefined();
+		expect(loginData.refreshToken).toBeDefined();
+
+		// Sensitive fields or profile fields (like role/avatar) should NOT be here
+		expect(loginData.user).not.toHaveProperty('hashedPassword');
+		expect(loginData.user).not.toHaveProperty('roleId');
+		expect(loginData).not.toHaveProperty('role');
 	});
 
 	it('should return 401 for invalid email', async () => {
@@ -48,7 +53,7 @@ describe('POST /auth/signin', () => {
 	});
 
 	it('should return 401 for invalid password', async () => {
-		const user = await createTestUser();
+		const user = await createTestUser({ isEmailVerified: true });
 
 		const { error, response } = await client.POST('/auth/signin', {
 			body: {
@@ -85,7 +90,10 @@ describe('POST /auth/signin', () => {
 
 	it('should store refresh token in database on successful signin', async () => {
 		const password = 'mypassword321';
-		const user = await createTestUser({ hashedPassword: await hashPassword(password) });
+		const user = await createTestUser({
+			hashedPassword: await hashPassword(password),
+			isEmailVerified: true
+		});
 
 		await client.POST('/auth/signin', {
 			body: {

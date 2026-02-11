@@ -7,15 +7,24 @@ import { seedPost } from '../seed';
 import { imgbbPost } from '../imgbb';
 import { openapiGet } from '.';
 import { docsGet } from '../(docs)';
-import { authMeGet, authRefreshPost, authSigninPost, authSignoutPost } from '../auth';
+import {
+	authMeGet,
+	authRefreshPost,
+	authSigninPost,
+	authSignoutPost,
+	authSignupPost,
+	authVerifyPost
+} from '../auth';
 
 const PATHS = [
 	docsGet,
 	openapiGet,
 	authSigninPost,
+	authSignupPost,
 	authSignoutPost,
 	authRefreshPost,
 	authMeGet,
+	authVerifyPost,
 	postsGet,
 	postsIdGet,
 	postsSlugGet,

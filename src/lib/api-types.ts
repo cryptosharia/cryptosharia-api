@@ -154,6 +154,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Public Signup
+         * @description Register a new user account. Role defaults to NULL (Regular User). Users must verify their email before they can sign in.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AuthSignupPostBody"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["AuthSignupPostResponse"];
+                        };
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Email already registered */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/signout": {
         parameters: {
             query?: never;
@@ -186,12 +258,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data: {
-                                success: boolean;
-                                message: string;
-                            };
-                        };
+                        "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
                 /** @description Bad Request */
@@ -345,6 +412,76 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify Email
+         * @description Verify a user email address using a secret token.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AuthVerifyPostBody"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Invalid or expired token */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1185,27 +1322,16 @@ export interface components {
     schemas: {
         /** @description Successful signin response with tokens and user info */
         AuthSigninPostResponse: {
+            user: components["schemas"]["UserMetadata"];
+            accessToken: string;
+            refreshToken: string;
+        };
+        UserMetadata: {
             /** Format: uuid */
             id: string;
             name: string;
+            /** Format: email */
             email: string;
-            avatarUrl: string | null;
-            isActive: boolean;
-            twoFactorSecret: string | null;
-            /** Format: date-time */
-            lastLoginAt: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            /** Format: uuid */
-            updatedBy: string | null;
-            /** @description The enum value of the assigned role */
-            role: string | null;
-            accessToken: string;
-            refreshToken: string;
         };
         ApiResponse: {
             success: boolean;
@@ -1221,33 +1347,28 @@ export interface components {
             email: string;
             password: string;
         };
+        /** @description Successful signup response with user info */
+        AuthSignupPostResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: email */
+            email: string;
+        };
+        /** @description Data for account registration */
+        AuthSignupPostBody: {
+            name: string;
+            /** Format: email */
+            email: string;
+            password: string;
+        };
         AuthSignoutPostBody: {
             /** @description The refresh token to revoke */
             refreshToken: string;
         };
         /** @description Successful token refresh */
         AuthRefreshPostResponse: {
-            user: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                email: string;
-                avatarUrl: string | null;
-                /** Format: uuid */
-                roleId: string | null;
-                isActive: boolean;
-                twoFactorSecret: string | null;
-                /** Format: date-time */
-                lastLoginAt: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string | null;
-                /** Format: uuid */
-                createdBy: string | null;
-                /** Format: uuid */
-                updatedBy: string | null;
-            };
+            user: components["schemas"]["UserMetadata"];
             accessToken: string;
             refreshToken: string;
         };
@@ -1256,24 +1377,9 @@ export interface components {
             refreshToken: string;
         };
         /** @description Successful retrieval of current user info */
-        AuthMeGetResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            email: string;
-            avatarUrl: string | null;
-            isActive: boolean;
-            twoFactorSecret: string | null;
-            /** Format: date-time */
-            lastLoginAt: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            /** Format: uuid */
-            updatedBy: string | null;
+        AuthMeGetResponse: components["schemas"]["UserMetadata"] & {
+            /** Format: uri */
+            avatarUrl?: string | null;
             role: components["schemas"]["RoleMetadata"];
             /** @description List of programmatic permission keys */
             permissions: string[];
@@ -1285,6 +1391,10 @@ export interface components {
             name: string;
             slug: string;
         } | null;
+        AuthVerifyPostBody: {
+            /** @description The verification token received via email */
+            token: string;
+        };
         PaginatedPostsGetItem: {
             items: components["schemas"]["PostsGetItem"][];
             pagination: components["schemas"]["Pagination"];
@@ -1311,17 +1421,10 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
-            createdBy: components["schemas"]["UserMetadata"];
-            updatedBy: components["schemas"]["UserMetadata"];
+            createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
+            updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             coverImage: components["schemas"]["AssetMetadata"];
         };
-        UserMetadata: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            /** Format: email */
-            email: string;
-        } | null;
         AssetMetadata: {
             /** Format: uuid */
             id: string;
@@ -1366,8 +1469,8 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
-            createdBy: components["schemas"]["UserMetadata"];
-            updatedBy: components["schemas"]["UserMetadata"];
+            createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
+            updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             coverImage: components["schemas"]["AssetMetadata"];
         };
         PaginatedTokensGetItem: {
@@ -1394,8 +1497,8 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
-            createdBy: components["schemas"]["UserMetadata"];
-            updatedBy: components["schemas"]["UserMetadata"];
+            createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
+            updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             logo: components["schemas"]["AssetMetadata"];
         };
         TokensGetData: {
@@ -1419,8 +1522,8 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string | null;
-            createdBy: components["schemas"]["UserMetadata"];
-            updatedBy: components["schemas"]["UserMetadata"];
+            createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
+            updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             logo: components["schemas"]["AssetMetadata"];
         };
         TokensQuotesGetItem: {

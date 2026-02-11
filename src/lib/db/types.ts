@@ -13,7 +13,11 @@ export const Role = createSelectSchema(table.roles);
 export type Role = z.infer<typeof Role>;
 
 // Users
-export const User = createSelectSchema(table.users);
+export const User = createSelectSchema(table.users, {
+	name: (s) => s.trim().min(2)
+}).extend({
+	email: z.email().max(255)
+});
 export type User = z.infer<typeof User>;
 
 // Activity Logs
@@ -44,7 +48,7 @@ export type Post = z.infer<typeof Post>;
 
 // Messages (Contact Form)
 export const Message = createSelectSchema(table.messages, {
-	name: (s) => s.trim().min(1),
+	name: (s) => s.trim().min(2),
 	message: (s) => s.min(10).max(5000)
 }) // Use extend to fix the z.string().email() deprecation
 	.extend({

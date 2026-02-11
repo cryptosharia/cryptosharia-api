@@ -1,27 +1,23 @@
 import z from '$lib/zod-openapi';
 import OpenApiResponse from '$lib/openapi-response';
 import { User } from '$lib/db/types';
-import { RoleMetadata } from '$lib/types';
+import { RoleMetadata, UserMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 // --- Auth: Sign In ---
 
 export const AuthSigninPostBody = z
 	.object({
-		email: z.string().email(),
-		password: z.string().min(8)
+		email: z.email(),
+		password: z.string().min(12)
 	})
 	.openapi('AuthSigninPostBody', {
 		description: 'Credentials for signing in'
 	});
 
-export const AuthSigninPostResponse = User.omit({
-	hashedPassword: true,
-	passwordHashingAlgorithm: true,
-	roleId: true
-})
-	.extend({
-		role: z.string().nullable().describe('The enum value of the assigned role'),
+export const AuthSigninPostResponse = z
+	.object({
+		user: UserMetadata,
 		accessToken: z.string(),
 		refreshToken: z.string()
 	})
@@ -64,7 +60,7 @@ export const AuthRefreshPostBody = z
 
 export const AuthRefreshPostResponse = z
 	.object({
-		user: User.omit({ hashedPassword: true, passwordHashingAlgorithm: true }),
+		user: UserMetadata,
 		accessToken: z.string(),
 		refreshToken: z.string()
 	})
@@ -120,12 +116,7 @@ export const authSignoutPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.ok(
-			z.object({
-				success: z.boolean(),
-				message: z.string()
-			})
-		),
+		...OpenApiResponse.ok(),
 		...OpenApiResponse.badRequest(),
 		...OpenApiResponse.internalServerError()
 	},
@@ -134,18 +125,13 @@ export const authSignoutPost: RouteConfig = {
 
 // --- Auth: Get Current User (Me) ---
 
-export const AuthMeGetResponse = User.omit({
-	hashedPassword: true,
-	passwordHashingAlgorithm: true,
-	roleId: true
-})
-	.extend({
-		role: RoleMetadata.nullable().describe('The metadata of the assigned role'),
-		permissions: z.array(z.string()).describe('List of programmatic permission keys')
-	})
-	.openapi('AuthMeGetResponse', {
-		description: 'Successful retrieval of current user info'
-	});
+export const AuthMeGetResponse = UserMetadata.extend({
+	avatarUrl: z.url().nullable().optional(),
+	role: RoleMetadata.nullable().describe('The metadata of the assigned role'),
+	permissions: z.array(z.string()).describe('List of programmatic permission keys')
+}).openapi('AuthMeGetResponse', {
+	description: 'Successful retrieval of current user info'
+});
 
 export type AuthMeGetResponse = z.infer<typeof AuthMeGetResponse>;
 
@@ -160,4 +146,77 @@ export const authMeGet: RouteConfig = {
 		...OpenApiResponse.internalServerError()
 	},
 	security: [{ ApiKeyAuth: [], BearerAuth: [] }]
+};
+// --- Auth: Signup ---
+
+export const AuthSignupPostBody = User.pick({
+	name: true,
+	email: true
+})
+	.extend({
+		password: z.string().min(12)
+	})
+	.openapi('AuthSignupPostBody', {
+		description: 'Data for account registration'
+	});
+
+export const AuthSignupPostResponse = UserMetadata.openapi('AuthSignupPostResponse', {
+	description: 'Successful signup response with user info'
+});
+
+export type AuthSignupPostResponse = z.infer<typeof AuthSignupPostResponse>;
+
+export const authSignupPost: RouteConfig = {
+	path: '/auth/signup',
+	method: 'post',
+	summary: 'Signup',
+	description:
+		'Register a new **regular user** (`role: null`) account. Users must verify their email before they can sign in.',
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: AuthSignupPostBody
+				}
+			}
+		}
+	},
+	responses: {
+		...OpenApiResponse.created(AuthSignupPostResponse),
+		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.conflict('Email already registered'),
+		...OpenApiResponse.internalServerError()
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+// --- Auth: Verify Email ---
+
+export const AuthVerifyPostBody = z
+	.object({
+		token: z.string().describe('The verification token received via email')
+	})
+	.openapi('AuthVerifyPostBody');
+
+export const authVerifyPost: RouteConfig = {
+	path: '/auth/verify',
+	method: 'post',
+	summary: 'Verify Email',
+	description: 'Verify a user email address using a secret token.',
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: AuthVerifyPostBody
+				}
+			}
+		}
+	},
+	responses: {
+		...OpenApiResponse.ok(),
+		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.notFound('Invalid or expired token'),
+		...OpenApiResponse.internalServerError()
+	},
+	security: [{ ApiKeyAuth: [] }]
 };

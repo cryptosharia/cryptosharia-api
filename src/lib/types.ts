@@ -99,4 +99,3 @@ export const AssetMetadata = z
 	.openapi('AssetMetadata');
 
 export type AssetMetadata = z.infer<typeof AssetMetadata>;
-

@@ -58,31 +58,41 @@ export default class ApiResponse {
 		);
 	}
 
-	static notFound(): Response {
+	static conflict(message = 'Conflict'): Response {
 		return Response.json(
 			{
 				success: false,
-				message: 'Not Found'
+				message
+			} satisfies ApiResponseType,
+			{ status: 409 }
+		);
+	}
+
+	static notFound(message = 'Not Found'): Response {
+		return Response.json(
+			{
+				success: false,
+				message
 			} satisfies ApiResponseType,
 			{ status: 404 }
 		);
 	}
 
-	static badGateway(): Response {
+	static badGateway(message = 'Bad Gateway'): Response {
 		return Response.json(
 			{
 				success: false,
-				message: 'Bad Gateway'
+				message
 			} satisfies ApiResponseType,
 			{ status: 502 }
 		);
 	}
 
-	static internalServerError(): Response {
+	static internalServerError(message = 'Internal Server Error'): Response {
 		return Response.json(
 			{
 				success: false,
-				message: 'Internal Server Error'
+				message
 			} satisfies ApiResponseType,
 			{ status: 500 }
 		);

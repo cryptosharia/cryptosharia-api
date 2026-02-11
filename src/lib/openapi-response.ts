@@ -28,10 +28,10 @@ export default class OpenApiResponse {
 		};
 	}
 
-	static badRequest() {
+	static badRequest(description = 'Bad Request') {
 		return {
 			400: {
-				description: 'Bad Request',
+				description,
 				content: {
 					'application/json': {
 						schema: ApiResponseSchema
@@ -41,10 +41,10 @@ export default class OpenApiResponse {
 		};
 	}
 
-	static unauthorized() {
+	static unauthorized(description = 'Unauthorized') {
 		return {
 			401: {
-				description: 'Unauthorized',
+				description,
 				content: {
 					'application/json': {
 						schema: ApiResponseSchema
@@ -57,10 +57,10 @@ export default class OpenApiResponse {
 	/**
 	 * Creates a standardized 403 Forbidden OpenAPI response.
 	 */
-	static forbidden() {
+	static forbidden(description = 'Forbidden') {
 		return {
 			403: {
-				description: 'Forbidden',
+				description,
 				content: {
 					'application/json': {
 						schema: ApiResponseSchema
@@ -73,10 +73,10 @@ export default class OpenApiResponse {
 	/**
 	 * Creates a standardized 404 Not Found OpenAPI response.
 	 */
-	static notFound() {
+	static notFound(description = 'Not Found') {
 		return {
 			404: {
-				description: 'Not Found',
+				description,
 				content: {
 					'application/json': {
 						schema: ApiResponseSchema
@@ -93,6 +93,22 @@ export default class OpenApiResponse {
 		return {
 			502: {
 				description: 'Bad Gateway',
+				content: {
+					'application/json': {
+						schema: ApiResponseSchema
+					}
+				}
+			}
+		};
+	}
+
+	/**
+	 * Creates a standardized 409 Conflict OpenAPI response.
+	 */
+	static conflict(description = 'Conflict') {
+		return {
+			409: {
+				description,
 				content: {
 					'application/json': {
 						schema: ApiResponseSchema

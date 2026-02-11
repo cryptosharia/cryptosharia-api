@@ -29,41 +29,44 @@ export const POST: RequestHandler = async ({ request }) => {
 	const { email, password } = result.data;
 
 	try {
-		// 2. Find user by email with role information
-		const userWithRole = await db.query.users.findFirst({
-			where: eq(users.email, email),
-			with: {
-				role: true
-			}
+		// 2. Find user by email
+		const user = await db.query.users.findFirst({
+			where: eq(users.email, email)
 		});
 
-		if (!userWithRole) {
+		if (!user) {
 			return ApiResponse.unauthorized();
 		}
 
-		// 3. Verify password
-		const isValid = await verifyPassword(password, userWithRole.hashedPassword);
+		// 3. Enforce Email Verification
+		if (!user.isEmailVerified) {
+			return ApiResponse.forbidden(
+				'Your email address is not verified. Please verify it to access your account.'
+			);
+		}
+
+		// 4. Verify password
+		const isValid = await verifyPassword(password, user.hashedPassword);
 		if (!isValid) {
 			return ApiResponse.unauthorized();
 		}
 
-		// 4. Generate access token
+		// 5. Generate access token
 		const accessToken = await signAccessToken({
-			userId: userWithRole.id,
-			roleId: userWithRole.roleId
+			userId: user.id,
+			roleId: user.roleId
 		});
 
-		// 5. Generate opaque refresh token
-		const refreshToken = createRefreshToken(userWithRole.id);
+		// 6. Generate opaque refresh token
+		const refreshToken = createRefreshToken(user.id);
 
-		// 6. Store refresh token in database
+		// 7. Store refresh token in database
 		await db.insert(refreshTokens).values(refreshToken);
 
-		// 7. Return response (sanitized via parse)
+		// 8. Return response (sanitized via parse)
 		return ApiResponse.ok(
 			AuthSigninPostResponse.parse({
-				...userWithRole,
-				role: userWithRole.role?.slug ?? null,
+				user,
 				accessToken,
 				refreshToken: refreshToken.token
 			}),

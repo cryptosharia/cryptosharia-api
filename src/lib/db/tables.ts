@@ -134,7 +134,7 @@ export const roles = pgTable('roles', {
 	...CREATED_AT,
 	...UPDATED_AT,
 	...CREATED_BY_CIR,
-	...UPDATED_BY_CIR,
+	...UPDATED_BY_CIR
 });
 
 /**
@@ -162,10 +162,12 @@ export const users = pgTable('users', {
 	twoFactorSecret: text('two_factor_secret'),
 	/** Timestamp of the most recent successful login */
 	lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+	/** Email verification status */
+	isEmailVerified: boolean('is_email_verified').notNull().default(false),
 	...CREATED_AT,
 	...UPDATED_AT,
 	...CREATED_BY_CIR,
-	...UPDATED_BY_CIR,
+	...UPDATED_BY_CIR
 });
 
 /**
@@ -225,6 +227,25 @@ export const refreshTokens = pgTable('refresh_tokens', {
 });
 
 /**
+ * Stores temporary tokens for email verification workflows.
+ */
+export const emailVerifications = pgTable('email_verifications', {
+	...PK_UUID,
+	/** ID of the user to be verified */
+	userId: uuid('user_id')
+		.references(() => users.id, { onDelete: 'cascade' })
+		.notNull(),
+	/** Secure random verification token */
+	token: varchar('token', { length: 255 }).notNull().unique(),
+	/** When this token expires (e.g. 24h from creation) */
+	expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+	/** When this token was used or invalidated */
+	revokedAt: timestamp('revoked_at', { withTimezone: true }),
+	...CREATED_AT,
+	...UPDATED_AT
+});
+
+/**
  * Stores tokens data.
  */
 export const tokens = pgTable('tokens', {
@@ -248,14 +269,16 @@ export const tokens = pgTable('tokens', {
 	/** Official project website URL */
 	website: text('website').notNull(),
 	/** Reference to the token's logo asset */
-	logoId: uuid('logo_id').references(() => assets.id).notNull(),
+	logoId: uuid('logo_id')
+		.references(() => assets.id)
+		.notNull(),
 	/** Detailed Sharia analysis or project description (Markdown) */
 	content: text('content').notNull(),
 	...PUBLISHED_AT,
 	...CREATED_AT,
 	...UPDATED_AT,
 	...CREATED_BY,
-	...UPDATED_BY,
+	...UPDATED_BY
 });
 
 /**
@@ -272,7 +295,9 @@ export const posts = pgTable('posts', {
 	/** Main content of the post (HTML or Markdown) */
 	content: text('content').notNull(),
 	/** Reference to the main cover image asset */
-	coverImageId: uuid('cover_image_id').references(() => assets.id).notNull(),
+	coverImageId: uuid('cover_image_id')
+		.references(() => assets.id)
+		.notNull(),
 	/** Logical section or category */
 	section: postSectionEnum('section').notNull(),
 	/** Document type */
@@ -289,7 +314,7 @@ export const posts = pgTable('posts', {
 	...CREATED_AT,
 	...UPDATED_AT,
 	...CREATED_BY,
-	...UPDATED_BY,
+	...UPDATED_BY
 });
 
 /**
@@ -306,7 +331,7 @@ export const tags = pgTable('tags', {
 	...CREATED_AT,
 	...UPDATED_AT,
 	...CREATED_BY,
-	...UPDATED_BY,
+	...UPDATED_BY
 });
 
 /**
@@ -387,7 +412,7 @@ export const assets = pgTable('assets', {
 	/** Storage provider used for this asset */
 	provider: assetProviderEnum('provider').notNull(),
 	...CREATED_AT,
-	...CREATED_BY,
+	...CREATED_BY
 });
 
 export const imgbbImages = pgTable('imgbb_images', {
@@ -411,5 +436,5 @@ export const imgbbImages = pgTable('imgbb_images', {
 	/** URL to delete this asset */
 	deleteUrl: text('delete_url').notNull(),
 	...CREATED_AT,
-	...CREATED_BY,
+	...CREATED_BY
 });
