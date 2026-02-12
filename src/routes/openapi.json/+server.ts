@@ -15,16 +15,26 @@ import {
 	authSignupPost,
 	authVerifyPost
 } from '../auth';
+// import {
+// 	usersGet,
+// 	usersIdDelete,
+// 	usersIdGet,
+// 	usersIdPatch,
+// 	usersPost,
+// 	usersIdRolePut,
+// 	usersIdPasswordPatch,
+// 	usersIdAvatarPost
+// } from '../users';
 
 const PATHS = [
 	docsGet,
 	openapiGet,
-	authSigninPost,
 	authSignupPost,
+	authVerifyPost,
+	authSigninPost,
 	authSignoutPost,
 	authRefreshPost,
 	authMeGet,
-	authVerifyPost,
 	postsGet,
 	postsIdGet,
 	postsSlugGet,
@@ -36,6 +46,14 @@ const PATHS = [
 	messagesPost,
 	imgbbPost,
 	seedPost
+	// usersGet,
+	// usersIdGet,
+	// usersPost,
+	// usersIdPatch,
+	// usersIdDelete,
+	// usersIdRolePut,
+	// usersIdPasswordPatch,
+	// usersIdAvatarPost
 ];
 
 export const GET: RequestHandler = async () => {

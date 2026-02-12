@@ -60,9 +60,14 @@ export const messagesGet: RouteConfig = {
 		query: MessagesGetQuery
 	},
 	responses: {
-		...OpenApiResponse.ok(PaginatedData(MessagesGetItem, 'MessagesGetItem')),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(
+			PaginatedData(MessagesGetItem, 'MessagesGetItem'),
+			'Paginated list of messages retrieved successfully'
+		),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve messages due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -83,10 +88,10 @@ export const messagesPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.created(Message),
-		...OpenApiResponse.badRequest(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.created(Message, 'Message sent successfully'),
+		...OpenApiResponse.badRequest('Invalid form data provided'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.internalServerError('Failed to send message due to an internal server error')
 	},
 	security: [{ ApiKeyAuth: [] }]
 };

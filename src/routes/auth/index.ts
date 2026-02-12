@@ -42,10 +42,10 @@ export const authSigninPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.ok(AuthSigninPostResponse),
-		...OpenApiResponse.badRequest(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(AuthSigninPostResponse, 'Success, tokens and user metadata returned'),
+		...OpenApiResponse.badRequest('Invalid email or password'),
+		...OpenApiResponse.unauthorized('Invalid credentials'),
+		...OpenApiResponse.internalServerError('Failed to process signin')
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -85,10 +85,13 @@ export const authRefreshPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.ok(AuthRefreshPostResponse),
-		...OpenApiResponse.badRequest(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(
+			AuthRefreshPostResponse,
+			'Success, new tokens and user metadata returned'
+		),
+		...OpenApiResponse.badRequest('Missing or invalid refresh token'),
+		...OpenApiResponse.unauthorized('Refresh token is expired or revoked'),
+		...OpenApiResponse.internalServerError('Failed to refresh token')
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -116,9 +119,9 @@ export const authSignoutPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.ok(),
-		...OpenApiResponse.badRequest(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(undefined, 'Refresh token revoked successfully'),
+		...OpenApiResponse.badRequest('Missing or invalid refresh token'),
+		...OpenApiResponse.internalServerError('Failed to revoke token')
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -141,9 +144,9 @@ export const authMeGet: RouteConfig = {
 	summary: 'Get Current User',
 	description: 'Retrieve profile information for the currently authenticated user.',
 	responses: {
-		...OpenApiResponse.ok(AuthMeGetResponse),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(AuthMeGetResponse, 'Current user profile retrieved successfully'),
+		...OpenApiResponse.unauthorized('Not authenticated'),
+		...OpenApiResponse.internalServerError('Failed to fetch user profile')
 	},
 	security: [{ ApiKeyAuth: [], BearerAuth: [] }]
 };
@@ -169,7 +172,7 @@ export type AuthSignupPostResponse = z.infer<typeof AuthSignupPostResponse>;
 export const authSignupPost: RouteConfig = {
 	path: '/auth/signup',
 	method: 'post',
-	summary: 'Signup',
+	summary: 'Sign Up',
 	description:
 		'Register a new **regular user** (`role: null`) account. Users must verify their email before they can sign in.',
 	request: {
@@ -182,10 +185,10 @@ export const authSignupPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.created(AuthSignupPostResponse),
-		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.created(AuthSignupPostResponse, 'User registered successfully'),
+		...OpenApiResponse.badRequest('Invalid input data'),
 		...OpenApiResponse.conflict('Email already registered'),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.internalServerError('Failed to register user')
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -213,10 +216,10 @@ export const authVerifyPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.ok(),
-		...OpenApiResponse.badRequest(),
+		...OpenApiResponse.ok(undefined, 'Email verified successfully'),
+		...OpenApiResponse.badRequest('Invalid or missing token'),
 		...OpenApiResponse.notFound('Invalid or expired token'),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.internalServerError('Failed to verify email')
 	},
 	security: [{ ApiKeyAuth: [] }]
 };

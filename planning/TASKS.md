@@ -15,7 +15,7 @@
   - [x] Create `/auth/signout` endpoint (POST) <!-- id: 91 -->
   - [x] Create `/auth/refresh` endpoint (POST) <!-- id: 92 -->
   - [x] Create `/auth/me` endpoint (GET) - get current user info <!-- id: 93 -->
-  - [ ] Create `/auth/signup` endpoint (POST) - Public registration <!-- id: 93.1 -->
+  - [x] Create `/auth/signup` endpoint (POST) - Regular user registration <!-- id: 93.1 -->
 - [x] Add JWT utilities (sign, verify, refresh) <!-- id: 94 -->
 - [x] Update `src/hooks.server.ts` to support dual authentication (API Key + JWT) <!-- id: 95 -->
 - [x] Add session management (refresh token rotation) <!-- id: 96 -->
@@ -46,14 +46,14 @@
 
 ## Phase 3: User CRUD Endpoints
 
-- [/] `/users` - List users (GET) <!-- id: 107 -->
-- [/] `/users/:id` - Get user by ID (GET) <!-- id: 108 -->
-- [/] `/users` - Create user (POST) <!-- id: 109 -->
-- [ ] `/users/:id` - Update user (PATCH) <!-- id: 110 -->
-- [ ] `/users/:id/role` - Assign role (PUT) <!-- id: 110.1 -->
-- [ ] `/users/:id` - Delete/deactivate user (DELETE) <!-- id: 111 -->
-- [ ] `/users/:id/password` - Change password (PATCH) <!-- id: 112 -->
-- [ ] `/users/:id/avatar` - Upload avatar (POST) <!-- id: 113 -->
+- [x] `/users` - List users (GET) <!-- id: 107 -->
+- [x] `/users/:id` - Get user by ID (GET) <!-- id: 108 -->
+- [x] `/users` - Create user (POST) <!-- id: 109 -->
+- [x] `/users/:id` - Update user (PATCH) <!-- id: 110 -->
+- [x] `/users/:id/role` - Assign role (PUT) <!-- id: 110.1 -->
+- [x] `/users/:id` - Delete/deactivate user (DELETE) <!-- id: 111 -->
+- [x] `/users/:id/password` - Change password (PATCH) <!-- id: 112 -->
+- [x] `/users/:id/avatar` - Upload avatar (POST) <!-- id: 113 -->
 
 ## Phase 4: Role Management Endpoints
 

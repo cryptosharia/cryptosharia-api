@@ -38,7 +38,7 @@ export const TokensGetItem = Token.omit({
 	.extend({
 		logo: AssetMetadata,
 		createdBy: UserMetadata.nullable(),
-		updatedBy: UserMetadata.nullable(),
+		updatedBy: UserMetadata.nullable()
 	})
 	.openapi('TokensGetItem');
 export type TokensGetItem = z.infer<typeof TokensGetItem>;
@@ -64,10 +64,15 @@ export const tokensGet: RouteConfig = {
 		query: TokensGetQuery
 	},
 	responses: {
-		...OpenApiResponse.ok(PaginatedData(TokensGetItem, 'TokensGetItem')),
-		...OpenApiResponse.badRequest(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(
+			PaginatedData(TokensGetItem, 'TokensGetItem'),
+			'Paginated list of tokens retrieved successfully'
+		),
+		...OpenApiResponse.badRequest('Invalid query parameters provided'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve tokens due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -87,10 +92,12 @@ export const tokensSlugGet: RouteConfig = {
 		params: TokensSlugGetParams
 	},
 	responses: {
-		...OpenApiResponse.ok(TokensGetData),
-		...OpenApiResponse.notFound(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(TokensGetData, 'Published token retrieved successfully'),
+		...OpenApiResponse.notFound('Token not found or is not published'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve token due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -110,10 +117,12 @@ export const tokensIdGet: RouteConfig = {
 		params: TokensIdGetParams
 	},
 	responses: {
-		...OpenApiResponse.ok(TokensGetData),
-		...OpenApiResponse.notFound(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(TokensGetData, 'Token retrieved successfully by ID'),
+		...OpenApiResponse.notFound('Token not found'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve token due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -156,11 +165,13 @@ export const tokensQuotesGet: RouteConfig = {
 		query: TokensQuotesGetQuery
 	},
 	responses: {
-		...OpenApiResponse.ok(z.array(TokensQuotesGetItem)),
-		...OpenApiResponse.badRequest(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.badGateway(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(z.array(TokensQuotesGetItem), 'Token quotes retrieved successfully'),
+		...OpenApiResponse.badRequest('Invalid slug(s) provided'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.badGateway('Failed to fetch data from market data provider'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve token quotes due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };

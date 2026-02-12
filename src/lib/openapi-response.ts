@@ -2,10 +2,10 @@ import { ApiResponse as ApiResponseSchema } from '$lib/types';
 import z from './zod-openapi';
 
 export default class OpenApiResponse {
-	static ok<T extends z.ZodTypeAny>(schema?: T) {
+	static ok<T extends z.ZodTypeAny>(schema?: T, description = 'OK') {
 		return {
 			200: {
-				description: 'OK',
+				description,
 				content: {
 					'application/json': {
 						schema: schema ? ApiResponseSchema.extend({ data: schema }) : ApiResponseSchema
@@ -15,10 +15,10 @@ export default class OpenApiResponse {
 		};
 	}
 
-	static created<T extends z.ZodTypeAny>(schema?: T) {
+	static created<T extends z.ZodTypeAny>(schema?: T, description = 'Created') {
 		return {
 			201: {
-				description: 'Created',
+				description,
 				content: {
 					'application/json': {
 						schema: schema ? ApiResponseSchema.extend({ data: schema }) : ApiResponseSchema
@@ -89,10 +89,10 @@ export default class OpenApiResponse {
 	/**
 	 * Creates a standardized 502 Bad Gateway OpenAPI response.
 	 */
-	static badGateway() {
+	static badGateway(description = 'Bad Gateway') {
 		return {
 			502: {
-				description: 'Bad Gateway',
+				description,
 				content: {
 					'application/json': {
 						schema: ApiResponseSchema
@@ -121,10 +121,10 @@ export default class OpenApiResponse {
 	/**
 	 * Creates a standardized 500 Internal Server Error OpenAPI response.
 	 */
-	static internalServerError() {
+	static internalServerError(description = 'Internal Server Error') {
 		return {
 			500: {
-				description: 'Internal Server Error',
+				description,
 				content: {
 					'application/json': {
 						schema: ApiResponseSchema

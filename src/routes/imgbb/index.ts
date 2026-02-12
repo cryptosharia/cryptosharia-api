@@ -24,11 +24,13 @@ export const imgbbPost: RouteConfig = {
 		}
 	},
 	responses: {
-		...OpenApiResponse.created(ImgbbImage),
-		...OpenApiResponse.badRequest(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.badGateway(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.created(ImgbbImage, 'Image uploaded to ImgBB successfully'),
+		...OpenApiResponse.badRequest('No image file provided in the request'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.badGateway('Failed to proxy upload to ImgBB service'),
+		...OpenApiResponse.internalServerError(
+			'Failed to process image upload due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };

@@ -37,7 +37,7 @@ export const PostsGetItem = Post.omit({
 	.extend({
 		coverImage: AssetMetadata,
 		createdBy: UserMetadata.nullable(),
-		updatedBy: UserMetadata.nullable(),
+		updatedBy: UserMetadata.nullable()
 	})
 	.openapi('PostsGetItem');
 export type PostsGetItem = z.infer<typeof PostsGetItem>;
@@ -62,10 +62,15 @@ export const postsGet: RouteConfig = {
 		query: PostsGetQuery
 	},
 	responses: {
-		...OpenApiResponse.ok(PaginatedData(PostsGetItem, 'PostsGetItem')),
-		...OpenApiResponse.badRequest(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(
+			PaginatedData(PostsGetItem, 'PostsGetItem'),
+			'Paginated list of posts retrieved successfully'
+		),
+		...OpenApiResponse.badRequest('Invalid query parameters provided'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve posts due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -85,10 +90,12 @@ export const postsSlugGet: RouteConfig = {
 		params: PostsSlugGetParams
 	},
 	responses: {
-		...OpenApiResponse.ok(PostsGetData),
-		...OpenApiResponse.notFound(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(PostsGetData, 'Published post retrieved successfully'),
+		...OpenApiResponse.notFound('Post not found or is not published'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve post due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -108,10 +115,12 @@ export const postsIdGet: RouteConfig = {
 		params: PostsIdGetParams
 	},
 	responses: {
-		...OpenApiResponse.ok(PostsGetData),
-		...OpenApiResponse.notFound(),
-		...OpenApiResponse.unauthorized(),
-		...OpenApiResponse.internalServerError()
+		...OpenApiResponse.ok(PostsGetData, 'Post retrieved successfully by ID'),
+		...OpenApiResponse.notFound('Post not found'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve post due to an internal server error'
+		)
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
