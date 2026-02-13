@@ -51,45 +51,47 @@
 - [x] `/users` - Create user (POST) <!-- id: 109 -->
 - [x] `/users/:id` - Update user (PATCH) <!-- id: 110 -->
 - [x] `/users/:id/role` - Assign role (PUT) <!-- id: 110.1 -->
-- [x] `/users/:id` - Delete/deactivate user (DELETE) <!-- id: 111 -->
+- [x] `/users/:id/status` - Update status (PUT) <!-- id: 111 -->
 - [x] `/users/:id/password` - Change password (PATCH) <!-- id: 112 -->
 - [x] `/users/:id/avatar` - Upload avatar (POST) <!-- id: 113 -->
 
-## Phase 4: Role Management Endpoints
+## Phase 4: Assets Management
 
-- [ ] `/roles` - List roles (GET) <!-- id: 114 -->
-- [ ] `/roles/:id` - Get role by ID (GET) <!-- id: 115 -->
-- [ ] `/roles` - Create role (POST) <!-- id: 116 -->
-- [ ] `/roles/:id` - Update role (PATCH) <!-- id: 117 -->
-- [ ] `/roles/:id` - Delete role (DELETE) <!-- id: 118 -->
-- [ ] `/roles/:id/permissions` - Assign permissions to role (PUT) <!-- id: 119 -->
+- [ ] `/assets` - List assets (GET) <!-- id: 114 -->
+- [ ] `/assets/:id` - Get asset detail (GET) <!-- id: 115 -->
+- [ ] `/assets` - Upload multiple assets (POST) <!-- id: 116 -->
+- [ ] `/assets/:id` - Update asset metadata (PATCH) <!-- id: 117 -->
+- [ ] `/assets/:id` - Delete asset (DELETE) <!-- id: 118 -->
 
-## Phase 5: Permission Endpoints (Read-Only)
+## Phase 5: Role & Permission Management
 
-- [ ] `/permissions` - List permissions (GET) <!-- id: 120 -->
+- [ ] `/roles` - List roles (GET) <!-- id: 119 -->
+- [ ] `/roles/:id` - Get role by ID (GET) <!-- id: 120 -->
+- [ ] `/roles` - Create role (POST) <!-- id: 121 -->
+- [ ] `/roles/:id` - Update role (PATCH) <!-- id: 122 -->
+- [ ] `/roles/:id` - Delete role (DELETE) <!-- id: 123 -->
+- [ ] `/roles/:id/permissions` - Assign permissions to role (PUT) <!-- id: 124 -->
+- [ ] `/permissions` - List all system permissions (GET) <!-- id: 125 -->
 
 ## Phase 6: Activity Logs
 
-- [ ] `/activity-logs` - List activity logs (GET) <!-- id: 121 -->
-- [ ] `/activity-logs/:id` - Get activity log by ID (GET) <!-- id: 122 -->
-- [ ] Implement automatic activity logging for all user actions <!-- id: 123 -->
+- [ ] `/activity-logs` - List activity logs (GET) <!-- id: 126 -->
+- [ ] `/activity-logs/:id` - Get activity log by ID (GET) <!-- id: 127 -->
+- [ ] Implement automatic activity logging for all user actions <!-- id: 128 -->
 
 ## Phase 7: Security Enhancements
 
-- [ ] Implement Admin MFA Enforcement (Mandatory for staff - Applies to both Password & OAuth) <!-- id: 124.1 -->
-- [ ] Implement Sudo Mode Middleware (Re-verification for high-stakes actions) <!-- id: 124.2 -->
-- [ ] Configure Global Content Security Policy (CSP) <!-- id: 125 -->
-- [ ] Add Security Audit Logging for Role changes & critical actions <!-- id: 126 -->
-- [ ] Implement Password Strength Validation <!-- id: 127 -->
-- [ ] Implement Rate Limiting for Auth endpoints <!-- id: 128 -->
-- [ ] Implement IP-matching for Refresh Tokens <!-- id: 129 -->
+- [ ] Implement Admin MFA Enforcement (Mandatory for staff) <!-- id: 129 -->
+- [ ] Implement Sudo Mode Middleware (Re-verification) <!-- id: 130 -->
+- [ ] Implement Rate Limiting for Auth endpoints <!-- id: 131 -->
 
 ## Phase 8: Testing & Documentation
 
-- [ ] Write unit tests for authentication utilities <!-- id: 128 -->
-- [ ] Write integration tests for all user endpoints <!-- id: 129 -->
-- [ ] Update OpenAPI documentation <!-- id: 130 -->
-- [ ] Create seed data for development <!-- id: 131 -->
+- [x] Write unit tests for authentication utilities <!-- id: 132 -->
+- [x] Write integration tests for all user endpoints <!-- id: 133 -->
+- [x] Write integration tests for messages endpoint <!-- id: 134 -->
+- [x] Create comprehensive API Documentation (`docs/API_DOCS.md`) <!-- id: 135 -->
+- [ ] Create production-ready seed data <!-- id: 136 -->
 
 ## Phase 9: Database Seeding
 

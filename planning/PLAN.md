@@ -27,24 +27,30 @@ This plan outlines the implementation of comprehensive admin functionality for t
 
 - [x] Token utilities (`src/lib/auth/tokens.ts`) - HS256 for Access Tokens, Opaque Strings for Refresh Tokens
 - [x] Password utilities (`src/lib/auth/password.ts`) - Argon2id hashing
-- [x] `/auth/signin` endpoint with tests
 - [x] Database schema updates (users table, refreshTokens table)
+- [x] Identification Layering (UUID internal, Slug external)
+- [x] Role-Based Access Control (RBAC) System
+- [x] API Response Standardization (Zod parsing, Metadata expansion)
+- [x] Auth Endpoints:
+  - [x] `/auth/signin`
+  - [x] `/auth/signup`
+  - [x] `/auth/verify`
+  - [x] `/auth/signout`
+  - [x] `/auth/refresh`
+  - [x] `/auth/me`
+- [x] User Management Endpoints:
+  - [x] `GET /users` - List users (Admin)
+  - [x] `GET /users/:id` - Get user detail (Admin/Self)
+  - [x] `PATCH /users/:id` - Update profile (Admin/Self)
+  - [x] `PUT /users/:id/status` - Update status (Admin)
+  - [x] `PUT /users/:id/role` - Assign role (Admin)
 
-### 🔄 In Progress
+### 📋 Todo - Core Modules
 
-- [ ] Add sample users to seed data (`src/routes/seed/data.ts`)
-
-### 📋 Todo - Auth Endpoints
-
-- [ ] `/auth/signout` - Revoke refresh token
-- [ ] `/auth/refresh` - Token rotation
-- [ ] `/auth/me` - Get current user
-- [ ] `hooks.server.ts` - Auth middleware for JWT verification
-
-### 📋 Todo - System Seed (Future)
-
-- [ ] Seed roles & permissions as system configuration (not sample data)
-- [ ] Bootstrap first admin endpoint
+- [ ] Assets Management Endpoint (`/assets`) - Integrated storage management
+- [ ] Role Management Endpoints (`/roles`)
+- [ ] Permission Discovery Endpoints (`/permissions`)
+- [ ] Activity Logging Implementation
 
 ---
 

@@ -42,6 +42,7 @@ Before every commit or finalizing a task, perform a comprehensive scan for:
 ## Self-Improvement:
 
 1.  **Proactive Rule Updates**: Automatically update this `GEMINI.md` file when new decisions, preferences, or corrections are made. This includes architecture decisions, ecosystem changes, coding conventions, and behavior preferences. Do not wait to be asked.
+2.  **API Documentation Maintenance**: Automatically update `docs/API_DOCS.md` whenever an endpoint is added, modified, or a new architectural rule is established. This document is the "Source of Truth" for all ecosystem consumers.
 
 ---
 

@@ -1,4 +1,4 @@
-import { GS_SEND_MESSAGE_URL } from '$env/static/private';
+import { sendEmail } from '$lib/email';
 import { Message } from '$lib/db/types';
 import ApiResponse from '$lib/api-response';
 import z from '$lib/zod-openapi';
@@ -10,6 +10,7 @@ import { and, ilike, inArray, or, count } from 'drizzle-orm';
 import { waitUntil } from '@vercel/functions';
 import { requirePermission } from '$lib/auth/permissions';
 import type { PaginatedData } from '$lib/types';
+import { escapeHtml } from '$lib/utils';
 
 /**
  * GET /messages
@@ -89,7 +90,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
  * Creates a new message (contact form submission).
  */
 export const POST: RequestHandler = async (event) => {
-	const { request, fetch, url } = event;
+	const { request, url } = event;
 	try {
 		const queryParams = Object.fromEntries(url.searchParams);
 		const body = await request.json();
@@ -111,11 +112,21 @@ export const POST: RequestHandler = async (event) => {
 		const notify = queryResult.success ? queryResult.data.notify : true;
 
 		if (notify) {
+			const safeName = escapeHtml(insertData.name);
+			const safeEmail = escapeHtml(insertData.email);
+			const safeMessage = escapeHtml(insertData.message).replace(/\n/g, '<br>');
+
 			waitUntil(
-				fetch(GS_SEND_MESSAGE_URL, {
-					method: 'POST',
-					body: JSON.stringify(insertData)
-				}).catch((err) => console.error('Google Apps Script Error:', err))
+				sendEmail({
+					to: 'cryptoshariaforum@gmail.com', // Admin notification
+					subject: `New Contact Message from ${safeName}`,
+					html: `
+						<p><strong>Name:</strong> ${safeName}</p>
+						<p><strong>Email:</strong> <i>${safeEmail}</i></p>
+						<p><strong>Message:</strong></p>
+						<p>${safeMessage}</p>
+					`
+				})
 			);
 		}
 
