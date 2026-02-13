@@ -25,14 +25,16 @@ export const POST: RequestHandler = async () => {
 
 		// 1. Clear existing content data
 		await db.delete(schema.refreshTokens);
-		await db.delete(schema.posts);
-		await db.delete(schema.tokens);
+		await db.delete(schema.emailVerifications); // Added missing cleanup
 		await db.delete(schema.postTags);
 		await db.delete(schema.tokenTags);
+		await db.delete(schema.posts);
+		await db.delete(schema.tokens);
 		await db.delete(schema.tags);
+		await db.delete(schema.users); // Delete users before assets (avatarId FK)
 		await db.delete(schema.assets);
 		await db.delete(schema.messages);
-		await db.delete(schema.users);
+		await db.delete(schema.activityLogs); // Clean logs too
 
 		// 2. Seed Users
 		const seededUsers: Record<string, string> = {};
