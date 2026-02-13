@@ -111,45 +111,34 @@ export const userStatusEnum = pgEnum('user_status', [
 	'banned' // Permanent block (policy violation)
 ]);
 
+/**
+ * Defined system roles for RBAC.
+ * Regular users have this set to NULL.
+ */
+export const userRoleEnum = pgEnum('user_role', [
+	'super_admin',
+	'admin',
+	'posts_manager',
+	'tokens_manager'
+]);
+
 // --- Tables ---
 
 /**
- * Stores permissions per module.
- */
-export const permissions = pgTable('permissions', {
-	...PK_UUID,
-	/** Programmatic identifier for code-level permission checks (e.g. 'tokens.manage') */
-	permission: varchar('permission', { length: 100 }).notNull().unique()
-});
-
-/**
- * Stores roles for users.
- */
-export const roles = pgTable('roles', {
-	...PK_UUID,
-	/** Programmatic identifier (e.g. 'super_admin', 'content_editor') */
-	role: varchar('role', { length: 50 }).notNull().unique()
-});
-
-/**
- * Stores users (both regular users and staff).
+ * Centralized user identity table.
  */
 export const users = pgTable('users', {
 	...PK_UUID,
-	/** Full name of the user */
-	name: varchar('name', { length: 120 }).notNull(),
-	/** Unique email address for login and notifications */
+	name: varchar('name', { length: 120 }).notNull(), // Full name
 	email: varchar('email', { length: 255 }).notNull().unique(),
-	/** Argon2 or Bcrypted password hash */
 	hashedPassword: text('hashed_password').notNull(),
-	/** Algorithm used for password hashing */
 	passwordHashingAlgorithm: hashingAlgorithmEnum('password_hashing_algorithm')
 		.notNull()
 		.default('argon2id'),
 	/** Reference to the user's profile image (optional) */
 	avatarId: uuid('avatar_id').references((): AnyPgColumn => assets.id),
-	/** Reference to the assigned role (NULL = regular user, set = staff/admin) */
-	roleId: uuid('role_id').references(() => roles.id),
+	/** System Role for staff/admins. */
+	role: userRoleEnum('role'), // NULL = Regular User / Member
 	/** Administrative account lifecycle status */
 	status: userStatusEnum('status').notNull().default('active'),
 	/** TOTP or secondary authentication secret */
@@ -162,24 +151,6 @@ export const users = pgTable('users', {
 	...UPDATED_AT,
 	...UPDATED_BY_CIR
 });
-
-/**
- * Stores role-permission many-to-many relationships.
- */
-export const rolePermissions = pgTable(
-	'role_permissions',
-	{
-		/** Reference to the role */
-		roleId: uuid('role_id')
-			.notNull()
-			.references(() => roles.id, { onDelete: 'cascade' }),
-		/** Reference to the permission */
-		permissionId: uuid('permission_id')
-			.notNull()
-			.references(() => permissions.id, { onDelete: 'cascade' })
-	},
-	(t) => [primaryKey({ columns: [t.roleId, t.permissionId] })]
-);
 
 /**
  * Stores audit logs for user activities.

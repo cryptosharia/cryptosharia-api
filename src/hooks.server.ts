@@ -3,6 +3,7 @@ import ApiResponse from '$lib/api-response';
 import type { Handle } from '@sveltejs/kit';
 import { verifyAccessToken } from '$lib/auth/tokens';
 import { getUserPermissions } from '$lib/auth/permissions';
+import type { Role } from '$lib/auth/rbac';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
@@ -33,16 +34,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 		try {
 			const payload = await verifyAccessToken(token);
 
-			// Fetch permissions if roleId exists (staff/admin)
+			// Fetch permissions if role exists (staff/admin)
 			let permissions: string[] = [];
-			if (payload.roleId) {
-				permissions = await getUserPermissions(payload.roleId);
+			if (payload.role) {
+				permissions = getUserPermissions(payload.role as Role);
 			}
 
 			event.locals.user = {
 				id: payload.userId,
-				roleId: payload.roleId,
-				permissions: permissions
+				role: payload.role as Role | null,
+				permissions
 			};
 		} catch {
 			// Token exists but is invalid/expired. We don't block yet,

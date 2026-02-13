@@ -1,9 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
 	users,
-	roles,
-	permissions,
-	rolePermissions,
 	activityLogs,
 	refreshTokens,
 	tokens,
@@ -18,10 +15,6 @@ import {
  * Relations for the Users table.
  */
 export const usersRelations = relations(users, ({ one, many }) => ({
-	role: one(roles, {
-		fields: [users.roleId],
-		references: [roles.id]
-	}),
 	avatar: one(assets, {
 		fields: [users.avatarId],
 		references: [assets.id]
@@ -33,34 +26,6 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 	}),
 	activityLogs: many(activityLogs),
 	refreshTokens: many(refreshTokens)
-}));
-
-/**
- * Relations for the Roles table.
- */
-export const rolesRelations = relations(roles, ({ many }) => ({
-	permissions: many(rolePermissions)
-}));
-
-/**
- * Relations for the Permissions table.
- */
-export const permissionsRelations = relations(permissions, ({ many }) => ({
-	roles: many(rolePermissions)
-}));
-
-/**
- * Relations for the Role-Permissions junction table.
- */
-export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
-	role: one(roles, {
-		fields: [rolePermissions.roleId],
-		references: [roles.id]
-	}),
-	permission: one(permissions, {
-		fields: [rolePermissions.permissionId],
-		references: [permissions.id]
-	})
 }));
 
 /**

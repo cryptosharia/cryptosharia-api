@@ -36,7 +36,7 @@ describe('POST /auth/signin', () => {
 
 		// Sensitive fields or profile fields (like role/avatar) should NOT be here
 		expect(loginData.user).not.toHaveProperty('hashedPassword');
-		expect(loginData.user).not.toHaveProperty('roleId');
+		expect(loginData.user).not.toHaveProperty('role');
 		expect(loginData).not.toHaveProperty('role');
 	});
 

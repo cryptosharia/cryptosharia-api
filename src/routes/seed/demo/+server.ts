@@ -6,6 +6,7 @@ import { env } from '$env/dynamic/private';
 import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
 import { hashPassword } from '$lib/auth/password';
+import type { Role } from '$lib/auth/rbac';
 import { MESSAGES, POSTS, TOKENS, USERS } from './data';
 
 /**
@@ -33,21 +34,10 @@ export const POST: RequestHandler = async () => {
 		await db.delete(schema.messages);
 		await db.delete(schema.users);
 
-		// 2. Fetch Roles for assignment (System Seed MUST be run first)
-		const allRoles = await db.select().from(schema.roles);
-		const roleMap = Object.fromEntries(allRoles.map((r) => [r.role, r.id]));
-
-		if (allRoles.length === 0) {
-			return ApiResponse.badRequest({
-				error: ['Roles table is empty. Please run /seed/system first.']
-			});
-		}
-
-		// 3. Seed Users
+		// 2. Seed Users
 		const seededUsers: Record<string, string> = {};
 		for (const userData of USERS) {
 			const hashedPassword = await hashPassword(userData.password);
-			const roleId = userData.role ? roleMap[userData.role] : null;
 
 			const [user] = await db
 				.insert(schema.users)
@@ -55,7 +45,7 @@ export const POST: RequestHandler = async () => {
 					name: userData.name,
 					email: userData.email,
 					hashedPassword,
-					roleId,
+					role: userData.role as Role,
 					status: userData.status || 'active'
 				})
 				.returning({ id: schema.users.id });

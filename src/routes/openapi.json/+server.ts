@@ -3,7 +3,7 @@ import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-ope
 import { postsGet, postsIdGet, postsSlugGet } from '../posts';
 import { tokensGet, tokensIdGet, tokensQuotesGet, tokensSlugGet } from '../tokens';
 import { messagesGet, messagesPost } from '../messages';
-import { seedSystemPost, seedDemoPost } from '../seed';
+import { seedDemoPost } from '../seed';
 import { imgbbPost } from '../imgbb';
 import { openapiGet } from '.';
 import { docsGet } from '../(docs)';
@@ -47,7 +47,6 @@ const PATHS = [
 	messagesGet,
 	messagesPost,
 	imgbbPost,
-	seedSystemPost,
 	seedDemoPost
 ];
 

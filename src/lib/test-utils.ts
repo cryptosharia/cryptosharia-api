@@ -29,21 +29,27 @@ export function createApiTestClient({ useApiKey = true }: { useApiKey?: boolean 
  * @returns The created user record
  */
 export async function createTestUser(overrides?: Partial<typeof users.$inferInsert>) {
-	const random = Math.random().toString(36).substring(7);
+	const random = Math.floor(Math.random() * 1000000);
 
-	const [user] = await db
-		.insert(users)
-		.values({
-			name: 'Test User',
-			email: `test-${random}@example.com`,
-			hashedPassword: await hashPassword('password123'),
-			passwordHashingAlgorithm: 'argon2id',
-			status: 'active',
-			...overrides
-		})
-		.returning();
+	try {
+		const [user] = await db
+			.insert(users)
+			.values({
+				name: `Test User ${random}`,
+				email: `test-${random}@example.com`,
+				hashedPassword: await hashPassword('password123'),
+				passwordHashingAlgorithm: 'argon2id',
+				status: 'active',
+				role: null,
+				...overrides
+			})
+			.returning();
 
-	return user;
+		return user;
+	} catch (error) {
+		console.error('Failed to create test user:', error);
+		throw error;
+	}
 }
 
 /**

@@ -56,7 +56,7 @@ This plan outlines the implementation of comprehensive admin functionality for t
 
 JWT utility functions for token generation, verification, and refresh logic:
 
-- `signAccessToken(userId: string, roleId: string)` - Generate short-lived access token (15 minutes)
+- `signAccessToken(userId: string, role: string)` - Generate short-lived access token (15 minutes)
 - `generateRandomToken()` - Generate cryptographically secure random string for refresh tokens
 - `verifyAccessToken(token: string)` - Verify and decode access token
 - Uses `jose` library with HS256 algorithm (symmetric keys)
@@ -96,7 +96,7 @@ interface Locals {
 	user?: {
 		id: string;
 		email: string;
-		roleId: string | null;
+		role: string | null;
 		permissions: string[];
 	};
 }
@@ -158,10 +158,10 @@ Get current admin info:
 List and create users:
 
 - **GET** `/users` - List all users with pagination, search, and role filtering
-  - Query params: `search`, `roleId`, `isActive`, `limit`, `page`
+  - Query params: `search`, `role`, `isActive`, `limit`, `page`
   - Requires permission: `users.read`
 - **POST** `/users` - Create new user
-  - Request body: `{ name, email, password, roleId?, avatarUrl? }`
+  - Request body: `{ name, email, password, role?, avatarUrl? }`
   - Requires permission: `users.create`
   - Hashes password with Argon2
   - Logs creation activity
@@ -178,11 +178,11 @@ Get, update, and delete specific user:
   - Requires permission: `users.read`
 - **PATCH** `/users/:id` - Update user generic fields
   - Request body: `{ name?, email?, bio?, isActive? }`
-  - **CRITICAL**: Does NOT allow `roleId` or `password` updates
+  - **CRITICAL**: Does NOT allow `role` or `password` updates
   - Requires permission: `users.update`
   - Logs update activity
 - **PUT** `/users/:id/role` - Assign role
-  - Request body: `{ roleId }`
+  - Request body: `{ role }`
   - Requires permission: `users.promote` (Higher privilege)
   - Logs role assignment activity
 - **DELETE** `/users/:id` - Soft delete (set `isActive = false`)
@@ -388,7 +388,7 @@ export const users = pgTable('users', {
 	passwordHashingAlgorithm: varchar('password_hashing_algorithm', { length: 20 })
 		.notNull()
 		.default('argon2id'),
-	roleId: uuid('role_id').references(() => roles.id), // NULL = regular user, set = staff/admin
+	role: uuid('role_id').references(() => roles.id), // NULL = regular user, set = staff/admin
 	avatarUrl: text('avatar_url'),
 	twoFactorSecret: text('two_factor_secret'),
 	isActive: boolean('is_active').notNull().default(true),

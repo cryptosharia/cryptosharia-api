@@ -4,11 +4,11 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user?: {
+			user: {
 				id: string;
-				roleId: string | null;
+				role: import('$lib/auth/rbac').Role | null;
 				permissions: string[];
-			};
+			} | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

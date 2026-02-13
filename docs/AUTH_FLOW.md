@@ -98,7 +98,7 @@ refresh_tokens:
      │                     │                      │
      │                     │                      │ 1. Verify JWT signature
      │                     │                      │ 2. Check not expired
-     │                     │                      │ 3. Extract userId, roleId
+     │                     │                      │ 3. Extract userId, role
      │                     │                      │ 4. Check permissions
      │                     │                      │ 5. Execute request
      │                     │                      │

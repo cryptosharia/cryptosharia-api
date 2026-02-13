@@ -1,11 +1,12 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { users, roles } from '$lib/db/tables';
+import { users, userRoleEnum } from '$lib/db/tables';
 import { UsersIdGetResponse, UsersIdRolePutBody } from '../../index';
 import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/assets';
+import type { Role } from '$lib/auth/rbac';
 
 /**
  * PUT /users/:id/role - Assign role to user
@@ -23,7 +24,7 @@ export const PUT: RequestHandler = async ({
 
 	// 1. Authorization
 	try {
-		requirePermission(locals, 'users.manage_role');
+		requirePermission(locals, 'users.manage_roles');
 	} catch (apiError) {
 		return apiError as Response;
 	}
@@ -41,24 +42,19 @@ export const PUT: RequestHandler = async ({
 		return ApiResponse.badRequest(result.error.flatten().fieldErrors);
 	}
 
-	const { roleId } = result.data;
+	const { role } = result.data;
 
 	try {
-		// 3. Verify role exists (if not null)
-		if (roleId) {
-			const role = await db.query.roles.findFirst({
-				where: eq(roles.id, roleId)
-			});
-			if (!role) {
-				return ApiResponse.notFound('Role not found');
-			}
+		// 3. Verify role exists in enum (if not null)
+		if (role && !userRoleEnum.enumValues.includes(role as Role)) {
+			return ApiResponse.badRequest({ role: ['Invalid role'] });
 		}
 
 		// 4. Update User
 		const [updatedUser] = await db
 			.update(users)
 			.set({
-				roleId,
+				role: role as Role | null,
 				updatedAt: new Date(),
 				updatedBy: locals.user!.id
 			})
@@ -69,21 +65,21 @@ export const PUT: RequestHandler = async ({
 			return ApiResponse.notFound('User not found');
 		}
 
-		// Fetch with role for response
-		const userWithRole = await db.query.users.findFirst({
+		// Fetch for response
+		const user = await db.query.users.findFirst({
 			where: eq(users.id, id),
-			with: { role: true, avatar: true }
+			with: { avatar: true }
 		});
 
-		if (!userWithRole) {
+		if (!user) {
 			return ApiResponse.notFound('User not found');
 		}
 
 		return ApiResponse.ok(
 			UsersIdGetResponse.parse({
-				...userWithRole,
-				avatar: toAssetMetadata(userWithRole.avatar),
-				role: userWithRole.role ? userWithRole.role.role : null
+				...user,
+				avatar: toAssetMetadata(user.avatar),
+				role: user.role
 			}),
 			'Role assigned successfully'
 		);

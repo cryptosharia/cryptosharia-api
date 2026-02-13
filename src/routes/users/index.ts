@@ -14,7 +14,7 @@ export const UsersGetQuery = z
 		page: z.coerce.number().int().min(1).default(1),
 		limit: z.coerce.number().int().min(1).max(100).default(20),
 		search: z.string().optional().describe('Search by name or email'),
-		roleId: z.uuid().optional().describe('Filter by role ID'),
+		role: z.string().optional().describe('Filter by role name (e.g. "admin")'),
 		status: UserStatus.optional().describe('Filter by account status')
 	})
 	.openapi('UsersGetQuery');
@@ -147,8 +147,7 @@ export const usersIdStatusPut: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(UsersIdGetResponse, 'User status updated successfully'),
 		...OpenApiResponse.badRequest('Invalid status provided'),
-		...OpenApiResponse.notFound('User not found'),
-		...OpenApiResponse.forbidden('Insufficient permissions to manage user status'),
+		...OpenApiResponse.notFound('User not found'),		...OpenApiResponse.forbidden('Insufficient permissions to manage user status'),
 		...OpenApiResponse.internalServerError('Failed to update status')
 	},
 	security: [{ ApiKeyAuth: [], BearerAuth: [] }]
@@ -158,7 +157,7 @@ export const usersIdStatusPut: RouteConfig = {
 
 export const UsersIdRolePutBody = z
 	.object({
-		roleId: z.uuid().nullable()
+		role: z.string().nullable().describe('The role name (e.g. "admin") or null to remove role')
 	})
 	.openapi('UsersIdRolePutBody');
 export type UsersIdRolePutBody = z.infer<typeof UsersIdRolePutBody>;

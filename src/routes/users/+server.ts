@@ -7,6 +7,7 @@ import z from '$lib/zod-openapi';
 import { and, ilike, eq, or, count } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/assets';
+import type { Role } from '$lib/auth/rbac';
 import { UsersGetQuery, UsersGetItem } from './index';
 
 /**
@@ -28,13 +29,13 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { search, limit, page, roleId, status } = result.data;
+	const { search, limit, page, role, status } = result.data;
 	const offset = (page - 1) * limit;
 
 	try {
 		// 3. Filters
 		const filters = [];
-		if (roleId) filters.push(eq(users.roleId, roleId));
+		if (role) filters.push(eq(users.role, role as Role));
 		if (status) filters.push(eq(users.status, status));
 		if (search) {
 			const query = `%${search}%`;
@@ -50,7 +51,6 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 				limit,
 				offset,
 				with: {
-					role: true,
 					avatar: true
 				},
 				orderBy: (table, { desc }) => [desc(table.createdAt)]
@@ -66,7 +66,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 					UsersGetItem.parse({
 						...u,
 						avatar: toAssetMetadata(u.avatar),
-						role: u.role ? u.role.role : null
+						role: u.role
 					})
 				),
 				pagination: {

@@ -21,7 +21,6 @@ export const GET: RequestHandler = async ({ locals }) => {
 		const userWithRole = await db.query.users.findFirst({
 			where: eq(users.id, locals.user.id),
 			with: {
-				role: true,
 				avatar: true
 			}
 		});
@@ -35,7 +34,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 			AuthMeGetResponse.parse({
 				...userWithRole,
 				avatar: toAssetMetadata(userWithRole.avatar),
-				role: userWithRole.role ? userWithRole.role.role : null,
+				role: userWithRole.role,
 				permissions: locals.user.permissions
 			}),
 			'User profile retrieved successfully'

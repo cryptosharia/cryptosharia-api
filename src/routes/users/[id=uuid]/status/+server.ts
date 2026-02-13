@@ -5,6 +5,7 @@ import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import z from '$lib/zod-openapi';
+import { toAssetMetadata } from '$lib/assets';
 import { UsersIdStatusPutBody, UsersIdGetResponse } from '../../index';
 
 /**
@@ -55,7 +56,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		// Fetch with role for full response
 		const userWithRole = await db.query.users.findFirst({
 			where: eq(users.id, id),
-			with: { role: true }
+			with: { avatar: true }
 		});
 
 		if (!userWithRole) {
@@ -63,7 +64,11 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		return ApiResponse.ok(
-			UsersIdGetResponse.parse(userWithRole),
+			UsersIdGetResponse.parse({
+				...userWithRole,
+				avatar: toAssetMetadata(userWithRole.avatar),
+				role: userWithRole.role
+			}),
 			`User status successfully updated to ${status}`
 		);
 	} catch (error) {

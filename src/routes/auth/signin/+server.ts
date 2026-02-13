@@ -54,7 +54,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// 5. Generate access token
 		const accessToken = await signAccessToken({
 			userId: user.id,
-			roleId: user.roleId
+			role: user.role
 		});
 
 		// 6. Generate opaque refresh token

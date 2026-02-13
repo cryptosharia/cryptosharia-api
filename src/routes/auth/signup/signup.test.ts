@@ -36,7 +36,7 @@ describe('POST /auth/signup', () => {
 			where: eq(users.email, signupData.email)
 		});
 		expect(user).toBeDefined();
-		expect(user?.roleId).toBeNull();
+		expect(user?.role).toBeNull();
 		expect(user?.isEmailVerified).toBe(false);
 	});
 
@@ -100,7 +100,7 @@ describe('POST /auth/signup', () => {
 			body: {
 				...signupData,
 				email,
-				roleId: 'some-role-id',
+				role: 'super_admin',
 				isEmailVerified: true
 			}
 		});
@@ -108,7 +108,7 @@ describe('POST /auth/signup', () => {
 		const user = await db.query.users.findFirst({
 			where: eq(users.email, email)
 		});
-		expect(user?.roleId).toBeNull();
+		expect(user?.role).toBeNull();
 		expect(user?.isEmailVerified).toBe(false);
 	});
 });

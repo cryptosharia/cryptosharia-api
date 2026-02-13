@@ -1,30 +1,24 @@
-import { db } from '$lib/db';
-import * as schema from '$lib/db/tables';
-import { eq } from 'drizzle-orm';
+import { type Role, ROLE_PERMISSIONS } from '$lib/auth/rbac';
 import ApiResponse from '$lib/api-response';
 
 /**
- * Fetches all unique permission keys for a given role.
- * Optimized to return a flat array of strings.
+ * Fetches all unique permission keys for a given role from the static config.
  */
-export async function getUserPermissions(roleId: string): Promise<string[]> {
-	const results = await db
-		.select({
-			permission: schema.permissions.permission
-		})
-		.from(schema.rolePermissions)
-		.innerJoin(schema.permissions, eq(schema.rolePermissions.permissionId, schema.permissions.id))
-		.where(eq(schema.rolePermissions.roleId, roleId));
-
-	return results.map((r) => r.permission);
+export function getUserPermissions(role: Role | null): string[] {
+	if (!role) return [];
+	return ROLE_PERMISSIONS[role] || [];
 }
 
 /**
- * Returns true if the user in locals has the specified permission.
+ * Checks if the user has the required permission.
+ * Uses the permissions attached to the user session (locals.user).
  */
-export function hasPermission(locals: App.Locals, permission: string): boolean {
-	return locals.user?.permissions.includes(permission) ?? false;
+export function hasPermission(locals: App.Locals, requiredPermission: string): boolean {
+	if (!locals.user || !locals.user.permissions) return false;
+
+	return locals.user.permissions.includes(requiredPermission);
 }
+
 
 /**
  * Middleware-style helper: Checks if the current user has a specific permission.

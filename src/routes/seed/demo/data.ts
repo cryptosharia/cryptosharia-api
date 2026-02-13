@@ -14,12 +14,16 @@ export type SeedToken = Omit<InferInsertModel<typeof schema.tokens>, 'logoId'> &
 
 export type SeedMessage = InferInsertModel<typeof schema.messages>;
 
+import { type Role } from '$lib/auth/rbac';
+
+// ... (previous types)
+
 // User seed type - password will be hashed during seeding
 export type SeedUser = {
 	name: string;
 	email: string;
 	password: string; // Plain text, hashed during seeding
-	role?: string | null; // Role programmatic identifier
+	role?: Role | null; // Role literal
 	status?: 'active' | 'inactive' | 'suspended' | 'banned';
 };
 

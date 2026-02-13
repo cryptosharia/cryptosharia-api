@@ -32,7 +32,6 @@ export const GET: RequestHandler = async ({
 		const user = await db.query.users.findFirst({
 			where: eq(users.id, id),
 			with: {
-				role: true,
 				avatar: true
 			}
 		});
@@ -45,7 +44,7 @@ export const GET: RequestHandler = async ({
 			UsersIdGetResponse.parse({
 				...user,
 				avatar: toAssetMetadata(user.avatar),
-				role: user.role ? user.role.role : null
+				role: user.role
 			}),
 			'User details retrieved successfully'
 		);
@@ -112,7 +111,6 @@ export const PATCH: RequestHandler = async ({
 		const userWithRole = await db.query.users.findFirst({
 			where: eq(users.id, updatedUser.id),
 			with: {
-				role: true,
 				avatar: true
 			}
 		});
@@ -125,7 +123,7 @@ export const PATCH: RequestHandler = async ({
 			UsersIdGetResponse.parse({
 				...userWithRole,
 				avatar: toAssetMetadata(userWithRole.avatar),
-				role: userWithRole.role ? userWithRole.role.role : null
+				role: userWithRole.role
 			}),
 			'User updated successfully'
 		);

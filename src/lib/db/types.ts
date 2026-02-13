@@ -4,17 +4,10 @@ import z from '$lib/zod-openapi';
 
 // --- Entity Schemas (OpenAPI Ready) ---
 
-// Permissions
-export const Permission = createSelectSchema(table.permissions);
-export type Permission = z.infer<typeof Permission>;
-
-// Roles
-export const Role = createSelectSchema(table.roles);
-export type Role = z.infer<typeof Role>;
-
 // Users
 export const User = createSelectSchema(table.users, {
-	name: (s) => s.trim().min(2)
+	name: (s) => s.trim().min(2),
+	role: z.enum(table.userRoleEnum.enumValues).nullable()
 }).extend({
 	email: z.email().max(255)
 });

@@ -12,7 +12,7 @@ import { JWT_ISSUER } from '$lib/constants';
  */
 export interface AccessTokenPayload {
 	userId: string;
-	roleId: string | null;
+	role: string | null;
 }
 
 /**
@@ -42,7 +42,7 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
 
 	return {
 		userId: payload.userId as string,
-		roleId: payload.roleId as string | null
+		role: payload.role as string | null
 	};
 }
 
