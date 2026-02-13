@@ -128,8 +128,8 @@ export const GET: RequestHandler = async ({ url }) => {
 			},
 			'Posts retrieved successfully'
 		);
-	} catch (err) {
-		console.error('Error fetching posts:', err);
-		return ApiResponse.internalServerError();
+	} catch (error) {
+		console.error('Fetch posts error:', error);
+		return ApiResponse.internalServerError('Failed to retrieve posts');
 	}
 };

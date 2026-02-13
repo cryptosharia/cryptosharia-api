@@ -35,7 +35,7 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 		});
 
 		if (!token) {
-			return ApiResponse.notFound();
+			return ApiResponse.notFound('Token not found');
 		}
 
 		return ApiResponse.ok<TokensGetData>(
@@ -45,8 +45,8 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 			}),
 			'Token retrieved successfully'
 		);
-	} catch (err) {
-		console.error('Error fetching token by ID:', err);
-		return ApiResponse.internalServerError();
+	} catch (error) {
+		console.error('Fetch token error:', error);
+		return ApiResponse.internalServerError('Failed to retrieve token');
 	}
 };

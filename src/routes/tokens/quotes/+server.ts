@@ -29,8 +29,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		);
 
 		if (!res.ok) {
-			console.error(`CMC Fetch Error: ${res.statusText}`);
-			return ApiResponse.badGateway();
+			return ApiResponse.badGateway('Failed to fetch token quotes from external provider');
 		}
 
 		const json = await res.json();
@@ -83,7 +82,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			'Token quotes retrieved successfully'
 		);
 	} catch (error) {
-		console.error('/tokens/quotes Error:', error);
-		return ApiResponse.internalServerError();
+		console.error('Fetch quotes error:', error);
+		return ApiResponse.internalServerError('Failed to process token quotes');
 	}
 };

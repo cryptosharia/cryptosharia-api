@@ -79,7 +79,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			'Users retrieved successfully'
 		);
 	} catch (error) {
-		console.error('Error fetching users:', error);
-		return ApiResponse.internalServerError();
+		console.error('Fetch users error:', error);
+		return ApiResponse.internalServerError('Failed to retrieve users');
 	}
 };

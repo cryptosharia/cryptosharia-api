@@ -35,20 +35,20 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		if (!user) {
-			return ApiResponse.unauthorized();
+			return ApiResponse.unauthorized('Invalid email or password');
 		}
 
 		// 3. Enforce Email Verification
+		// We return 401 Unauthorized for unverified accounts to mask their existence for privacy.
+		// signup route handles re-registration gracefully.
 		if (!user.isEmailVerified) {
-			return ApiResponse.forbidden(
-				'Your email address is not verified. Please verify it to access your account.'
-			);
+			return ApiResponse.unauthorized('Invalid email or password');
 		}
 
 		// 4. Verify password
 		const isValid = await verifyPassword(password, user.hashedPassword);
 		if (!isValid) {
-			return ApiResponse.unauthorized();
+			return ApiResponse.unauthorized('Invalid email or password');
 		}
 
 		// 5. Generate access token

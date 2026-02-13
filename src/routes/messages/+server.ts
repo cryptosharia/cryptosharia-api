@@ -79,9 +79,9 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			},
 			'Messages retrieved successfully'
 		);
-	} catch (err) {
-		console.error('Error fetching messages:', err);
-		return ApiResponse.internalServerError();
+	} catch (error) {
+		console.error('Post message error:', error);
+		return ApiResponse.internalServerError('Failed to send message');
 	}
 };
 

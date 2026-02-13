@@ -59,14 +59,14 @@ This document serves as the **Single Source of Truth** for all endpoints, archit
 
 ### 🔐 Authentication (`/auth`)
 
-| Method | Path            | Summary       | Rules                                                  |
-| :----- | :-------------- | :------------ | :----------------------------------------------------- |
-| `POST` | `/auth/signup`  | Sign Up       | Sets role to `member`; requires email verification.    |
-| `POST` | `/auth/verify`  | Verify Email  | Uses secret token to activate account.                 |
-| `POST` | `/auth/signin`  | Sign In       | Returns Access/Refresh tokens. Min password: 12 chars. |
-| `POST` | `/auth/refresh` | Refresh Token | Rotates tokens; sliding session management.            |
-| `POST` | `/auth/signout` | Sign Out      | Revokes the current refresh token.                     |
-| `GET`  | `/auth/me`      | Get Profile   | Returns current user info + roles + permissions.       |
+| Method | Path            | Summary       | Rules                                                                         |
+| :----- | :-------------- | :------------ | :---------------------------------------------------------------------------- |
+| `POST` | `/auth/signup`  | Sign Up       | Sets role to `member`; requires email verification. Supports `?notify=false`. |
+| `POST` | `/auth/verify`  | Verify Email  | Uses secret token to activate account.                                        |
+| `POST` | `/auth/signin`  | Sign In       | Returns Access/Refresh tokens. Unverified accounts return 401.                |
+| `POST` | `/auth/refresh` | Refresh Token | Rotates tokens; sliding session management.                                   |
+| `POST` | `/auth/signout` | Sign Out      | Revokes the current refresh token.                                            |
+| `GET`  | `/auth/me`      | Get Profile   | Returns current user info + roles + permissions.                              |
 
 ### 👤 Users (`/users`)
 
@@ -106,11 +106,15 @@ This document serves as the **Single Source of Truth** for all endpoints, archit
 
 ## 📧 Email Service
 
-The API uses a **Consolidated Email Proxy** (Google Apps Script) for all internal and outbound communications.
+### Email Service Configuration
 
-- **URL**: Configured via `GAS_URL`.
-- **Formatting**: The API handles all HTML formatting and **Strict Escaping** of user contents to prevent injection.
-- **Background Tasks**: All email sending operations are handled via `@vercel/functions` `waitUntil` to ensure zero impact on API response latency.
+The API uses a Google Apps Script (GAS) Web App as a simplified, generic proxy for sending emails.
+
+- **`GAS_URL`**: The URL of your deployed GAS Web App.
+- **`SKIP_EMAIL`**: Set to `true` in development/testing to skip real delivery.
+- **Safety**: The API handles strict HTML escaping (`escapeHtml`) before sending.
+- **Manual Control**: Endpoints like `/auth/signup` and `/messages` accept an optional `notify=false` query parameter to skip emails (useful for automated tests).
+  All email sending operations are handled via `@vercel/functions` `waitUntil` to ensure zero impact on API response latency.
 
 ---
 

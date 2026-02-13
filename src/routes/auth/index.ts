@@ -170,6 +170,21 @@ export const AuthSignupPostResponse = UserMetadata.openapi('AuthSignupPostRespon
 
 export type AuthSignupPostResponse = z.infer<typeof AuthSignupPostResponse>;
 
+export const AuthSignupPostQuery = z
+	.object({
+		notify: z
+			.preprocess((val) => {
+				if (val === 'true') return true;
+				if (val === 'false') return false;
+				return val;
+			}, z.boolean())
+			.default(true)
+			.describe('Whether to trigger a verification email')
+	})
+	.openapi('AuthSignupPostQuery');
+
+export type AuthSignupPostQuery = z.infer<typeof AuthSignupPostQuery>;
+
 export const authSignupPost: RouteConfig = {
 	path: '/auth/signup',
 	method: 'post',
@@ -177,6 +192,7 @@ export const authSignupPost: RouteConfig = {
 	description:
 		'Register a new **regular user** (`role: member`) account. Users must verify their email before they can sign in.',
 	request: {
+		query: AuthSignupPostQuery,
 		body: {
 			content: {
 				'application/json': {

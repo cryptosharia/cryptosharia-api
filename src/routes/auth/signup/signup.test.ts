@@ -14,6 +14,7 @@ describe('POST /auth/signup', () => {
 
 	it('should register a new user successfully with correct defaults', async () => {
 		const { data, response } = await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: signupData
 		});
 
@@ -43,6 +44,7 @@ describe('POST /auth/signup', () => {
 	it('should trim whitespace from user name before saving', async () => {
 		const email = 'trim@example.com';
 		await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: { ...signupData, email, name: '  Trimmed Name  ' }
 		});
 
@@ -56,12 +58,14 @@ describe('POST /auth/signup', () => {
 		const email = 'graceful@example.com';
 		// 1. Initial Signup
 		const res1 = await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: { ...signupData, email }
 		});
 		expect(res1.response.status).toBe(201);
 
 		// 2. Second signup (unverified) should update the account (password, name)
 		const res2 = await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: { ...signupData, email, name: 'John Updated' }
 		});
 
@@ -78,6 +82,7 @@ describe('POST /auth/signup', () => {
 		const email = 'strict@example.com';
 		// 1. Signup
 		await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: { ...signupData, email }
 		});
 
@@ -86,6 +91,7 @@ describe('POST /auth/signup', () => {
 
 		// 3. Fail on second signup
 		const { response, error } = await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: { ...signupData, email }
 		});
 
@@ -97,6 +103,7 @@ describe('POST /auth/signup', () => {
 	it('should ignore extra fields during signup (Mass Assignment protection)', async () => {
 		const email = 'mass@example.com';
 		await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: {
 				...signupData,
 				email,

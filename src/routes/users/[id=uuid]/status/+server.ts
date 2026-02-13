@@ -72,7 +72,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 			`User status successfully updated to ${status}`
 		);
 	} catch (error) {
-		console.error('Error updating user status:', error);
-		return ApiResponse.internalServerError();
+		console.error('Update user status error:', error);
+		return ApiResponse.internalServerError('Failed to update user status');
 	}
 };

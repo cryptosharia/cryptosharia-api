@@ -30,7 +30,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (!res.ok) {
 			const errorData = await res.json();
 			console.error('IMGBB API error:', errorData);
-			return ApiResponse.badGateway();
+			return ApiResponse.badGateway('Failed to upload image to external provider');
 		}
 
 		type ImgbbData = {
@@ -72,8 +72,8 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Return the URLs from the IMGBB response sanitized via parse
 		return ApiResponse.ok(ImgbbImage.parse({ ...asset }), 'Image uploaded successfully');
-	} catch (err) {
-		console.error('Error uploading to IMGBB:', err);
-		return ApiResponse.internalServerError();
+	} catch (error) {
+		console.error('IMGBB upload error:', error);
+		return ApiResponse.internalServerError('Failed to process image upload');
 	}
 };

@@ -97,7 +97,10 @@ export interface paths {
          */
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Whether to trigger a verification email */
+                    notify?: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;

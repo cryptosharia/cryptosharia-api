@@ -42,6 +42,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		);
 	} catch (error) {
 		console.error('Signout error:', error);
-		return ApiResponse.internalServerError();
+		return ApiResponse.internalServerError('Failed to sign out');
 	}
 };

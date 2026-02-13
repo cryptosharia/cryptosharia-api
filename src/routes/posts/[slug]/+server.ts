@@ -35,7 +35,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		});
 
 		if (!post) {
-			return ApiResponse.notFound();
+			return ApiResponse.notFound('Post not found');
 		}
 
 		return ApiResponse.ok<PostsGetData>(
@@ -45,8 +45,8 @@ export const GET: RequestHandler = async ({ params }) => {
 			}),
 			'Post retrieved successfully'
 		);
-	} catch (err) {
-		console.error('Error fetching post by slug:', err);
-		return ApiResponse.internalServerError();
+	} catch (error) {
+		console.error('Fetch post by slug error:', error);
+		return ApiResponse.internalServerError('Failed to retrieve post');
 	}
 };

@@ -85,7 +85,7 @@ export const PUT: RequestHandler = async ({
 			'Role assigned successfully'
 		);
 	} catch (error) {
-		console.error('Error assigning role:', error);
-		return ApiResponse.internalServerError();
+		console.error('Update user role error:', error);
+		return ApiResponse.internalServerError('Failed to update user role');
 	}
 };

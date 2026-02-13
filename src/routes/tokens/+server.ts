@@ -121,8 +121,8 @@ export const GET: RequestHandler = async ({ url }) => {
 			},
 			'Tokens retrieved successfully'
 		);
-	} catch (err) {
-		console.error('Error fetching tokens:', err);
-		return ApiResponse.internalServerError();
+	} catch (error) {
+		console.error('Fetch tokens error:', error);
+		return ApiResponse.internalServerError('Failed to retrieve tokens');
 	}
 };

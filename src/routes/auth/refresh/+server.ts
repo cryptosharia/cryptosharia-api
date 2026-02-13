@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		if (!storedToken || !storedToken.user) {
-			return ApiResponse.unauthorized();
+			return ApiResponse.unauthorized('Invalid or expired refresh token');
 		}
 
 		const user = storedToken.user;
@@ -76,6 +76,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		);
 	} catch (error) {
 		console.error('Refresh error:', error);
-		return ApiResponse.internalServerError();
+		return ApiResponse.internalServerError('Failed to refresh authentication token');
 	}
 };

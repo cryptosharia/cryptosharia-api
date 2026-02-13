@@ -49,8 +49,8 @@ export const GET: RequestHandler = async ({
 			'User details retrieved successfully'
 		);
 	} catch (error) {
-		console.error('Error fetching user detail:', error);
-		return ApiResponse.internalServerError();
+		console.error('Fetch user error:', error);
+		return ApiResponse.internalServerError('Failed to retrieve user details');
 	}
 };
 
@@ -128,7 +128,7 @@ export const PATCH: RequestHandler = async ({
 			'User updated successfully'
 		);
 	} catch (error) {
-		console.error('Error updating user:', error);
-		return ApiResponse.internalServerError();
+		console.error('Update user error:', error);
+		return ApiResponse.internalServerError('Failed to update user profile');
 	}
 };

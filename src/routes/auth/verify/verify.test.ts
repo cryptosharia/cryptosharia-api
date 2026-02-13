@@ -97,15 +97,15 @@ describe('POST /auth/verify', () => {
 
 		// 1. Signup (unverified)
 		await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: { name: 'Blocked', email, password }
 		});
 
-		// 2. Attempt Signin -> Should fail
+		// 2. Attempt Signin -> Should fail (mask as unauthorized/not found)
 		const signinRes = await client.POST('/auth/signin', {
 			body: { email, password }
 		});
-		expect(signinRes.response.status).toBe(403);
-		expect(signinRes.error?.message).toContain('not verified');
+		expect(signinRes.response.status).toBe(401);
 
 		// 3. Get token from DB
 		const ver = await db.query.emailVerifications.findFirst();
@@ -129,6 +129,7 @@ describe('POST /auth/verify', () => {
 
 		// 1. First Signup
 		await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: { name: 'Multi', email, password }
 		});
 
@@ -141,6 +142,7 @@ describe('POST /auth/verify', () => {
 
 		// 2. Second Signup (Graceful)
 		await client.POST('/auth/signup', {
+			params: { query: { notify: false } },
 			body: { name: 'Multi Updated', email, password }
 		});
 

@@ -135,8 +135,8 @@ export const POST: RequestHandler = async () => {
 		console.log(`Seeded ${MESSAGES.length} demo messages`);
 
 		return ApiResponse.created(undefined, 'Demo data seeded successfully');
-	} catch (err) {
-		console.error('Demo Seeding failed:', err);
-		return ApiResponse.internalServerError();
+	} catch (error) {
+		console.error('Seed demo error:', error);
+		return ApiResponse.internalServerError('Failed to seed demo data');
 	}
 };

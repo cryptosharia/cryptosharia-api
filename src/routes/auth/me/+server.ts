@@ -13,7 +13,7 @@ import { AuthMeGetResponse } from '..';
 export const GET: RequestHandler = async ({ locals }) => {
 	// 1. Check if user is attached by middleware
 	if (!locals.user) {
-		return ApiResponse.unauthorized();
+		return ApiResponse.unauthorized('Not authenticated');
 	}
 
 	try {
@@ -26,7 +26,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 		});
 
 		if (!userWithRole) {
-			return ApiResponse.unauthorized();
+			return ApiResponse.unauthorized('User session not found');
 		}
 
 		// 3. Return response (sanitized via parse)
@@ -40,7 +40,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 			'User profile retrieved successfully'
 		);
 	} catch (error) {
-		console.error('AuthMe error:', error);
-		return ApiResponse.internalServerError();
+		console.error('Fetch me error:', error);
+		return ApiResponse.internalServerError('Failed to retrieve user profile');
 	}
 };

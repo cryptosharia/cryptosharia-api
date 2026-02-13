@@ -56,6 +56,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		return ApiResponse.ok(undefined, 'Email verified successfully. You can now sign in.');
 	} catch (error) {
 		console.error('Verification error:', error);
-		return ApiResponse.internalServerError();
+		return ApiResponse.internalServerError('Failed to verify email address');
 	}
 };
