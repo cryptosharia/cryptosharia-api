@@ -10,16 +10,44 @@ import { users } from './db/tables';
 import { env } from '$env/dynamic/private';
 import { hashPassword } from './auth/password';
 
+const TEST_USER_PASSWORD = 'password12345';
+
 /**
  * Creates a type-safe openapi-fetch client for real HTTP requests.
  */
-export function createApiTestClient({ useApiKey = true }: { useApiKey?: boolean } = {}) {
+export function createApiTestClient({
+	useApiKey = true,
+	headers = {}
+}: { useApiKey?: boolean; headers?: Record<string, string> } = {}) {
+	const finalHeaders: Record<string, string> = {
+		'Api-Key': useApiKey ? env.CS_API_KEY_TEST : '',
+		...headers
+	};
+
 	return createClient<paths>({
 		baseUrl: env.TEST_URL,
-		headers: {
-			'Api-Key': useApiKey ? env.CS_API_KEY_TEST : undefined
+		headers: finalHeaders
+	});
+}
+
+/**
+ * Signs in a test user and returns the access token.
+ */
+export async function signTestUserIn(email: string) {
+	const client = createApiTestClient();
+	const { data, response, error } = await client.POST('/auth/signin', {
+		body: {
+			email,
+			password: TEST_USER_PASSWORD
 		}
 	});
+
+	if (!data?.data?.accessToken) {
+		console.error('Signin failed:', { status: response.status, error });
+		throw new Error(`Failed to sign in test user: ${email} (Status: ${response.status})`);
+	}
+
+	return data.data.accessToken;
 }
 
 /**
@@ -37,7 +65,7 @@ export async function createTestUser(overrides?: Partial<typeof users.$inferInse
 			.values({
 				name: `Test User ${random}`,
 				email: `test-${random}@example.com`,
-				hashedPassword: await hashPassword('password123'),
+				hashedPassword: await hashPassword(TEST_USER_PASSWORD),
 				passwordHashingAlgorithm: 'argon2id',
 				status: 'active',
 				role: 'member',

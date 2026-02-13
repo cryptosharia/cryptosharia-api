@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/assets';
 import type { Role } from '$lib/auth/rbac';
+import z from '$lib/zod-openapi';
 
 /**
  * PUT /users/:id/role - Assign role to user
@@ -24,7 +25,7 @@ export const PUT: RequestHandler = async ({
 
 	// 1. Authorization
 	try {
-		requirePermission(locals, 'users.manage_roles');
+		requirePermission(locals, 'users.manage_role');
 	} catch (apiError) {
 		return apiError as Response;
 	}
@@ -39,7 +40,7 @@ export const PUT: RequestHandler = async ({
 
 	const result = UsersIdRolePutBody.safeParse(body);
 	if (!result.success) {
-		return ApiResponse.badRequest(result.error.flatten().fieldErrors);
+		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
 	const { role } = result.data;

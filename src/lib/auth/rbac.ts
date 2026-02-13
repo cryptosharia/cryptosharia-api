@@ -13,8 +13,9 @@ export const ALL_PERMISSIONS = [
 	'posts.read',
 	'tokens.manage',
 	'users.read',
+	'users.update',
 	'users.manage_status',
-	'users.manage_roles',
+	'users.manage_role',
 	'messages.read'
 ] as const;
 
@@ -30,7 +31,9 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 		'posts.manage',
 		'tokens.manage',
 		'users.read',
+		'users.update',
 		'users.manage_status',
+		'users.manage_role',
 		'messages.read'
 	],
 	posts_manager: ['posts.manage'],

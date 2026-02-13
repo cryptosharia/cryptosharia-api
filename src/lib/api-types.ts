@@ -721,7 +721,7 @@ export interface paths {
         get?: never;
         /**
          * Update User Status
-         * @description Update the administrative status of a user (lifecycle management).
+         * @description Update the administrative status of a user (lifecycle management). Requires permission: `users.manage_status`
          */
         put: {
             parameters: {
@@ -804,7 +804,7 @@ export interface paths {
         get?: never;
         /**
          * Assign Role
-         * @description Assign or remove a role for a user. Requires permission: `users.manage_roles`.
+         * @description Assign or remove a role for a user. Requires permission: `users.manage_role`.
          */
         put: {
             parameters: {

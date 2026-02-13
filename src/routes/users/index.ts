@@ -169,7 +169,7 @@ export const usersIdRolePut: RouteConfig = {
 	path: '/users/{id}/role',
 	method: 'put',
 	summary: 'Assign Role',
-	description: 'Assign or remove a role for a user. Requires permission: `users.manage_roles`.',
+	description: 'Assign or remove a role for a user. Requires permission: `users.manage_role`.',
 	request: {
 		params: UsersIdParams,
 		body: {
