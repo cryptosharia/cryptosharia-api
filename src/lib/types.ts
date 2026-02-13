@@ -37,21 +37,6 @@ export const UserMetadata = z
 
 export type UserMetadata = z.infer<typeof UserMetadata>;
 
-// --- Role Metadata ---
-
-/**
- * Shared schema for role metadata.
- */
-export const RoleMetadata = z
-	.object({
-		id: z.uuid(),
-		name: z.string(),
-		slug: z.string()
-	})
-	.openapi('RoleMetadata');
-
-export type RoleMetadata = z.infer<typeof RoleMetadata>;
-
 // --- Pagination Types ---
 
 export const Pagination = z

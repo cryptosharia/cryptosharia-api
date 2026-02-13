@@ -19,31 +19,49 @@ export type SeedUser = {
 	name: string;
 	email: string;
 	password: string; // Plain text, hashed during seeding
-	roleId?: string | null;
+	role?: string | null; // Role programmatic identifier
+	status?: 'active' | 'inactive' | 'suspended' | 'banned';
 };
 
 // Dev password for all sample users (easy to remember for testing)
 export const DEV_PASSWORD = 'password123';
 
-// Sample Users
+// Sample Users (Demo)
 export const USERS: SeedUser[] = [
+	{
+		name: 'Super Admin',
+		email: 'superadmin@cryptosharia.id',
+		password: DEV_PASSWORD,
+		role: 'super_admin',
+		status: 'active'
+	},
 	{
 		name: 'Admin User',
 		email: 'admin@cryptosharia.id',
 		password: DEV_PASSWORD,
-		roleId: null // Will be assigned when roles are seeded
+		role: 'admin',
+		status: 'active'
 	},
 	{
-		name: 'Editor User',
-		email: 'editor@cryptosharia.id',
+		name: 'Post Manager',
+		email: 'posts@cryptosharia.id',
 		password: DEV_PASSWORD,
-		roleId: null
+		role: 'posts_manager',
+		status: 'active'
+	},
+	{
+		name: 'Token Manager',
+		email: 'tokens@cryptosharia.id',
+		password: DEV_PASSWORD,
+		role: 'tokens_manager',
+		status: 'active'
 	},
 	{
 		name: 'Regular User',
 		email: 'user@example.com',
 		password: DEV_PASSWORD,
-		roleId: null
+		role: null,
+		status: 'active'
 	}
 ];
 
@@ -55,17 +73,17 @@ export const POSTS: SeedPost[] = [
 		excerpt:
 			'A comprehensive guide to understanding cryptocurrency from an Islamic perspective, covering fundamental concepts and sharia compliance.',
 		content: `# Understanding Halal Cryptocurrency
-
-Cryptocurrency has emerged as a revolutionary financial technology, but for Muslims, the question of its permissibility under Islamic law is paramount.
-
-## What Makes Cryptocurrency Halal?
-
-For a cryptocurrency to be considered halal, it must meet several criteria:
-
-1. **No Riba (Interest)**: The system must not involve interest-based transactions
-2. **No Gharar (Uncertainty)**: Excessive uncertainty and speculation should be avoided
-3. **Real Value**: The asset should have intrinsic value or utility
-4. **Transparency**: The technology and operations must be transparent`,
+		
+		Cryptocurrency has emerged as a revolutionary financial technology, but for Muslims, the question of its permissibility under Islamic law is paramount.
+		
+		## What Makes Cryptocurrency Halal?
+		
+		For a cryptocurrency to be considered halal, it must meet several criteria:
+		
+		1. **No Riba (Interest)**: The system must not involve interest-based transactions
+		2. **No Gharar (Uncertainty)**: Excessive uncertainty and speculation should be avoided
+		3. **Real Value**: The asset should have intrinsic value or utility
+		4. **Transparency**: The technology and operations must be transparent`,
 		type: 'article',
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:00:00Z'),
@@ -90,12 +108,12 @@ For a cryptocurrency to be considered halal, it must meet several criteria:
 		excerpt:
 			'An in-depth research paper examining Bitcoin through the lens of Islamic jurisprudence and modern financial principles.',
 		content: `# Bitcoin Halal Analysis
-
-This research examines Bitcoin's compliance with Islamic financial principles.
-
-## Methodology
-
-Our analysis is based on classical Islamic jurisprudence combined with modern financial understanding.`,
+		
+		This research examines Bitcoin's compliance with Islamic financial principles.
+		
+		## Methodology
+		
+		Our analysis is based on classical Islamic jurisprudence combined with modern financial understanding.`,
 		type: 'article',
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:00:00Z'),
@@ -120,16 +138,16 @@ Our analysis is based on classical Islamic jurisprudence combined with modern fi
 		excerpt:
 			'Join us for an exclusive webinar discussing the intersection of Islamic finance and blockchain technology.',
 		content: `# Upcoming Webinar
-
-**Date**: March 15, 2024  
-**Time**: 7:00 PM GMT+8
-
-## Topics Covered
-
-- Introduction to Islamic Finance Principles
-- Blockchain Technology Overview
-- Halal Cryptocurrency Projects
-- Q&A Session with Scholars`,
+		
+		**Date**: March 15, 2024  
+		**Time**: 7:00 PM GMT+8
+		
+		## Topics Covered
+		
+		- Introduction to Islamic Finance Principles
+		- Blockchain Technology Overview
+		- Halal Cryptocurrency Projects
+		- Q&A Session with Scholars`,
 		type: 'webinar',
 		status: 'published',
 		publishedAt: new Date('2024-03-15T00:00:00Z'),
@@ -154,8 +172,8 @@ Our analysis is based on classical Islamic jurisprudence combined with modern fi
 		excerpt:
 			"Breaking news on how Ethereum's transition to Proof-of-Stake affects its status under Islamic law.",
 		content: `# Ethereum PoS Update
-
-Ethereum's successful transition to Proof-of-Stake has significant implications for its sharia compliance status.`,
+		
+		Ethereum's successful transition to Proof-of-Stake has significant implications for its sharia compliance status.`,
 		type: 'headline',
 		status: 'published',
 		publishedAt: new Date('2024-03-01T00:00:00Z'),
@@ -219,7 +237,6 @@ Ethereum's successful transition to Proof-of-Stake has significant implications 
 	}
 ];
 
-// Tokens Data
 export const TOKENS: SeedToken[] = [
 	{
 		slug: 'bitcoin',
@@ -231,12 +248,12 @@ export const TOKENS: SeedToken[] = [
 		tradingviewSymbol: 'INDEX:BTCUSD',
 		website: 'https://bitcoin.org',
 		content: `# Bitcoin (BTC)
-
-Bitcoin is the first and most well-known cryptocurrency, created by Satoshi Nakamoto in 2009.
-
-## Sharia Analysis
-
-Bitcoin is generally considered halal by many Islamic scholars due to its decentralized nature and absence of interest-bearing mechanisms.`,
+		
+		Bitcoin is the first and most well-known cryptocurrency, created by Satoshi Nakamoto in 2009.
+		
+		## Sharia Analysis
+		
+		Bitcoin is generally considered halal by many Islamic scholars due to its decentralized nature and absence of interest-bearing mechanisms.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:00:00Z'),
 		tags: ['Currency', 'Proof of Work', 'Store of Value', 'Decentralized'],
@@ -256,12 +273,13 @@ Bitcoin is generally considered halal by many Islamic scholars due to its decent
 		name: 'Ethereum',
 		ticker: 'ETH',
 		shariaStatus: 'halal',
-		excerpt: 'A decentralized platform that enables smart contracts and decentralized applications.',
+		excerpt:
+			'A decentralized platform that enables smart contracts and decentralized applications.',
 		tradingviewSymbol: 'INDEX:ETHUSD',
 		website: 'https://ethereum.org',
 		content: `# Ethereum (ETH)
-
-Ethereum is a decentralized platform that enables smart contracts and decentralized applications.`,
+		
+		Ethereum is a decentralized platform that enables smart contracts and decentralized applications.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:02:00Z'),
 		tags: ['Platform', 'Smart Contracts', 'Proof of Stake', 'DeFi'],
@@ -285,8 +303,8 @@ Ethereum is a decentralized platform that enables smart contracts and decentrali
 		tradingviewSymbol: 'CRYPTO:USDCUSD',
 		website: 'https://www.circle.com/en/usdc',
 		content: `# USD Coin (USDC)
-
-USDC is a fully-backed stablecoin pegged to the US Dollar.`,
+		
+		USDC is a fully-backed stablecoin pegged to the US Dollar.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:03:00Z'),
 		tags: ['Stablecoin', 'Fiat-Backed', 'USD', 'Payments'],
@@ -310,8 +328,8 @@ USDC is a fully-backed stablecoin pegged to the US Dollar.`,
 		tradingviewSymbol: 'BINANCE:BNBUSDT',
 		website: 'https://www.bnbchain.org',
 		content: `# BNB
-
-BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
+		
+		BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:04:00Z'),
 		tags: ['Exchange Token', 'BNB Chain', 'Utility Token'],
@@ -335,8 +353,8 @@ BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
 		tradingviewSymbol: 'BINANCE:SOLUSDT',
 		website: 'https://solana.com',
 		content: `# Solana (SOL)
-
-Solana is a high-performance blockchain designed for decentralized applications.`,
+		
+		Solana is a high-performance blockchain designed for decentralized applications.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:05:00Z'),
 		tags: ['Platform', 'Proof of Stake', 'High Performance', 'DeFi'],
@@ -396,7 +414,6 @@ Solana is a high-performance blockchain designed for decentralized applications.
 	}
 ];
 
-// Messages Data
 export const MESSAGES: SeedMessage[] = [
 	{
 		name: 'Ahmad Fauzi',

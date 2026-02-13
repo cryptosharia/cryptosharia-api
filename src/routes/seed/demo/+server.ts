@@ -5,49 +5,67 @@ import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import ApiResponse from '$lib/api-response';
 import { eq } from 'drizzle-orm';
-import { MESSAGES, POSTS, TOKENS, USERS } from './data';
 import { hashPassword } from '$lib/auth/password';
+import { MESSAGES, POSTS, TOKENS, USERS } from './data';
 
+/**
+ * POST /seed/demo
+ * Populates the system with mock data for development and testing.
+ * Strictly forbidden in production.
+ */
 export const POST: RequestHandler = async () => {
-	// Only allow seeding in local development or Vercel preview environments
-	// env.VERCEL_ENV is automatically provided by Vercel
+	// Strictly forbidden in production
 	if (!dev && env.VERCEL_ENV !== 'preview') {
-		return ApiResponse.forbidden('Seeding is forbidden in production environment');
+		return ApiResponse.forbidden('Demo seeding is strictly forbidden in production');
 	}
 
 	try {
-		console.log('--- Seeding started via API ---');
+		console.log('--- Demo Seeding Started ---');
 
-		// Clear existing data (Cascade will handle relations)
+		// 1. Clear existing content data
 		await db.delete(schema.refreshTokens);
 		await db.delete(schema.posts);
 		await db.delete(schema.tokens);
+		await db.delete(schema.postTags);
+		await db.delete(schema.tokenTags);
 		await db.delete(schema.tags);
 		await db.delete(schema.assets);
 		await db.delete(schema.messages);
 		await db.delete(schema.users);
 
-		// Seed Users
+		// 2. Fetch Roles for assignment (System Seed MUST be run first)
+		const allRoles = await db.select().from(schema.roles);
+		const roleMap = Object.fromEntries(allRoles.map((r) => [r.role, r.id]));
+
+		if (allRoles.length === 0) {
+			return ApiResponse.badRequest({
+				error: ['Roles table is empty. Please run /seed/system first.']
+			});
+		}
+
+		// 3. Seed Users
 		const seededUsers: Record<string, string> = {};
 		for (const userData of USERS) {
 			const hashedPassword = await hashPassword(userData.password);
+			const roleId = userData.role ? roleMap[userData.role] : null;
+
 			const [user] = await db
 				.insert(schema.users)
 				.values({
 					name: userData.name,
 					email: userData.email,
 					hashedPassword,
-					roleId: userData.roleId
+					roleId,
+					status: userData.status || 'active'
 				})
 				.returning({ id: schema.users.id });
 			seededUsers[userData.name] = user.id;
 		}
-		console.log(`Seeded ${USERS.length} users`);
+		console.log(`Seeded ${USERS.length} demo users`);
 
-		const adminId = seededUsers['Admin User'];
-		const editorId = seededUsers['Editor User'];
+		const adminId = seededUsers['Super Admin'];
 
-		// Seed Posts
+		// 4. Seed Posts
 		for (const postData of POSTS) {
 			const { tags: tagNames, coverImage, ...postFields } = postData;
 
@@ -57,29 +75,21 @@ export const POST: RequestHandler = async () => {
 				.returning({ id: schema.assets.id });
 			const coverImageId = asset.id;
 
-			// 2. Insert Post with audit metadata
 			const [insertedPost] = await db
 				.insert(schema.posts)
 				.values({
 					...postFields,
 					coverImageId,
 					createdBy: adminId,
-					updatedBy: editorId
+					updatedBy: adminId
 				})
 				.returning({ id: schema.posts.id });
 
-			// 3. Handle tags
 			if (tagNames && tagNames.length > 0) {
 				for (const tagName of tagNames) {
 					const slug = tagName.toLowerCase().replace(/ /g, '-');
-
-					// Insert tag if not exists
 					await db.insert(schema.tags).values({ name: tagName, slug }).onConflictDoNothing();
-
-					// Get tag
 					const [tag] = await db.select().from(schema.tags).where(eq(schema.tags.slug, slug));
-
-					// Link post to tag
 					if (tag) {
 						await db
 							.insert(schema.postTags)
@@ -89,8 +99,9 @@ export const POST: RequestHandler = async () => {
 				}
 			}
 		}
+		console.log(`Seeded ${POSTS.length} demo posts`);
 
-		// Seed Tokens
+		// 5. Seed Tokens
 		for (const tokenData of TOKENS) {
 			const { tags: tagNames, logo, ...tokenFields } = tokenData;
 
@@ -100,29 +111,21 @@ export const POST: RequestHandler = async () => {
 				.returning({ id: schema.assets.id });
 			const logoId = asset.id;
 
-			// 2. Insert Token with audit metadata
 			const [insertedToken] = await db
 				.insert(schema.tokens)
 				.values({
 					...tokenFields,
 					logoId,
 					createdBy: adminId,
-					updatedBy: editorId
+					updatedBy: adminId
 				})
 				.returning({ id: schema.tokens.id });
 
-			// 3. Handle tags
 			if (tagNames && tagNames.length > 0) {
 				for (const tagName of tagNames) {
 					const slug = tagName.toLowerCase().replace(/ /g, '-');
-
-					// Insert tag if not exists
 					await db.insert(schema.tags).values({ name: tagName, slug }).onConflictDoNothing();
-
-					// Get tag
 					const [tag] = await db.select().from(schema.tags).where(eq(schema.tags.slug, slug));
-
-					// Link token to tag
 					if (tag) {
 						await db
 							.insert(schema.tokenTags)
@@ -132,15 +135,17 @@ export const POST: RequestHandler = async () => {
 				}
 			}
 		}
+		console.log(`Seeded ${TOKENS.length} demo tokens`);
 
-		// Seed Messages
+		// 6. Seed Messages
 		for (const messageData of MESSAGES) {
 			await db.insert(schema.messages).values(messageData);
 		}
+		console.log(`Seeded ${MESSAGES.length} demo messages`);
 
-		return ApiResponse.created(undefined, 'Sample data seeded successfully');
+		return ApiResponse.created(undefined, 'Demo data seeded successfully');
 	} catch (err) {
-		console.error('Seeding failed:', err);
+		console.error('Demo Seeding failed:', err);
 		return ApiResponse.internalServerError();
 	}
 };

@@ -40,8 +40,7 @@ describe('GET /auth/me', () => {
 		const [testRole] = await db
 			.insert(roles)
 			.values({
-				name: 'Test Admin',
-				slug: 'test-admin'
+				role: 'test_admin'
 			})
 			.returning();
 
@@ -64,11 +63,7 @@ describe('GET /auth/me', () => {
 			throw new Error('No data received');
 		}
 
-		expect(data.data.role).toEqual({
-			id: testRole.id,
-			name: testRole.name,
-			slug: testRole.slug
-		});
+		expect(data.data.role).toBe(testRole.role);
 	});
 
 	it('should return unauthorized with non-existent user token', async () => {

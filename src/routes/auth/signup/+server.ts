@@ -47,7 +47,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				.set({
 					name,
 					hashedPassword,
-					isActive: true // In case it was disabled
+					status: 'active' // In case it was disabled
 				})
 				.where(eq(users.id, existingUser.id))
 				.returning();
@@ -60,7 +60,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					email,
 					hashedPassword,
 					roleId: null,
-					isActive: true,
+					status: 'active',
 					isEmailVerified: false
 				})
 				.returning();

@@ -293,18 +293,21 @@ Get specific activity log:
 #### [NEW] [oauth-handler.ts](src/lib/auth/oauth-handler.ts)
 
 Utilities for OAuth providers (Google):
+
 - `getGoogleAuthUrl()` - Generate redirect URL with state
 - `validateGoogleCallback(code)` - Exchange code for tokens & profile
 
 #### [NEW] [/auth/google/+server.ts](src/routes/auth/google/+server.ts)
 
 Redirect to Google:
+
 - **GET** `/auth/google`
 - Redirects user to Google Identity platform
 
 #### [NEW] [/auth/callback/google/+server.ts](src/routes/auth/callback/google/+server.ts)
 
 Handle Google Callback:
+
 - **GET** `/auth/callback/google`
 - Validates `code` and `state`
 - Check if user exists (by email) -> Link or Create
@@ -319,6 +322,7 @@ Handle Google Callback:
 #### [NEW] [sudo-middleware.ts](src/lib/auth/sudo-middleware.ts)
 
 Middleware for re-verification:
+
 - `requireSudo()` - Checks for a recent `sudo_confirmed_at` timestamp in the session.
 - If expired, returns a `403 Forbidden` with a specialized code `NEEDS_SUDO_CONFIRMATION`.
 
@@ -407,18 +411,21 @@ export const refreshTokens = pgTable('refresh_tokens', {
 	revokedAt: timestamp('revoked_at', { withTimezone: true }) // Null = active
 });
 
-export const oauthAccounts = pgTable('oauth_accounts', {
-	id: uuid('id').primaryKey().defaultRandom(),
-	userId: uuid('user_id')
-		.references(() => users.id, { onDelete: 'cascade' })
-		.notNull(),
-	provider: varchar('provider', { length: 50 }).notNull(), // 'google'
-	providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
-	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
-}, (t) => ({
-	uniqueProviderAccount: unique().on(t.provider, t.providerAccountId)
-}));
-
+export const oauthAccounts = pgTable(
+	'oauth_accounts',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		userId: uuid('user_id')
+			.references(() => users.id, { onDelete: 'cascade' })
+			.notNull(),
+		provider: varchar('provider', { length: 50 }).notNull(), // 'google'
+		providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+	},
+	(t) => ({
+		uniqueProviderAccount: unique().on(t.provider, t.providerAccountId)
+	})
+);
 ```
 
 **Update all FK references:**

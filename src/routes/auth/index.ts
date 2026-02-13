@@ -1,7 +1,7 @@
 import z from '$lib/zod-openapi';
 import OpenApiResponse from '$lib/openapi-response';
 import { User } from '$lib/db/types';
-import { RoleMetadata, UserMetadata } from '$lib/types';
+import { UserMetadata, AssetMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 // --- Auth: Sign In ---
@@ -129,8 +129,8 @@ export const authSignoutPost: RouteConfig = {
 // --- Auth: Get Current User (Me) ---
 
 export const AuthMeGetResponse = UserMetadata.extend({
-	avatarUrl: z.url().nullable().optional(),
-	role: RoleMetadata.nullable().describe('The metadata of the assigned role'),
+	avatar: AssetMetadata.nullable().optional(),
+	role: z.string().nullable().describe('The programmatic name of the assigned role'),
 	permissions: z.array(z.string()).describe('List of programmatic permission keys')
 }).openapi('AuthMeGetResponse', {
 	description: 'Successful retrieval of current user info'

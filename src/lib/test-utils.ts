@@ -38,7 +38,7 @@ export async function createTestUser(overrides?: Partial<typeof users.$inferInse
 			email: `test-${random}@example.com`,
 			hashedPassword: await hashPassword('password123'),
 			passwordHashingAlgorithm: 'argon2id',
-			avatarUrl: env.TEST_URL + '/favicon.svg',
+			status: 'active',
 			...overrides
 		})
 		.returning();

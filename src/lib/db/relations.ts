@@ -22,10 +22,9 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 		fields: [users.roleId],
 		references: [roles.id]
 	}),
-	createdBy: one(users, {
-		fields: [users.createdBy],
-		references: [users.id],
-		relationName: 'user_created_by'
+	avatar: one(assets, {
+		fields: [users.avatarId],
+		references: [assets.id]
 	}),
 	updatedBy: one(users, {
 		fields: [users.updatedBy],
@@ -39,15 +38,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 /**
  * Relations for the Roles table.
  */
-export const rolesRelations = relations(roles, ({ one, many }) => ({
-	createdBy: one(users, {
-		fields: [roles.createdBy],
-		references: [users.id]
-	}),
-	updatedBy: one(users, {
-		fields: [roles.updatedBy],
-		references: [users.id]
-	}),
+export const rolesRelations = relations(roles, ({ many }) => ({
 	permissions: many(rolePermissions)
 }));
 

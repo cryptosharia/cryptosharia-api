@@ -3,7 +3,7 @@ import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-ope
 import { postsGet, postsIdGet, postsSlugGet } from '../posts';
 import { tokensGet, tokensIdGet, tokensQuotesGet, tokensSlugGet } from '../tokens';
 import { messagesGet, messagesPost } from '../messages';
-import { seedPost } from '../seed';
+import { seedSystemPost, seedDemoPost } from '../seed';
 import { imgbbPost } from '../imgbb';
 import { openapiGet } from '.';
 import { docsGet } from '../(docs)';
@@ -15,16 +15,13 @@ import {
 	authSignupPost,
 	authVerifyPost
 } from '../auth';
-// import {
-// 	usersGet,
-// 	usersIdDelete,
-// 	usersIdGet,
-// 	usersIdPatch,
-// 	usersPost,
-// 	usersIdRolePut,
-// 	usersIdPasswordPatch,
-// 	usersIdAvatarPost
-// } from '../users';
+import {
+	usersGet,
+	usersIdGet,
+	usersIdPatch,
+	usersIdStatusPut,
+	usersIdRolePut
+} from '../users';
 
 const PATHS = [
 	docsGet,
@@ -35,6 +32,11 @@ const PATHS = [
 	authSignoutPost,
 	authRefreshPost,
 	authMeGet,
+	usersGet,
+	usersIdGet,
+	usersIdPatch,
+	usersIdStatusPut,
+	usersIdRolePut,
 	postsGet,
 	postsIdGet,
 	postsSlugGet,
@@ -45,15 +47,8 @@ const PATHS = [
 	messagesGet,
 	messagesPost,
 	imgbbPost,
-	seedPost
-	// usersGet,
-	// usersIdGet,
-	// usersPost,
-	// usersIdPatch,
-	// usersIdDelete,
-	// usersIdRolePut,
-	// usersIdPasswordPatch,
-	// usersIdAvatarPost
+	seedSystemPost,
+	seedDemoPost
 ];
 
 export const GET: RequestHandler = async () => {

@@ -60,10 +60,6 @@ const UPDATED_BY = {
  * Specialized audit helpers specifically for tables that have circular dependencies (users, roles).
  * Uses AnyPgColumn to break the TypeScript recursion loop while keeping SQL Foreign Keys.
  */
-const CREATED_BY_CIR = {
-	createdBy: uuid('created_by').references((): AnyPgColumn => users.id)
-};
-
 const UPDATED_BY_CIR = {
 	updatedBy: uuid('updated_by').references((): AnyPgColumn => users.id)
 };
@@ -105,6 +101,16 @@ export const postTypeEnum = pgEnum('post_type', ['article', 'webinar', 'video', 
  */
 export const hashingAlgorithmEnum = pgEnum('hashing_algorithm', ['argon2id']);
 
+/**
+ * Administrative status for user accounts.
+ */
+export const userStatusEnum = pgEnum('user_status', [
+	'active', // Active user
+	'inactive', // Soft-deleted/Deactivated
+	'suspended', // Temporary block (investigation, payment, etc)
+	'banned' // Permanent block (policy violation)
+]);
+
 // --- Tables ---
 
 /**
@@ -112,14 +118,8 @@ export const hashingAlgorithmEnum = pgEnum('hashing_algorithm', ['argon2id']);
  */
 export const permissions = pgTable('permissions', {
 	...PK_UUID,
-	/** Human-readable name of the permission */
-	name: varchar('name', { length: 100 }).notNull(),
-	/** Programmatic key for code-level permission checks (e.g. 'tokens.create') */
-	key: varchar('key', { length: 100 }).notNull().unique(),
-	/** Logical grouping for the permission (e.g. 'tokens') */
-	module: varchar('module', { length: 50 }).notNull(),
-	...CREATED_AT,
-	...UPDATED_AT
+	/** Programmatic identifier for code-level permission checks (e.g. 'tokens.manage') */
+	permission: varchar('permission', { length: 100 }).notNull().unique()
 });
 
 /**
@@ -127,14 +127,8 @@ export const permissions = pgTable('permissions', {
  */
 export const roles = pgTable('roles', {
 	...PK_UUID,
-	/** Display name of the role (e.g. 'Super Admin') */
-	name: varchar('name', { length: 50 }).notNull(),
-	/** Unique URL-friendly identifier for the role */
-	slug: varchar('slug', { length: 50 }).notNull().unique(),
-	...CREATED_AT,
-	...UPDATED_AT,
-	...CREATED_BY_CIR,
-	...UPDATED_BY_CIR
+	/** Programmatic identifier (e.g. 'super_admin', 'content_editor') */
+	role: varchar('role', { length: 50 }).notNull().unique()
 });
 
 /**
@@ -152,12 +146,12 @@ export const users = pgTable('users', {
 	passwordHashingAlgorithm: hashingAlgorithmEnum('password_hashing_algorithm')
 		.notNull()
 		.default('argon2id'),
-	/** URL to the user's profile image (optional) */
-	avatarUrl: text('avatar_url'),
+	/** Reference to the user's profile image (optional) */
+	avatarId: uuid('avatar_id').references((): AnyPgColumn => assets.id),
 	/** Reference to the assigned role (NULL = regular user, set = staff/admin) */
-	roleId: uuid('role_id').references((): AnyPgColumn => roles.id),
-	/** Boolean flag to enable/disable account access */
-	isActive: boolean('is_active').notNull().default(true),
+	roleId: uuid('role_id').references(() => roles.id),
+	/** Administrative account lifecycle status */
+	status: userStatusEnum('status').notNull().default('active'),
 	/** TOTP or secondary authentication secret */
 	twoFactorSecret: text('two_factor_secret'),
 	/** Timestamp of the most recent successful login */
@@ -166,7 +160,6 @@ export const users = pgTable('users', {
 	isEmailVerified: boolean('is_email_verified').notNull().default(false),
 	...CREATED_AT,
 	...UPDATED_AT,
-	...CREATED_BY_CIR,
 	...UPDATED_BY_CIR
 });
 

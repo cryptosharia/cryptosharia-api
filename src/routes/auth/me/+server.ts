@@ -3,6 +3,7 @@ import { db } from '$lib/db';
 import { users } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
 import ApiResponse from '$lib/api-response';
+import { toAssetMetadata } from '$lib/assets';
 import { AuthMeGetResponse } from '..';
 
 /**
@@ -20,7 +21,8 @@ export const GET: RequestHandler = async ({ locals }) => {
 		const userWithRole = await db.query.users.findFirst({
 			where: eq(users.id, locals.user.id),
 			with: {
-				role: true
+				role: true,
+				avatar: true
 			}
 		});
 
@@ -32,7 +34,8 @@ export const GET: RequestHandler = async ({ locals }) => {
 		return ApiResponse.ok(
 			AuthMeGetResponse.parse({
 				...userWithRole,
-				role: userWithRole.role ? { ...userWithRole.role } : null,
+				avatar: toAssetMetadata(userWithRole.avatar),
+				role: userWithRole.role ? userWithRole.role.role : null,
 				permissions: locals.user.permissions
 			}),
 			'User profile retrieved successfully'

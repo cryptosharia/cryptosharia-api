@@ -10,13 +10,13 @@ import ApiResponse from '$lib/api-response';
 export async function getUserPermissions(roleId: string): Promise<string[]> {
 	const results = await db
 		.select({
-			key: schema.permissions.key
+			permission: schema.permissions.permission
 		})
 		.from(schema.rolePermissions)
 		.innerJoin(schema.permissions, eq(schema.rolePermissions.permissionId, schema.permissions.id))
 		.where(eq(schema.rolePermissions.roleId, roleId));
 
-	return results.map((r) => r.key);
+	return results.map((r) => r.permission);
 }
 
 /**

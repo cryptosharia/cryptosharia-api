@@ -20,7 +20,7 @@ export function getAssetUrl(asset: AssetRecord): string {
 
 		case 'vercel_blob':
 			// TODO: implement vercel blob url generation
-      return pathname;
+			return pathname;
 
 		default:
 			// Fallback if pathname is already a URL

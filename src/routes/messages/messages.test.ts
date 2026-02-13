@@ -120,7 +120,7 @@ describe('Messages API Integration', () => {
 
 		it('should filter messages by sender email', async () => {
 			const email = `filter-${Math.random()}@example.com`;
-			
+
 			// Seed a specific message
 			await client.POST('/messages', {
 				params: { query: { notify: false } },
@@ -141,13 +141,13 @@ describe('Messages API Integration', () => {
 
 		it('should search messages by content', async () => {
 			const uniqueKeyword = `sharia-${Math.random()}`;
-			
+
 			// Seed a specific message
 			await client.POST('/messages', {
 				params: { query: { notify: false } },
-				body: { 
-					name: 'Searcher', 
-					email: 'search@example.com', 
+				body: {
+					name: 'Searcher',
+					email: 'search@example.com',
 					message: `This is a unique ${uniqueKeyword} message.`
 				}
 			});
