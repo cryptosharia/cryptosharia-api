@@ -23,12 +23,13 @@ export type SeedUser = {
 	name: string;
 	email: string;
 	password: string; // Plain text, hashed during seeding
-	role?: Role | null; // Role literal
+	role: Role; // Role literal
 	status?: 'active' | 'inactive' | 'suspended' | 'banned';
+	isEmailVerified: boolean;
 };
 
 // Dev password for all sample users (easy to remember for testing)
-export const DEV_PASSWORD = 'password123';
+export const DEV_PASSWORD = 'password12345';
 
 // Sample Users (Demo)
 export const USERS: SeedUser[] = [
@@ -37,35 +38,40 @@ export const USERS: SeedUser[] = [
 		email: 'superadmin@cryptosharia.id',
 		password: DEV_PASSWORD,
 		role: 'super_admin',
-		status: 'active'
+		status: 'active',
+		isEmailVerified: true
 	},
 	{
 		name: 'Admin User',
 		email: 'admin@cryptosharia.id',
 		password: DEV_PASSWORD,
 		role: 'admin',
-		status: 'active'
+		status: 'active',
+		isEmailVerified: true
 	},
 	{
 		name: 'Post Manager',
 		email: 'posts@cryptosharia.id',
 		password: DEV_PASSWORD,
 		role: 'posts_manager',
-		status: 'active'
+		status: 'active',
+		isEmailVerified: true
 	},
 	{
 		name: 'Token Manager',
 		email: 'tokens@cryptosharia.id',
 		password: DEV_PASSWORD,
 		role: 'tokens_manager',
-		status: 'active'
+		status: 'active',
+		isEmailVerified: true
 	},
 	{
 		name: 'Regular User',
 		email: 'user@example.com',
 		password: DEV_PASSWORD,
-		role: null,
-		status: 'active'
+		role: 'member',
+		status: 'active',
+		isEmailVerified: true
 	}
 ];
 

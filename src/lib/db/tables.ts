@@ -113,13 +113,13 @@ export const userStatusEnum = pgEnum('user_status', [
 
 /**
  * Defined system roles for RBAC.
- * Regular users have this set to NULL.
  */
 export const userRoleEnum = pgEnum('user_role', [
 	'super_admin',
 	'admin',
 	'posts_manager',
-	'tokens_manager'
+	'tokens_manager',
+	'member'
 ]);
 
 // --- Tables ---
@@ -137,8 +137,10 @@ export const users = pgTable('users', {
 		.default('argon2id'),
 	/** Reference to the user's profile image (optional) */
 	avatarId: uuid('avatar_id').references((): AnyPgColumn => assets.id),
-	/** System Role for staff/admins. */
-	role: userRoleEnum('role'), // NULL = Regular User / Member
+	/**
+	 * System Role for staff/admins.
+	 */
+	role: userRoleEnum('role').notNull().default('member'),
 	/** Administrative account lifecycle status */
 	status: userStatusEnum('status').notNull().default('active'),
 	/** TOTP or secondary authentication secret */

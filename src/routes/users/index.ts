@@ -1,6 +1,7 @@
 import z from '$lib/zod-openapi';
 import OpenApiResponse from '$lib/openapi-response';
 import { User } from '$lib/db/types';
+import { userRoleEnum } from '$lib/db/tables';
 import { UserMetadata, PaginatedData, AssetMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
@@ -14,14 +15,14 @@ export const UsersGetQuery = z
 		page: z.coerce.number().int().min(1).default(1),
 		limit: z.coerce.number().int().min(1).max(100).default(20),
 		search: z.string().optional().describe('Search by name or email'),
-		role: z.string().optional().describe('Filter by role name (e.g. "admin")'),
+		role: z.enum(userRoleEnum.enumValues).optional().describe('Filter by role name'),
 		status: UserStatus.optional().describe('Filter by account status')
 	})
 	.openapi('UsersGetQuery');
 
 export const UsersGetItem = UserMetadata.extend({
 	avatar: AssetMetadata.nullable(),
-	role: z.string().nullable(),
+	role: z.enum(userRoleEnum.enumValues),
 	status: UserStatus,
 	isEmailVerified: z.boolean(),
 	lastLoginAt: z.date().nullable(),
@@ -133,7 +134,8 @@ export const usersIdStatusPut: RouteConfig = {
 	path: '/users/{id}/status',
 	method: 'put',
 	summary: 'Update User Status',
-	description: 'Update the administrative status of a user (lifecycle management).',
+	description:
+		'Update the administrative status of a user (lifecycle management). Requires permission: `users.manage_status`',
 	request: {
 		params: UsersIdParams,
 		body: {
@@ -147,7 +149,8 @@ export const usersIdStatusPut: RouteConfig = {
 	responses: {
 		...OpenApiResponse.ok(UsersIdGetResponse, 'User status updated successfully'),
 		...OpenApiResponse.badRequest('Invalid status provided'),
-		...OpenApiResponse.notFound('User not found'),		...OpenApiResponse.forbidden('Insufficient permissions to manage user status'),
+		...OpenApiResponse.notFound('User not found'),
+		...OpenApiResponse.forbidden('Insufficient permissions to manage user status'),
 		...OpenApiResponse.internalServerError('Failed to update status')
 	},
 	security: [{ ApiKeyAuth: [], BearerAuth: [] }]
@@ -157,7 +160,7 @@ export const usersIdStatusPut: RouteConfig = {
 
 export const UsersIdRolePutBody = z
 	.object({
-		role: z.string().nullable().describe('The role name (e.g. "admin") or null to remove role')
+		role: z.enum(userRoleEnum.enumValues).describe('The role name (e.g. "admin", "member")')
 	})
 	.openapi('UsersIdRolePutBody');
 export type UsersIdRolePutBody = z.infer<typeof UsersIdRolePutBody>;
@@ -166,7 +169,7 @@ export const usersIdRolePut: RouteConfig = {
 	path: '/users/{id}/role',
 	method: 'put',
 	summary: 'Assign Role',
-	description: 'Assign or remove a role for a user. Requires permission: `users.manage_role`.',
+	description: 'Assign or remove a role for a user. Requires permission: `users.manage_roles`.',
 	request: {
 		params: UsersIdParams,
 		body: {
@@ -179,8 +182,8 @@ export const usersIdRolePut: RouteConfig = {
 	},
 	responses: {
 		...OpenApiResponse.ok(UsersIdGetResponse, 'Role assigned successfully'),
-		...OpenApiResponse.badRequest('Invalid role ID provided'),
-		...OpenApiResponse.notFound('User or role not found'),
+		...OpenApiResponse.badRequest('Invalid role provided'),
+		...OpenApiResponse.notFound('User not found'),
 		...OpenApiResponse.forbidden('Insufficient permissions to manage user roles'),
 		...OpenApiResponse.internalServerError('Failed to assign role due to an internal server error')
 	},

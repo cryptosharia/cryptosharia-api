@@ -4,8 +4,7 @@ import ApiResponse from '$lib/api-response';
 /**
  * Fetches all unique permission keys for a given role from the static config.
  */
-export function getUserPermissions(role: Role | null): string[] {
-	if (!role) return [];
+export function getUserPermissions(role: Role): string[] {
 	return ROLE_PERMISSIONS[role] || [];
 }
 

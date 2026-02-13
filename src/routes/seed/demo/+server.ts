@@ -46,7 +46,8 @@ export const POST: RequestHandler = async () => {
 					email: userData.email,
 					hashedPassword,
 					role: userData.role as Role,
-					status: userData.status || 'active'
+					status: userData.status || 'active',
+					isEmailVerified: userData.isEmailVerified
 				})
 				.returning({ id: schema.users.id });
 			seededUsers[userData.name] = user.id;

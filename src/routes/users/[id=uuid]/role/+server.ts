@@ -54,7 +54,7 @@ export const PUT: RequestHandler = async ({
 		const [updatedUser] = await db
 			.update(users)
 			.set({
-				role: role as Role | null,
+				role: role as Role,
 				updatedAt: new Date(),
 				updatedBy: locals.user!.id
 			})

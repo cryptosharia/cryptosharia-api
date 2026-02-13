@@ -34,5 +34,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 		'messages.read'
 	],
 	posts_manager: ['posts.manage'],
-	tokens_manager: ['tokens.manage']
+	tokens_manager: ['tokens.manage'],
+	member: []
 };

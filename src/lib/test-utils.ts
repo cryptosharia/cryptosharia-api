@@ -40,7 +40,7 @@ export async function createTestUser(overrides?: Partial<typeof users.$inferInse
 				hashedPassword: await hashPassword('password123'),
 				passwordHashingAlgorithm: 'argon2id',
 				status: 'active',
-				role: null,
+				role: 'member',
 				...overrides
 			})
 			.returning();

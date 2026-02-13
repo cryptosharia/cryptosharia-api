@@ -8,13 +8,21 @@ import { messages } from '$lib/db/tables';
 import { MessagesGetQuery, MessagesGetItem, MessagesPostBody, MessagesPostQuery } from './index';
 import { and, ilike, inArray, or, count } from 'drizzle-orm';
 import { waitUntil } from '@vercel/functions';
+import { requirePermission } from '$lib/auth/permissions';
 import type { PaginatedData } from '$lib/types';
 
 /**
  * GET /messages
  * Fetches messages with optional filtering, searching, and pagination.
  */
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
+	// Authorization
+	try {
+		requirePermission(locals, 'messages.read');
+	} catch (apiError) {
+		return apiError as Response;
+	}
+
 	const params = Object.fromEntries(url.searchParams);
 	const result = MessagesGetQuery.safeParse(params);
 

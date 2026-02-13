@@ -34,15 +34,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 		try {
 			const payload = await verifyAccessToken(token);
 
-			// Fetch permissions if role exists (staff/admin)
-			let permissions: string[] = [];
-			if (payload.role) {
-				permissions = getUserPermissions(payload.role as Role);
-			}
+			// Fetch permissions for the assigned role
+			const permissions = getUserPermissions(payload.role as Role);
 
 			event.locals.user = {
 				id: payload.userId,
-				role: payload.role as Role | null,
+				role: payload.role as Role,
 				permissions
 			};
 		} catch {

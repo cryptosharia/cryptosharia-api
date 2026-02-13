@@ -36,7 +36,7 @@ describe('POST /auth/signup', () => {
 			where: eq(users.email, signupData.email)
 		});
 		expect(user).toBeDefined();
-		expect(user?.role).toBeNull();
+		expect(user?.role).toBe('member');
 		expect(user?.isEmailVerified).toBe(false);
 	});
 
@@ -108,7 +108,7 @@ describe('POST /auth/signup', () => {
 		const user = await db.query.users.findFirst({
 			where: eq(users.email, email)
 		});
-		expect(user?.role).toBeNull();
+		expect(user?.role).toBe('member');
 		expect(user?.isEmailVerified).toBe(false);
 	});
 });

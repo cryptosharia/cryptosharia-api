@@ -6,7 +6,7 @@ declare global {
 		interface Locals {
 			user: {
 				id: string;
-				role: import('$lib/auth/rbac').Role | null;
+				role: import('$lib/auth/rbac').Role;
 				permissions: string[];
 			} | null;
 		}

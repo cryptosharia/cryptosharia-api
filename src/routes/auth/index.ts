@@ -1,6 +1,7 @@
 import z from '$lib/zod-openapi';
 import OpenApiResponse from '$lib/openapi-response';
 import { User } from '$lib/db/types';
+import { userRoleEnum } from '$lib/db/tables';
 import { UserMetadata, AssetMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
@@ -130,7 +131,7 @@ export const authSignoutPost: RouteConfig = {
 
 export const AuthMeGetResponse = UserMetadata.extend({
 	avatar: AssetMetadata.nullable().optional(),
-	role: z.string().nullable().describe('The programmatic name of the assigned role'),
+	role: z.enum(userRoleEnum.enumValues).describe('The programmatic name of the assigned role'),
 	permissions: z.array(z.string()).describe('List of programmatic permission keys')
 }).openapi('AuthMeGetResponse', {
 	description: 'Successful retrieval of current user info'
@@ -174,7 +175,7 @@ export const authSignupPost: RouteConfig = {
 	method: 'post',
 	summary: 'Sign Up',
 	description:
-		'Register a new **regular user** (`role: null`) account. Users must verify their email before they can sign in.',
+		'Register a new **regular user** (`role: member`) account. Users must verify their email before they can sign in.',
 	request: {
 		body: {
 			content: {

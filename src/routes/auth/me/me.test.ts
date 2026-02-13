@@ -59,7 +59,7 @@ describe('GET /auth/me', () => {
 		// Use a valid token structure but with a random UUID that doesn't exist
 		const accessToken = await signAccessToken({
 			userId: crypto.randomUUID(),
-			role: null
+			role: 'member'
 		});
 
 		const { response } = await client.GET('/auth/me', {

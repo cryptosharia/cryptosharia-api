@@ -82,6 +82,148 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Up
+         * @description Register a new **regular user** (`role: member`) account. Users must verify their email before they can sign in.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AuthSignupPostBody"];
+                };
+            };
+            responses: {
+                /** @description User registered successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["AuthSignupPostResponse"];
+                        };
+                    };
+                };
+                /** @description Invalid input data */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Email already registered */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to register user */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify Email
+         * @description Verify a user email address using a secret token.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AuthVerifyPostBody"];
+                };
+            };
+            responses: {
+                /** @description Email verified successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Invalid or missing token */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Invalid or expired token */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to verify email */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/signin": {
         parameters: {
             query?: never;
@@ -108,7 +250,7 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
+                /** @description Success, tokens and user metadata returned */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -119,7 +261,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Bad Request */
+                /** @description Invalid email or password */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -128,7 +270,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid credentials */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -137,79 +279,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/signup": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Public Signup
-         * @description Register a new user account. Role defaults to NULL (Regular User). Users must verify their email before they can sign in.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["AuthSignupPostBody"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["AuthSignupPostResponse"];
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Email already registered */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
+                /** @description Failed to process signin */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -252,7 +322,7 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
+                /** @description Refresh token revoked successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -261,7 +331,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description Missing or invalid refresh token */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -270,7 +340,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to revoke token */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -313,7 +383,7 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
+                /** @description Success, new tokens and user metadata returned */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -324,7 +394,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Bad Request */
+                /** @description Missing or invalid refresh token */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -333,7 +403,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Refresh token is expired or revoked */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -342,7 +412,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to refresh token */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -379,7 +449,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Current user profile retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -390,7 +460,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Not authenticated */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -399,7 +469,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to fetch user profile */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -418,43 +488,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/verify": {
+    "/users": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
         /**
-         * Verify Email
-         * @description Verify a user email address using a secret token.
+         * List Users
+         * @description Retrieve a paginated list of all users. Requires permission: `users.read`.
          */
-        post: {
+        get: {
             parameters: {
-                query?: never;
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    /** @description Search by name or email */
+                    search?: string;
+                    /** @description Filter by role name */
+                    role?: "super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member";
+                    /** @description Filter by account status */
+                    status?: "active" | "inactive" | "suspended" | "banned";
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["AuthVerifyPostBody"];
-                };
-            };
+            requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Paginated list of users retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["UsersGetResponse"];
+                        };
                     };
                 };
-                /** @description Bad Request */
-                400: {
+                /** @description Authentication required */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -462,8 +537,8 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Invalid or expired token */
-                404: {
+                /** @description Insufficient permissions to list users */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -471,7 +546,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve users due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -482,6 +557,320 @@ export interface paths {
                 };
             };
         };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get User Detail
+         * @description Retrieve detailed information for a specific user. Requires permission: `users.read` or ownership.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description User details retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["UsersIdGetResponse"];
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Insufficient permissions to view this user */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description User not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to retrieve user details due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update User
+         * @description Update an existing user profile. Requires permission: `users.update` or ownership.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UsersIdPatchBody"];
+                };
+            };
+            responses: {
+                /** @description User updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["UsersIdGetResponse"];
+                        };
+                    };
+                };
+                /** @description Invalid update data provided */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Insufficient permissions to update this user */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description User not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to update user due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/users/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update User Status
+         * @description Update the administrative status of a user (lifecycle management).
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UsersIdStatusPutBody"];
+                };
+            };
+            responses: {
+                /** @description User status updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["UsersIdGetResponse"];
+                        };
+                    };
+                };
+                /** @description Invalid status provided */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Insufficient permissions to manage user status */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description User not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to update status */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{id}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Assign Role
+         * @description Assign or remove a role for a user. Requires permission: `users.manage_roles`.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UsersIdRolePutBody"];
+                };
+            };
+            responses: {
+                /** @description Role assigned successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["UsersIdGetResponse"];
+                        };
+                    };
+                };
+                /** @description Invalid role provided */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Insufficient permissions to manage user roles */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description User not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to assign role due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -522,7 +911,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Paginated list of posts retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -533,7 +922,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Bad Request */
+                /** @description Invalid query parameters provided */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -542,7 +931,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -551,7 +940,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve posts due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -593,7 +982,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Post retrieved successfully by ID */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -604,7 +993,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -613,7 +1002,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Not Found */
+                /** @description Post not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -622,7 +1011,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve post due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -664,7 +1053,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Published post retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -675,7 +1064,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -684,7 +1073,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Not Found */
+                /** @description Post not found or is not published */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -693,7 +1082,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve post due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -744,7 +1133,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Paginated list of tokens retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -755,7 +1144,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Bad Request */
+                /** @description Invalid query parameters provided */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -764,7 +1153,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -773,7 +1162,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve tokens due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -815,7 +1204,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Token retrieved successfully by ID */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -826,7 +1215,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -835,7 +1224,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Not Found */
+                /** @description Token not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -844,7 +1233,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve token due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -886,7 +1275,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Published token retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -897,7 +1286,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -906,7 +1295,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Not Found */
+                /** @description Token not found or is not published */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -915,7 +1304,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve token due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -957,7 +1346,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Token quotes retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -968,7 +1357,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Bad Request */
+                /** @description Invalid slug(s) provided */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -977,7 +1366,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -986,7 +1375,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve token quotes due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -995,7 +1384,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Bad Gateway */
+                /** @description Failed to fetch data from market data provider */
                 502: {
                     headers: {
                         [name: string]: unknown;
@@ -1040,7 +1429,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
+                /** @description Paginated list of messages retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1051,7 +1440,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -1060,7 +1449,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to retrieve messages due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -1092,7 +1481,7 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Created */
+                /** @description Message sent successfully */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -1112,7 +1501,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Bad Request */
+                /** @description Invalid form data provided */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1121,7 +1510,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -1130,7 +1519,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to send message due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -1179,7 +1568,7 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Created */
+                /** @description Image uploaded to ImgBB successfully */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -1206,7 +1595,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Bad Request */
+                /** @description No image file provided in the request */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1215,7 +1604,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Unauthorized */
+                /** @description Invalid or missing API key */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -1224,7 +1613,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to process image upload due to an internal server error */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -1233,7 +1622,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Bad Gateway */
+                /** @description Failed to proxy upload to ImgBB service */
                 502: {
                     headers: {
                         [name: string]: unknown;
@@ -1250,7 +1639,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/seed": {
+    "/seed/demo": {
         parameters: {
             query?: never;
             header?: never;
@@ -1260,8 +1649,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Seed Sample Data
-         * @description Initialize the database with sample data for development and testing purposes. (Seeding in production is forbidden)
+         * Seed Demo Data
+         * @description Initialize the database with sample data (Users, Posts, Tokens, Messages) for development and testing.
          */
         post: {
             parameters: {
@@ -1272,7 +1661,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Created */
+                /** @description Demo data seeded successfully */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -1281,16 +1670,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Forbidden */
+                /** @description Demo seeding is strictly forbidden in production */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1299,7 +1679,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Internal Server Error */
+                /** @description Failed to seed demo data */
                 500: {
                     headers: {
                         [name: string]: unknown;
@@ -1320,13 +1700,8 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Successful signin response with tokens and user info */
-        AuthSigninPostResponse: {
-            user: components["schemas"]["UserMetadata"];
-            accessToken: string;
-            refreshToken: string;
-        };
-        UserMetadata: {
+        /** @description Successful signup response with user info */
+        AuthSignupPostResponse: {
             /** Format: uuid */
             id: string;
             name: string;
@@ -1341,23 +1716,32 @@ export interface components {
             };
             data?: unknown;
         };
-        /** @description Credentials for signing in */
-        AuthSigninPostBody: {
+        /** @description Data for account registration */
+        AuthSignupPostBody: {
+            name: string;
             /** Format: email */
             email: string;
             password: string;
         };
-        /** @description Successful signup response with user info */
-        AuthSignupPostResponse: {
+        AuthVerifyPostBody: {
+            /** @description The verification token received via email */
+            token: string;
+        };
+        /** @description Successful signin response with tokens and user info */
+        AuthSigninPostResponse: {
+            user: components["schemas"]["UserMetadata"];
+            accessToken: string;
+            refreshToken: string;
+        };
+        UserMetadata: {
             /** Format: uuid */
             id: string;
             name: string;
             /** Format: email */
             email: string;
         };
-        /** @description Data for account registration */
-        AuthSignupPostBody: {
-            name: string;
+        /** @description Credentials for signing in */
+        AuthSigninPostBody: {
             /** Format: email */
             email: string;
             password: string;
@@ -1378,22 +1762,83 @@ export interface components {
         };
         /** @description Successful retrieval of current user info */
         AuthMeGetResponse: components["schemas"]["UserMetadata"] & {
-            /** Format: uri */
-            avatarUrl?: string | null;
-            role: components["schemas"]["RoleMetadata"];
+            avatar?: components["schemas"]["AssetMetadata"];
+            /**
+             * @description The programmatic name of the assigned role
+             * @enum {string}
+             */
+            role: "super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member";
             /** @description List of programmatic permission keys */
             permissions: string[];
         };
-        /** @description The metadata of the assigned role */
-        RoleMetadata: {
+        AssetMetadata: {
             /** Format: uuid */
             id: string;
-            name: string;
-            slug: string;
+            /** Format: uri */
+            url: string;
+            filename: string;
+            size: number;
+            mimeType?: string | null;
+            width?: number | null;
+            height?: number | null;
         } | null;
-        AuthVerifyPostBody: {
-            /** @description The verification token received via email */
-            token: string;
+        UsersGetResponse: {
+            items: components["schemas"]["UsersGetItem"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        UsersGetItem: components["schemas"]["UserMetadata"] & {
+            avatar: components["schemas"]["AssetMetadata"];
+            /** @enum {string} */
+            role: "super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member";
+            /** @enum {string} */
+            status: "active" | "inactive" | "suspended" | "banned";
+            isEmailVerified: boolean;
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string | null;
+        };
+        Pagination: {
+            /** @description Total number of items matching the filters */
+            total: number;
+            /** @description Current page number */
+            page: number;
+            /** @description Number of items per page */
+            limit: number;
+            /** @description Total number of pages */
+            totalPages: number;
+        };
+        UsersIdGetResponse: components["schemas"]["UserMetadata"] & {
+            avatar: components["schemas"]["AssetMetadata"];
+            /** @enum {string} */
+            role: "super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member";
+            /** @enum {string} */
+            status: "active" | "inactive" | "suspended" | "banned";
+            isEmailVerified: boolean;
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string | null;
+        };
+        UsersIdPatchBody: {
+            name?: string;
+            /** Format: uuid */
+            avatarId?: string | null;
+        };
+        UsersIdStatusPutBody: {
+            /** @enum {string} */
+            status: "active" | "inactive" | "suspended" | "banned";
+        };
+        UsersIdRolePutBody: {
+            /**
+             * @description The role name (e.g. "admin", "member")
+             * @enum {string}
+             */
+            role: "super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member";
         };
         PaginatedPostsGetItem: {
             items: components["schemas"]["PostsGetItem"][];
@@ -1424,27 +1869,6 @@ export interface components {
             createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             coverImage: components["schemas"]["AssetMetadata"];
-        };
-        AssetMetadata: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uri */
-            url: string;
-            filename: string;
-            size: number;
-            mimeType?: string | null;
-            width?: number | null;
-            height?: number | null;
-        };
-        Pagination: {
-            /** @description Total number of items matching the filters */
-            total: number;
-            /** @description Current page number */
-            page: number;
-            /** @description Number of items per page */
-            limit: number;
-            /** @description Total number of pages */
-            totalPages: number;
         };
         PostsGetData: {
             /** Format: uuid */

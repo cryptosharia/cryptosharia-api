@@ -7,7 +7,7 @@ import z from '$lib/zod-openapi';
 // Users
 export const User = createSelectSchema(table.users, {
 	name: (s) => s.trim().min(2),
-	role: z.enum(table.userRoleEnum.enumValues).nullable()
+	role: z.enum(table.userRoleEnum.enumValues)
 }).extend({
 	email: z.email().max(255)
 });

@@ -53,18 +53,16 @@ export const POST: RequestHandler = async ({ request }) => {
 				.returning();
 		} else {
 			// 4. Create New User
-			[newUser] = await db
-									.insert(users)
-									.values({
-										name,
-										email,
-										hashedPassword,
-										role: null,
-										status: 'active',
-										isEmailVerified: false
-									})
-									.returning();
-				
+			            [newUser] = await db
+			                                    .insert(users)
+			                                    .values({
+			                                        name,
+			                                        email,
+			                                        hashedPassword,
+			                                        status: 'active',
+			                                        isEmailVerified: false
+			                                    })
+			                                    .returning();				
 		}
 
 		// 5. Generate and Store Verification Token
