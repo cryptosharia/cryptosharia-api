@@ -4,6 +4,7 @@ import { User } from '$lib/db/types';
 import { userRoleEnum } from '$lib/db/tables';
 import { UserMetadata, PaginatedData, AssetMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
+import { zQueryArray } from '$lib/utils';
 
 // --- User: List ---
 
@@ -15,8 +16,12 @@ export const UsersGetQuery = z
 		page: z.coerce.number().int().min(1).default(1),
 		limit: z.coerce.number().int().min(1).max(100).default(20),
 		search: z.string().optional().describe('Search by name or email'),
-		role: z.enum(userRoleEnum.enumValues).optional().describe('Filter by role name'),
-		status: UserStatus.optional().describe('Filter by account status')
+		roles: zQueryArray(z.enum(userRoleEnum.enumValues), {
+			description: 'List of role names to filter by.<br>Example: admin,member'
+		}),
+		statuses: zQueryArray(UserStatus, {
+			description: 'List of account statuses to filter by.<br>Example: active,suspended'
+		})
 	})
 	.openapi('UsersGetQuery');
 

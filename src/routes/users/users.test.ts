@@ -38,7 +38,7 @@ describe('Users API Integration', () => {
 			expect(data?.data?.items[0].name).toBe(uniqueName);
 		});
 
-		it('should filter users by role', async () => {
+		it('should filter users by roles', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
 			const authClient = createApiTestClient({
@@ -50,12 +50,56 @@ describe('Users API Integration', () => {
 
 			const { data, response } = await authClient.GET('/users', {
 				params: {
-					query: { role: 'admin' }
+					query: { roles: ['admin'] }
 				}
 			});
 
 			expect(response.status).toBe(200);
 			expect(data?.data?.items.every((u) => u.role === 'admin')).toBe(true);
+		});
+
+		it('should filter users by multiple roles', async () => {
+			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
+			const accessToken = await signTestUserIn(admin.email);
+			const authClient = createApiTestClient({
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			await createTestUser({ role: 'admin' });
+			await createTestUser({ role: 'member' });
+
+			const { data, response } = await authClient.GET('/users', {
+				params: {
+					query: { roles: ['admin', 'member'] }
+				}
+			});
+
+			expect(response.status).toBe(200);
+			const roles = data?.data?.items.map((u) => u.role);
+			expect(roles).toContain('admin');
+			expect(roles).toContain('member');
+		});
+
+		it('should filter users by multiple statuses', async () => {
+			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
+			const accessToken = await signTestUserIn(admin.email);
+			const authClient = createApiTestClient({
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			await createTestUser({ status: 'active' });
+			await createTestUser({ status: 'suspended' });
+
+			const { data, response } = await authClient.GET('/users', {
+				params: {
+					query: { statuses: ['active', 'suspended'] }
+				}
+			});
+
+			expect(response.status).toBe(200);
+			const statuses = data?.data?.items.map((u) => u.status);
+			expect(statuses).toContain('active');
+			expect(statuses).toContain('suspended');
 		});
 
 		it('should return 403 for regular user', async () => {

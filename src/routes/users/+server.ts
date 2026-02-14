@@ -4,7 +4,7 @@ import { users } from '$lib/db/tables';
 import ApiResponse from '$lib/api-response';
 import type { PaginatedData } from '$lib/types';
 import z from '$lib/zod-openapi';
-import { and, ilike, eq, or, count } from 'drizzle-orm';
+import { and, ilike, inArray, or, count } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/assets';
 import type { Role } from '$lib/auth/rbac';
@@ -22,21 +22,35 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	}
 
 	// 2. Validation
-	const params = Object.fromEntries(url.searchParams);
+	const params = Object.fromEntries(
+		Array.from(url.searchParams.keys()).map((key) => [
+			key,
+			url.searchParams.getAll(key).length > 1
+				? url.searchParams.getAll(key)
+				: url.searchParams.get(key)
+		])
+	);
 	const result = UsersGetQuery.safeParse(params);
 
 	if (!result.success) {
 		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
 	}
 
-	const { search, limit, page, role, status } = result.data;
+	const { search, limit, page, roles, statuses } = result.data;
 	const offset = (page - 1) * limit;
 
 	try {
 		// 3. Filters
 		const filters = [];
-		if (role) filters.push(eq(users.role, role as Role));
-		if (status) filters.push(eq(users.status, status));
+
+		if (roles && roles.length > 0) {
+			filters.push(inArray(users.role, roles as Role[]));
+		}
+
+		if (statuses && statuses.length > 0) {
+			filters.push(inArray(users.status, statuses as (typeof UserStatus._type)[]));
+		}
+
 		if (search) {
 			const query = `%${search}%`;
 			filters.push(or(ilike(users.name, query), ilike(users.email, query)));
