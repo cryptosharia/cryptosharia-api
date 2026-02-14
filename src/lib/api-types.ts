@@ -509,10 +509,10 @@ export interface paths {
                     limit?: number;
                     /** @description Search by name or email */
                     search?: string;
-                    /** @description Filter by role name */
-                    role?: "super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member";
-                    /** @description Filter by account status */
-                    status?: "active" | "inactive" | "suspended" | "banned";
+                    /** @description List of role names to filter by.<br>Example: admin,member */
+                    roles?: ("super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member")[];
+                    /** @description List of account statuses to filter by.<br>Example: active,suspended */
+                    statuses?: ("active" | "inactive" | "suspended" | "banned")[];
                 };
                 header?: never;
                 path?: never;
@@ -889,7 +889,7 @@ export interface paths {
         };
         /**
          * List Posts
-         * @description Retrieve a list of posts with filtering, searching, and pagination support.
+         * @description Retrieve a list of posts with filtering, searching, and pagination support.<br>Note: Guests/members requesting non-published statuses will receive a 403 Forbidden.
          */
         get: {
             parameters: {
@@ -936,6 +936,15 @@ export interface paths {
                 };
                 /** @description Invalid or missing API key */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Explicitly requesting non-published statuses without permission */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1113,7 +1122,7 @@ export interface paths {
         };
         /**
          * List Tokens
-         * @description Retrieve a list of cryptocurrency tokens with filtering, searching, and pagination support.
+         * @description Retrieve a list of cryptocurrency tokens with filtering, searching, and pagination support.<br>Note: Guests/members requesting non-published statuses will receive a 403 Forbidden.
          */
         get: {
             parameters: {
@@ -1158,6 +1167,15 @@ export interface paths {
                 };
                 /** @description Invalid or missing API key */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Explicitly requesting non-published statuses without permission */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };

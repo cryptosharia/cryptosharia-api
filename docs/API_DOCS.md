@@ -20,8 +20,9 @@ This document serves as the **Single Source of Truth** for all endpoints, archit
 - All responses are wrapped in a standardized object:
   ```json
   {
-    "status": "success | error",
+    "success": true,
     "message": "Human-readable message",
+    "errors": { "field": ["error message"] },
     "data": { ... }
   }
   ```
@@ -75,8 +76,8 @@ This document serves as the **Single Source of Truth** for all endpoints, archit
 | `GET`   | `/users`             | List Users     | Admins only keywords. Filter by `role`, `status`, `search`. |
 | `GET`   | `/users/{id}`        | Get Detail     | Requires `users.read` or **Ownership**.                     |
 | `PATCH` | `/users/{id}`        | Update Profile | Requires `users.update` or **Ownership**.                   |
-| `PUT`   | `/users/{id}/status` | Update Status  | Requires `users.manage_status`. Self-mod forbidden.         |
-| `PUT`   | `/users/{id}/role`   | Assign Role    | Requires `users.manage_role`. Admins only.                  |
+| `PUT`   | `/users/{id}/status` | Update Status  | Requires `users.manage_status`. **Super Admin only**.       |
+| `PUT`   | `/users/{id}/role`   | Assign Role    | Requires `users.manage_role`. **Super Admin only**.         |
 
 ### 📝 Posts (`/posts`)
 

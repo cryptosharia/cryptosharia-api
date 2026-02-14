@@ -102,20 +102,19 @@ describe('Messages API Integration', () => {
 
 	describe('GET /messages', () => {
 		it('should be blocked without an API key', async () => {
-			const unauthorizedClient = createApiTestClient({ useApiKey: false });
-
-			const { response } = await unauthorizedClient.GET('/messages');
+			const { response } = await client.GET('/messages', {
+				headers: { 'Api-Key': '' }
+			});
 			expect(response.status).toBe(401);
 		});
 
 		it('should return a list of messages when authorized', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
+
+			const { response, data } = await client.GET('/messages', {
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-
-			const { response, data } = await authClient.GET('/messages');
 
 			expect(response.status).toBe(200);
 			expect(data?.success).toBe(true);
@@ -127,9 +126,6 @@ describe('Messages API Integration', () => {
 		it('should filter messages by sender email', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 			const email = `filter-${Math.random()}@example.com`;
 
 			// Seed a specific message
@@ -138,10 +134,11 @@ describe('Messages API Integration', () => {
 				body: { name: 'Filter Me', email, message: 'Target message' }
 			});
 
-			const { response, data } = await authClient.GET('/messages', {
+			const { response, data } = await client.GET('/messages', {
 				params: {
 					query: { senders: [email] }
-				}
+				},
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -153,9 +150,6 @@ describe('Messages API Integration', () => {
 		it('should search messages by content', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 			const uniqueKeyword = `sharia-${Math.random()}`;
 
 			// Seed a specific message
@@ -168,10 +162,11 @@ describe('Messages API Integration', () => {
 				}
 			});
 
-			const { response, data } = await authClient.GET('/messages', {
+			const { response, data } = await client.GET('/messages', {
 				params: {
 					query: { search: uniqueKeyword }
-				}
+				},
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -183,14 +178,12 @@ describe('Messages API Integration', () => {
 		it('should handle pagination', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { response, data } = await authClient.GET('/messages', {
+			const { response, data } = await client.GET('/messages', {
 				params: {
 					query: { limit: 1, page: 1 }
-				}
+				},
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);

@@ -8,10 +8,12 @@ import { toAssetMetadata } from '$lib/assets';
 import { posts, postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables';
 import { and, count, ilike, inArray, notInArray, or } from 'drizzle-orm';
 
+import { hasPermission } from '$lib/auth/permissions';
+
 /**
  * Handles GET requests to fetch posts with filtering, searching, and pagination.
  */
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
 	// 1. Validate query parameters using Zod
 	const params = Object.fromEntries(
 		Array.from(url.searchParams.keys()).map((key) => [
@@ -31,8 +33,17 @@ export const GET: RequestHandler = async ({ url }) => {
 	const { sections, types, slugs, search, limit, page, exclude, statuses } = result.data;
 	const offset = (page - 1) * limit;
 
+	// 2. Security Check: If non-published statuses are explicitly requested, require permission
+	if (statuses && statuses.some((s) => s !== 'published')) {
+		if (!hasPermission(locals, 'posts.manage')) {
+			return ApiResponse.forbidden(
+				'You do not have permission to access content with the requested statuses.'
+			);
+		}
+	}
+
 	try {
-		// 2. Define filters for both list and count queries
+		// 3. Define filters for both list and count queries
 		const getFilters = (table: typeof posts) => {
 			const filters = [];
 
@@ -68,10 +79,19 @@ export const GET: RequestHandler = async ({ url }) => {
 				filters.push(notInArray(table.slug, exclude as string[]));
 			}
 
-			// 🔓 Filter by status (default handled by Zod)
-			filters.push(
-				inArray(table.status, statuses as (typeof contentStatusEnum.enumValues)[number][])
-			);
+			// 🔓 Filter by status
+			let allowedStatuses = statuses;
+
+			// Default behavior if no status filter is provided
+			if (!allowedStatuses && !hasPermission(locals, 'posts.manage')) {
+				allowedStatuses = ['published'];
+			}
+
+			if (allowedStatuses && allowedStatuses.length > 0) {
+				filters.push(
+					inArray(table.status, allowedStatuses as (typeof contentStatusEnum.enumValues)[number][])
+				);
+			}
 
 			return filters.length > 0 ? and(...filters) : undefined;
 		};

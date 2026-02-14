@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
 import { tokens, assets } from '$lib/db/tables';
-import { createApiTestClient, createTestAsset } from '$lib/test-utils';
+import {
+	createApiTestClient,
+	createTestAsset,
+	createTestUser,
+	signTestUserIn
+} from '$lib/test-utils';
 
 const client = createApiTestClient();
 
@@ -188,8 +193,9 @@ describe('Tokens API Integration', () => {
 		expect(response.status).toBe(404);
 	});
 
-	it('should filter tokens by status (including archived)', async () => {
+	it('should filter tokens by status (restricting non-published for unauthorized)', async () => {
 		const asset = await createTestAsset();
+
 		await db.insert(tokens).values([
 			{
 				name: 'Archived Coin',
@@ -205,17 +211,51 @@ describe('Tokens API Integration', () => {
 			}
 		]);
 
-		// 1. Default (should NOT return archived)
-		const { data: defaultData } = await client.GET('/tokens');
+		// 1. Default (guest) - should NOT return archived
+		const { data: defaultData, response: defaultResponse } = await client.GET('/tokens');
+		expect(defaultResponse.status).toBe(200);
 		expect(defaultData?.data?.items?.some((i) => i.slug === 'archived-coin')).toBe(false);
 
-		// 2. Explicit archive (should return archived)
-		const { data: archiveData } = await client.GET('/tokens', {
+		// 2. Explicit archive (guest) - should return 403 Forbidden (strict security fix)
+		const { response: archiveResponse } = await client.GET('/tokens', {
 			params: {
 				query: { statuses: ['archived'] }
 			}
 		});
-		expect(archiveData?.data?.items?.some((i) => i.slug === 'archived-coin')).toBe(true);
+		expect(archiveResponse.status).toBe(403);
+
+		// 3. Admin (authorized) - should return archived
+		const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
+		const accessToken = await signTestUserIn(admin.email);
+
+		const { data: adminData } = await client.GET('/tokens', {
+			params: {
+				query: { statuses: ['archived'] }
+			},
+			headers: { Authorization: `Bearer ${accessToken}` }
+		});
+		expect(adminData?.data?.items?.some((i) => i.slug === 'archived-coin')).toBe(true);
+
+		// 4. Admin (No filter) - should return ALL statuses
+		const { data: adminAllData } = await client.GET('/tokens', {
+			headers: { Authorization: `Bearer ${accessToken}` }
+		});
+		expect(adminAllData?.data?.items?.some((i) => i.slug === 'archived-coin')).toBe(true);
+
+		// 5. Regular Member (authorized but not staff) - should return 403
+		const member = await createTestUser({ role: 'member', isEmailVerified: true });
+		const memberToken = await signTestUserIn(member.email);
+		const { response: memberResponse } = await client.GET('/tokens', {
+			params: { query: { statuses: ['archived'] } },
+			headers: { Authorization: `Bearer ${memberToken}` }
+		});
+		expect(memberResponse.status).toBe(403);
+
+		// 6. Guest Mixed Statuses - should return 403
+		const { response: mixedResponse } = await client.GET('/tokens', {
+			params: { query: { statuses: ['published', 'archived'] } }
+		});
+		expect(mixedResponse.status).toBe(403);
 	});
 
 	it('should include audit metadata as objects in response', async () => {

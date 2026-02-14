@@ -1,16 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { createApiTestClient, createTestUser, signTestUserIn } from '$lib/test-utils';
 
+const client = createApiTestClient();
+
 describe('Users API Integration', () => {
 	describe('GET /users', () => {
 		it('should list users for admin', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
+
+			const { data, response } = await client.GET('/users', {
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-
-			const { data, response } = await authClient.GET('/users');
 
 			expect(response.status).toBe(200);
 			expect(data?.data?.items).toBeDefined();
@@ -20,17 +21,15 @@ describe('Users API Integration', () => {
 		it('should filter users by search query', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
 			const uniqueName = `UniqueUser-${Math.random()}`;
 			await createTestUser({ name: uniqueName });
 
-			const { data, response } = await authClient.GET('/users', {
+			const { data, response } = await client.GET('/users', {
 				params: {
 					query: { search: uniqueName }
-				}
+				},
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -41,17 +40,15 @@ describe('Users API Integration', () => {
 		it('should filter users by roles', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
 			await createTestUser({ role: 'admin' });
 			await createTestUser({ role: 'member' });
 
-			const { data, response } = await authClient.GET('/users', {
+			const { data, response } = await client.GET('/users', {
 				params: {
 					query: { roles: ['admin'] }
-				}
+				},
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -61,17 +58,15 @@ describe('Users API Integration', () => {
 		it('should filter users by multiple roles', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
 			await createTestUser({ role: 'admin' });
 			await createTestUser({ role: 'member' });
 
-			const { data, response } = await authClient.GET('/users', {
+			const { data, response } = await client.GET('/users', {
 				params: {
 					query: { roles: ['admin', 'member'] }
-				}
+				},
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -83,17 +78,15 @@ describe('Users API Integration', () => {
 		it('should filter users by multiple statuses', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
 			await createTestUser({ status: 'active' });
 			await createTestUser({ status: 'suspended' });
 
-			const { data, response } = await authClient.GET('/users', {
+			const { data, response } = await client.GET('/users', {
 				params: {
 					query: { statuses: ['active', 'suspended'] }
-				}
+				},
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -105,17 +98,15 @@ describe('Users API Integration', () => {
 		it('should return 403 for regular user', async () => {
 			const user = await createTestUser({ role: 'member', isEmailVerified: true });
 			const accessToken = await signTestUserIn(user.email);
-			const authClient = createApiTestClient({
+
+			const { response } = await client.GET('/users', {
 				headers: { Authorization: `Bearer ${accessToken}` }
 			});
-
-			const { response } = await authClient.GET('/users');
 
 			expect(response.status).toBe(403);
 		});
 
 		it('should return 401 for unauthorized request', async () => {
-			const client = createApiTestClient();
 			const { response } = await client.GET('/users');
 			expect(response.status).toBe(401);
 		});
@@ -125,12 +116,10 @@ describe('Users API Integration', () => {
 		it('should get own user details', async () => {
 			const user = await createTestUser({ isEmailVerified: true });
 			const accessToken = await signTestUserIn(user.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { data, response } = await authClient.GET('/users/{id}', {
-				params: { path: { id: user.id } }
+			const { data, response } = await client.GET('/users/{id}', {
+				params: { path: { id: user.id } },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -142,12 +131,10 @@ describe('Users API Integration', () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const user = await createTestUser();
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { data, response } = await authClient.GET('/users/{id}', {
-				params: { path: { id: user.id } }
+			const { data, response } = await client.GET('/users/{id}', {
+				params: { path: { id: user.id } },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -158,12 +145,10 @@ describe('Users API Integration', () => {
 			const user1 = await createTestUser({ isEmailVerified: true });
 			const user2 = await createTestUser();
 			const accessToken = await signTestUserIn(user1.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { response } = await authClient.GET('/users/{id}', {
-				params: { path: { id: user2.id } }
+			const { response } = await client.GET('/users/{id}', {
+				params: { path: { id: user2.id } },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(403);
@@ -172,12 +157,10 @@ describe('Users API Integration', () => {
 		it('should return 404 for non-existent user', async () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { response } = await authClient.GET('/users/{id}', {
-				params: { path: { id: '00000000-0000-0000-0000-000000000000' } }
+			const { response } = await client.GET('/users/{id}', {
+				params: { path: { id: '00000000-0000-0000-0000-000000000000' } },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(404);
@@ -188,14 +171,12 @@ describe('Users API Integration', () => {
 		it('should update own profile', async () => {
 			const user = await createTestUser({ isEmailVerified: true });
 			const accessToken = await signTestUserIn(user.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 			const newName = 'Updated Name';
 
-			const { data, response } = await authClient.PATCH('/users/{id}', {
+			const { data, response } = await client.PATCH('/users/{id}', {
 				params: { path: { id: user.id } },
-				body: { name: newName }
+				body: { name: newName },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -206,14 +187,12 @@ describe('Users API Integration', () => {
 			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
 			const user = await createTestUser();
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 			const newName = 'Admin Updated Name';
 
-			const { data, response } = await authClient.PATCH('/users/{id}', {
+			const { data, response } = await client.PATCH('/users/{id}', {
 				params: { path: { id: user.id } },
-				body: { name: newName }
+				body: { name: newName },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
@@ -224,13 +203,11 @@ describe('Users API Integration', () => {
 			const user1 = await createTestUser({ isEmailVerified: true });
 			const user2 = await createTestUser();
 			const accessToken = await signTestUserIn(user1.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { response } = await authClient.PATCH('/users/{id}', {
+			const { response } = await client.PATCH('/users/{id}', {
 				params: { path: { id: user2.id } },
-				body: { name: 'Trying to update' }
+				body: { name: 'Trying to update' },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(403);
@@ -238,34 +215,44 @@ describe('Users API Integration', () => {
 	});
 
 	describe('PUT /users/{id}/status', () => {
-		it('should update user status as admin', async () => {
-			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
+		it('should update user status as super_admin', async () => {
+			const admin = await createTestUser({ role: 'super_admin', isEmailVerified: true });
 			const user = await createTestUser();
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { data, response } = await authClient.PUT('/users/{id}/status', {
+			const { data, response } = await client.PUT('/users/{id}/status', {
 				params: { path: { id: user.id } },
-				body: { status: 'suspended' }
+				body: { status: 'suspended' },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
 			expect(data?.data?.status).toBe('suspended');
 		});
 
+		it('should return 403 for regular admin (non-super)', async () => {
+			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
+			const user = await createTestUser();
+			const accessToken = await signTestUserIn(admin.email);
+
+			const { response } = await client.PUT('/users/{id}/status', {
+				params: { path: { id: user.id } },
+				body: { status: 'suspended' },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			expect(response.status).toBe(403);
+		});
+
 		it('should return 403 for regular user', async () => {
 			const user1 = await createTestUser({ isEmailVerified: true });
 			const user2 = await createTestUser();
 			const accessToken = await signTestUserIn(user1.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { response } = await authClient.PUT('/users/{id}/status', {
+			const { response } = await client.PUT('/users/{id}/status', {
 				params: { path: { id: user2.id } },
-				body: { status: 'suspended' }
+				body: { status: 'suspended' },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(403);
@@ -273,34 +260,44 @@ describe('Users API Integration', () => {
 	});
 
 	describe('PUT /users/{id}/role', () => {
-		it('should update user role as admin', async () => {
-			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
+		it('should update user role as super_admin', async () => {
+			const admin = await createTestUser({ role: 'super_admin', isEmailVerified: true });
 			const user = await createTestUser();
 			const accessToken = await signTestUserIn(admin.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { data, response } = await authClient.PUT('/users/{id}/role', {
+			const { data, response } = await client.PUT('/users/{id}/role', {
 				params: { path: { id: user.id } },
-				body: { role: 'admin' }
+				body: { role: 'admin' },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(200);
 			expect(data?.data?.role).toBe('admin');
 		});
 
+		it('should return 403 for regular admin (non-super)', async () => {
+			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
+			const user = await createTestUser();
+			const accessToken = await signTestUserIn(admin.email);
+
+			const { response } = await client.PUT('/users/{id}/role', {
+				params: { path: { id: user.id } },
+				body: { role: 'admin' },
+				headers: { Authorization: `Bearer ${accessToken}` }
+			});
+
+			expect(response.status).toBe(403);
+		});
+
 		it('should return 403 for regular user', async () => {
 			const user1 = await createTestUser({ isEmailVerified: true });
 			const user2 = await createTestUser();
 			const accessToken = await signTestUserIn(user1.email);
-			const authClient = createApiTestClient({
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
 
-			const { response } = await authClient.PUT('/users/{id}/role', {
+			const { response } = await client.PUT('/users/{id}/role', {
 				params: { path: { id: user2.id } },
-				body: { role: 'admin' }
+				body: { role: 'admin' },
+				headers: { Authorization: `Bearer ${accessToken}` }
 			});
 
 			expect(response.status).toBe(403);

@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
 import { posts, assets } from '$lib/db/tables';
-import { createApiTestClient, createTestAsset } from '$lib/test-utils';
+import {
+	createApiTestClient,
+	createTestAsset,
+	createTestUser,
+	signTestUserIn
+} from '$lib/test-utils';
 
 // Create a type-safe client
 const client = createApiTestClient();
@@ -276,8 +281,9 @@ describe('Posts API Integration', () => {
 		expect(singleData?.data?.content).toBe('This secret content should not be in the list!');
 	});
 
-	it('should filter posts by status (including draft for authorized users)', async () => {
+	it('should filter posts by status (restricting non-published for unauthorized)', async () => {
 		const asset = await createTestAsset();
+
 		await db.insert(posts).values([
 			{
 				title: 'Published Post',
@@ -301,27 +307,52 @@ describe('Posts API Integration', () => {
 			}
 		]);
 
-		// 1. Default (should only return published)
-		const { data: defaultData } = await client.GET('/posts');
+		// 1. Default (guest) - should only return published
+		const { data: defaultData, response: defaultResponse } = await client.GET('/posts');
+		expect(defaultResponse.status).toBe(200);
 		expect(defaultData?.data?.items?.some((i) => i.slug === 'draft-post')).toBe(false);
 
-		// 2. Explicit draft (should return draft)
-		const { data: draftData } = await client.GET('/posts', {
+		// 2. Explicit draft (guest) - should return 403 Forbidden (strict security fix)
+		const { response: draftResponse } = await client.GET('/posts', {
 			params: {
 				query: { statuses: ['draft'] }
 			}
 		});
-		expect(draftData?.data?.items?.some((i) => i.slug === 'draft-post')).toBe(true);
-		expect(draftData?.data?.items?.some((i) => i.slug === 'published-post')).toBe(false);
+		expect(draftResponse.status).toBe(403);
 
-		// 3. Both
-		const { data: bothData } = await client.GET('/posts', {
+		// 3. Admin (authorized) - should return drafts
+		const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
+		const accessToken = await signTestUserIn(admin.email);
+
+		const { data: adminData } = await client.GET('/posts', {
 			params: {
-				query: { statuses: ['published', 'draft'] }
-			}
+				query: { statuses: ['draft'] }
+			},
+			headers: { Authorization: `Bearer ${accessToken}` }
 		});
-		expect(bothData?.data?.items?.some((i) => i.slug === 'draft-post')).toBe(true);
-		expect(bothData?.data?.items?.some((i) => i.slug === 'published-post')).toBe(true);
+		expect(adminData?.data?.items?.some((i) => i.slug === 'draft-post')).toBe(true);
+
+		// 4. Admin (No filter) - should return ALL statuses
+		const { data: adminAllData } = await client.GET('/posts', {
+			headers: { Authorization: `Bearer ${accessToken}` }
+		});
+		expect(adminAllData?.data?.items?.some((i) => i.slug === 'published-post')).toBe(true);
+		expect(adminAllData?.data?.items?.some((i) => i.slug === 'draft-post')).toBe(true);
+
+		// 5. Regular Member (authorized but not staff) - should return 403
+		const member = await createTestUser({ role: 'member', isEmailVerified: true });
+		const memberToken = await signTestUserIn(member.email);
+		const { response: memberResponse } = await client.GET('/posts', {
+			params: { query: { statuses: ['draft'] } },
+			headers: { Authorization: `Bearer ${memberToken}` }
+		});
+		expect(memberResponse.status).toBe(403);
+
+		// 6. Guest Mixed Statuses - should return 403
+		const { response: mixedResponse } = await client.GET('/posts', {
+			params: { query: { statuses: ['published', 'draft'] } }
+		});
+		expect(mixedResponse.status).toBe(403);
 	});
 
 	it('should include audit metadata as objects in response', async () => {

@@ -95,7 +95,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 		// 6. Send Verification Email (Synchronous for Auth Reliability)
 		if (notify) {
 			const safeName = escapeHtml(name);
-			const verificationLink = `https://admin.cryptosharia.id/verify?token=${verificationToken}`;
+			const verificationLink = `https://admin.cryptosharia.id/verify/${verificationToken}`;
 
 			await sendEmail({
 				to: email,

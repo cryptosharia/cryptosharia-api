@@ -8,10 +8,12 @@ import { toAssetMetadata } from '$lib/assets';
 import { tokens, shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
 import { and, ilike, inArray, notInArray, or, count } from 'drizzle-orm';
 
+import { hasPermission } from '$lib/auth/permissions';
+
 /**
  * Handles GET requests to fetch tokens with filtering, searching, and pagination.
  */
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
 	// 1. Validate query parameters using Zod
 	const params = Object.fromEntries(
 		Array.from(url.searchParams.keys()).map((key) => [
@@ -31,8 +33,17 @@ export const GET: RequestHandler = async ({ url }) => {
 	const { shariaStatuses, slugs, search, limit, page, exclude, statuses } = result.data;
 	const offset = (page - 1) * limit;
 
+	// 2. Security Check: If non-published statuses are explicitly requested, require permission
+	if (statuses && statuses.some((s) => s !== 'published')) {
+		if (!hasPermission(locals, 'tokens.manage')) {
+			return ApiResponse.forbidden(
+				'You do not have permission to access content with the requested statuses.'
+			);
+		}
+	}
+
 	try {
-		// 2. Define filters for the query
+		// 3. Define filters for the query
 		const getFilters = (table: typeof tokens) => {
 			const filters = [];
 
@@ -60,11 +71,19 @@ export const GET: RequestHandler = async ({ url }) => {
 				filters.push(notInArray(table.slug, exclude as string[]));
 			}
 
-			// 🔓 Filter by status (default to published for safety)
-			const statusesToFilter = (
-				statuses && statuses.length > 0 ? statuses : ['published']
-			) as (typeof contentStatusEnum.enumValues)[number][];
-			filters.push(inArray(table.status, statusesToFilter));
+			// 🔓 Filter by status
+			let allowedStatuses = statuses;
+
+			// If no status filter is provided and not staff, default to 'published'
+			if (!allowedStatuses && !hasPermission(locals, 'tokens.manage')) {
+				allowedStatuses = ['published'];
+			}
+
+			if (allowedStatuses && allowedStatuses.length > 0) {
+				filters.push(
+					inArray(table.status, allowedStatuses as (typeof contentStatusEnum.enumValues)[number][])
+				);
+			}
 
 			return filters.length > 0 ? and(...filters) : undefined;
 		};

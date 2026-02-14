@@ -10,7 +10,7 @@ export const PostsGetQuery = z
 	.object({
 		statuses: zQueryArray(z.enum(contentStatusEnum.enumValues), {
 			description: 'List of content statuses to filter by.<br>Example: published,draft'
-		}).default(['published']),
+		}),
 		sections: zQueryArray(z.enum(postSectionEnum.enumValues), {
 			description: 'List of post sections to filter by.<br>Example: news,education,activity'
 		}),
@@ -57,7 +57,8 @@ export const postsGet: RouteConfig = {
 	path: '/posts',
 	method: 'get',
 	summary: 'List Posts',
-	description: 'Retrieve a list of posts with filtering, searching, and pagination support.',
+	description:
+		'Retrieve a list of posts with filtering, searching, and pagination support.<br>Note: Guests/members requesting non-published statuses will receive a 403 Forbidden.',
 	request: {
 		query: PostsGetQuery
 	},
@@ -67,6 +68,7 @@ export const postsGet: RouteConfig = {
 			'Paginated list of posts retrieved successfully'
 		),
 		...OpenApiResponse.badRequest('Invalid query parameters provided'),
+		...OpenApiResponse.forbidden('Explicitly requesting non-published statuses without permission'),
 		...OpenApiResponse.unauthorized('Invalid or missing API key'),
 		...OpenApiResponse.internalServerError(
 			'Failed to retrieve posts due to an internal server error'

@@ -13,7 +13,7 @@ export const TokensGetQuery = z
 	.object({
 		statuses: zQueryArray(z.enum(contentStatusEnum.enumValues), {
 			description: 'List of content statuses to filter by.<br>Example: published,draft'
-		}).default(['published']),
+		}),
 		shariaStatuses: zQueryArray(z.enum(shariaStatusEnum.enumValues), {
 			description: 'List of sharia statuses to filter by.<br>Example: halal,haram'
 		}),
@@ -59,7 +59,7 @@ export const tokensGet: RouteConfig = {
 	method: 'get',
 	summary: 'List Tokens',
 	description:
-		'Retrieve a list of cryptocurrency tokens with filtering, searching, and pagination support.',
+		'Retrieve a list of cryptocurrency tokens with filtering, searching, and pagination support.<br>Note: Guests/members requesting non-published statuses will receive a 403 Forbidden.',
 	request: {
 		query: TokensGetQuery
 	},
@@ -69,6 +69,7 @@ export const tokensGet: RouteConfig = {
 			'Paginated list of tokens retrieved successfully'
 		),
 		...OpenApiResponse.badRequest('Invalid query parameters provided'),
+		...OpenApiResponse.forbidden('Explicitly requesting non-published statuses without permission'),
 		...OpenApiResponse.unauthorized('Invalid or missing API key'),
 		...OpenApiResponse.internalServerError(
 			'Failed to retrieve tokens due to an internal server error'
