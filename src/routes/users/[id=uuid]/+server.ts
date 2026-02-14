@@ -7,6 +7,7 @@ import z from '$lib/zod-openapi';
 import { eq } from 'drizzle-orm';
 import { hasPermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/services/assets';
+import { logUserActivity } from '$lib/services/activity-logger';
 
 /**
  * GET /users/:id - Get user detail
@@ -57,15 +58,8 @@ export const GET: RequestHandler = async ({
 /**
  * PATCH /users/:id - Update user
  */
-export const PATCH: RequestHandler = async ({
-	params,
-	request,
-	locals
-}: {
-	params: { id: string };
-	request: Request;
-	locals: App.Locals;
-}) => {
+export const PATCH: RequestHandler = async (event) => {
+	const { params, request, locals } = event;
 	const { id } = params;
 
 	// 1. Authorization: users.update OR ownership
@@ -118,14 +112,20 @@ export const PATCH: RequestHandler = async ({
 			return ApiResponse.notFound('User not found after update');
 		}
 
-		return ApiResponse.ok(
-			UsersIdGetResponse.parse({
-				...userWithRole,
-				avatar: toAssetMetadata(userWithRole.avatar),
-				role: userWithRole.role
-			}),
-			'User updated successfully'
-		);
+		const result = UsersIdGetResponse.parse({
+			...userWithRole,
+			avatar: toAssetMetadata(userWithRole.avatar),
+			role: userWithRole.role
+		});
+
+		await logUserActivity(event, {
+			action: 'user.update',
+			subjectType: 'user',
+			subjectId: id,
+			description: `Updated user profile`
+		});
+
+		return ApiResponse.ok(result, 'User updated successfully');
 	} catch (error) {
 		console.error('Update user error:', error);
 		return ApiResponse.internalServerError('Failed to update user profile');

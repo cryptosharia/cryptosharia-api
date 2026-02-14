@@ -76,47 +76,23 @@ export const postsGet: RouteConfig = {
 	security: [{ ApiKeyAuth: [] }]
 };
 
-export const PostsSlugGetParams = z
+export const PostsDetailGetParams = z
 	.object({
-		slug: z.string().describe('The slug of the post')
+		id: z.string().describe('The UUID or Slug of the post')
 	})
-	.openapi('PostsSlugGetParams');
+	.openapi('PostsDetailGetParams');
 
-export const postsSlugGet: RouteConfig = {
-	path: '/posts/{slug}',
-	method: 'get',
-	summary: 'Get Published Post by Slug',
-	description: 'Retrieve a single published post using its slug.',
-	request: {
-		params: PostsSlugGetParams
-	},
-	responses: {
-		...OpenApiResponse.ok(PostsGetData, 'Published post retrieved successfully'),
-		...OpenApiResponse.notFound('Post not found or is not published'),
-		...OpenApiResponse.unauthorized('Invalid or missing API key'),
-		...OpenApiResponse.internalServerError(
-			'Failed to retrieve post due to an internal server error'
-		)
-	},
-	security: [{ ApiKeyAuth: [] }]
-};
-
-export const PostsIdGetParams = z
-	.object({
-		id: z.uuid().describe('The UUID of the post')
-	})
-	.openapi('PostsIdGetParams');
-
-export const postsIdGet: RouteConfig = {
+export const postsDetailGet: RouteConfig = {
 	path: '/posts/{id}',
 	method: 'get',
-	summary: 'Get Post by ID',
-	description: 'Retrieve any post using its UUID regardless of its status.',
+	summary: 'Get Post by Identifier',
+	description:
+		'Retrieve a single post using its UUID or Slug. Support for draft preview is automatically handled based on user permissions.',
 	request: {
-		params: PostsIdGetParams
+		params: PostsDetailGetParams
 	},
 	responses: {
-		...OpenApiResponse.ok(PostsGetData, 'Post retrieved successfully by ID'),
+		...OpenApiResponse.ok(PostsGetData, 'Post retrieved successfully'),
 		...OpenApiResponse.notFound('Post not found'),
 		...OpenApiResponse.unauthorized('Invalid or missing API key'),
 		...OpenApiResponse.internalServerError(

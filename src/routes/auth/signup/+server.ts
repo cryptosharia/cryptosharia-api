@@ -8,6 +8,7 @@ import { AuthSignupPostBody, AuthSignupPostResponse, AuthSignupPostQuery } from 
 import type { RequestHandler } from './$types';
 import { generateRandomToken } from '$lib/auth/tokens';
 import { sendEmail } from '$lib/services/email';
+import { logActivity } from '$lib/services/activity-logger';
 import { escapeHtml } from '$lib/utils';
 import { dev } from '$app/environment';
 import { DEV_BASE_URL, BASE_DOMAIN } from '$lib/constants';
@@ -128,7 +129,15 @@ export const POST: RequestHandler = async ({ request, url }) => {
 			});
 		}
 
-		// 7. Return Response
+		// 7. Log activity
+		await logActivity({
+			userId: newUser.id,
+			action: 'signup',
+			subjectType: 'auth',
+			description: `New user registered: ${newUser.email}`
+		});
+
+		// 8. Return Response
 		return ApiResponse.created(
 			AuthSignupPostResponse.parse(newUser),
 			'User registered successfully. Please check your email for verification.'

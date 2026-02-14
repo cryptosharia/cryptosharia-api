@@ -15,11 +15,8 @@ import { UsersGetQuery, UsersGetItem } from './index';
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
 	// 1. Authorization
-	try {
-		requirePermission(locals, 'users.read');
-	} catch (apiError) {
-		return apiError as Response;
-	}
+	const authError = requirePermission(locals, 'users.read');
+	if (authError) return authError;
 
 	// 2. Validation
 	const params = Object.fromEntries(

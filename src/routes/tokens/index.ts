@@ -77,47 +77,23 @@ export const tokensGet: RouteConfig = {
 	security: [{ ApiKeyAuth: [] }]
 };
 
-export const TokensSlugGetParams = z
+export const TokensDetailGetParams = z
 	.object({
-		slug: z.string().describe('The slug of the cryptocurrency token')
+		id: z.string().describe('The UUID or Slug of the cryptocurrency token')
 	})
-	.openapi('TokensSlugGetParams');
+	.openapi('TokensDetailGetParams');
 
-export const tokensSlugGet: RouteConfig = {
-	path: '/tokens/{slug}',
-	method: 'get',
-	summary: 'Get Published Token by Slug',
-	description: 'Retrieve a single published cryptocurrency token using its slug.',
-	request: {
-		params: TokensSlugGetParams
-	},
-	responses: {
-		...OpenApiResponse.ok(TokensGetData, 'Published token retrieved successfully'),
-		...OpenApiResponse.notFound('Token not found or is not published'),
-		...OpenApiResponse.unauthorized('Invalid or missing API key'),
-		...OpenApiResponse.internalServerError(
-			'Failed to retrieve token due to an internal server error'
-		)
-	},
-	security: [{ ApiKeyAuth: [] }]
-};
-
-export const TokensIdGetParams = z
-	.object({
-		id: z.uuid().describe('The UUID of the cryptocurrency token')
-	})
-	.openapi('TokensIdGetParams');
-
-export const tokensIdGet: RouteConfig = {
+export const tokensDetailGet: RouteConfig = {
 	path: '/tokens/{id}',
 	method: 'get',
-	summary: 'Get Token by ID',
-	description: 'Retrieve any cryptocurrency token using its UUID regardless of its status.',
+	summary: 'Get Token by Identifier',
+	description:
+		'Retrieve a single cryptocurrency token using its UUID or Slug. Support for draft preview is automatically handled based on user permissions.',
 	request: {
-		params: TokensIdGetParams
+		params: TokensDetailGetParams
 	},
 	responses: {
-		...OpenApiResponse.ok(TokensGetData, 'Token retrieved successfully by ID'),
+		...OpenApiResponse.ok(TokensGetData, 'Token retrieved successfully'),
 		...OpenApiResponse.notFound('Token not found'),
 		...OpenApiResponse.unauthorized('Invalid or missing API key'),
 		...OpenApiResponse.internalServerError(

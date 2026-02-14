@@ -5,8 +5,6 @@ import {
 	createTestAsset,
 	createTestPost
 } from '$lib/test-utils';
-import { db } from '$lib/db';
-import { assets } from '$lib/db/tables';
 
 const client = createApiTestClient();
 
@@ -317,18 +315,15 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should return final form for coverImage if assigned', async () => {
-		const [asset] = await db
-			.insert(assets)
-			.values({
-				pathname: 'test/path/image.jpg',
-				filename: 'image.jpg',
-				size: 1024,
-				mimeType: 'image/jpeg',
-				provider: 'picsum',
-				width: 800,
-				height: 600
-			})
-			.returning();
+		const asset = await createTestAsset({
+			pathname: 'test/path/image.jpg',
+			filename: 'image.jpg',
+			size: 1024,
+			mimeType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		});
 
 		await createTestPost({
 			title: 'Post with Image',
@@ -336,8 +331,8 @@ describe('Posts API Integration', () => {
 			coverImageId: asset.id
 		});
 
-		const { data } = await client.GET('/posts/{slug}', {
-			params: { path: { slug: 'post-with-image' } }
+		const { data } = await client.GET('/posts/{id}', {
+			params: { path: { id: 'post-with-image' } }
 		});
 
 		const post = data?.data;
@@ -345,5 +340,18 @@ describe('Posts API Integration', () => {
 		expect(post?.coverImage?.id).toBe(asset.id);
 		expect(post?.coverImage?.url).toContain('picsum.photos');
 		expect(post?.coverImage?.url).toContain('test/path/image.jpg');
+	});
+
+	it('should allow admins to preview draft post via slug', async () => {
+		const { client } = await createAuthenticatedClient('admin');
+		const post = await createTestPost({ status: 'draft' });
+
+		const { data, response } = await client.GET('/posts/{id}', {
+			params: { path: { id: post.slug } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.id).toBe(post.id);
+		expect(data?.data?.status).toBe('draft');
 	});
 });

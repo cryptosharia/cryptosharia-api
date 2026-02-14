@@ -18,32 +18,28 @@ export function hasPermission(locals: App.Locals, requiredPermission: string): b
 	return locals.user.permissions.includes(requiredPermission);
 }
 
-
 /**
- * Middleware-style helper: Checks if the current user has a specific permission.
- * Throws a standardized 403 Forbidden response if not authorized.
+ * Middleware-style helper: Checks if the current user has the required permission(s).
+ * - If a string is provided, it checks for that specific permission.
+ * - If an array is provided, it checks if the user has AT LEAST ONE of those permissions (OR logic).
+ * Returns a standardized 403 Forbidden Response if not authorized, otherwise returns void.
  */
-export function requirePermission(locals: App.Locals, permission: string) {
+export function requirePermission(
+	locals: App.Locals,
+	permission: string | string[]
+): Response | void {
 	if (!locals.user) {
-		throw ApiResponse.unauthorized();
+		return ApiResponse.unauthorized();
 	}
 
-	if (!hasPermission(locals, permission)) {
-		throw ApiResponse.forbidden(`Missing required permission: ${permission}`);
-	}
-}
+	const permissions = Array.isArray(permission) ? permission : [permission];
+	const hasPerm = permissions.some((p) => hasPermission(locals, p));
 
-/**
- * Middleware-style helper: Checks if the current user has any of the specified permissions.
- * Useful for endpoints that can be accessed by multiple types of staff.
- */
-export function requireAnyPermission(locals: App.Locals, permissions: string[]) {
-	if (!locals.user) {
-		throw ApiResponse.unauthorized();
-	}
-
-	const hasAny = permissions.some((p) => hasPermission(locals, p));
-	if (!hasAny) {
-		throw ApiResponse.forbidden(`Missing one of required permissions: ${permissions.join(', ')}`);
+	if (!hasPerm) {
+		return ApiResponse.forbidden(
+			Array.isArray(permission)
+				? `Missing one of required permissions: ${permission.join(', ')}`
+				: `Missing required permission: ${permission}`
+		);
 	}
 }

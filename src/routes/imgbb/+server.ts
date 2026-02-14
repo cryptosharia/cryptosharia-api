@@ -4,15 +4,37 @@ import { ApiResponse } from '$lib/api';
 import { db } from '$lib/db';
 import { imgbbImages } from '$lib/db/tables';
 import { ImgbbImage } from '$lib/db/types';
+import { requirePermission } from '$lib/auth/permissions';
+import { logUserActivity } from '$lib/services/activity-logger';
 
-export const POST: RequestHandler = async ({ request }) => {
+const MAX_IMAGE_SIZE = 32 * 1024 * 1024; // 32MB
+
+export const POST: RequestHandler = async (event) => {
 	try {
-		const formData = await request.formData();
+		// Only posts/tokens managers can upload images
+		const authError = requirePermission(event.locals, ['posts.manage', 'tokens.manage']);
+		if (authError) return authError;
+
+		const formData = await event.request.formData();
 		const image = formData.get('image') as File;
 
 		if (!image) {
 			return ApiResponse.badRequest({
 				image: ['Image file is required']
+			});
+		}
+
+		// Validate MIME type — only image files allowed
+		if (!image.type.startsWith('image/')) {
+			return ApiResponse.badRequest({
+				image: ['Only image files are allowed (e.g., JPEG, PNG, WebP, GIF, HEIC)']
+			});
+		}
+
+		// Validate file size — max 32MB
+		if (image.size > MAX_IMAGE_SIZE) {
+			return ApiResponse.badRequest({
+				image: ['Image must be 32MB or less']
 			});
 		}
 
@@ -71,7 +93,16 @@ export const POST: RequestHandler = async ({ request }) => {
 			.returning();
 
 		// Return the URLs from the IMGBB response sanitized via parse
-		return ApiResponse.ok(ImgbbImage.parse({ ...asset }), 'Image uploaded successfully');
+		const result = ImgbbImage.parse({ ...asset });
+
+		await logUserActivity(event, {
+			action: 'image.upload',
+			subjectType: 'imgbb_image',
+			subjectId: asset.id,
+			description: `Uploaded image: ${data.image.filename}`
+		});
+
+		return ApiResponse.ok(result, 'Image uploaded successfully');
 	} catch (error) {
 		console.error('IMGBB upload error:', error);
 		return ApiResponse.internalServerError('Failed to process image upload');

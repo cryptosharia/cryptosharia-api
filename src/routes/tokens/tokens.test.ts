@@ -415,8 +415,8 @@ describe('Tokens API Integration', () => {
 			logoId: asset.id
 		});
 
-		const { data } = await client.GET('/tokens/{slug}', {
-			params: { path: { slug: 'token-with-logo' } }
+		const { data } = await client.GET('/tokens/{id}', {
+			params: { path: { id: 'token-with-logo' } }
 		});
 
 		const token = data?.data;
@@ -424,5 +424,18 @@ describe('Tokens API Integration', () => {
 		expect(token?.logo?.id).toBe(asset.id);
 		expect(token?.logo?.url).toContain('picsum.photos');
 		expect(token?.logo?.url).toContain('test/path/logo.png');
+	});
+
+	it('should allow admins to preview draft token via slug', async () => {
+		const { client } = await createAuthenticatedClient('admin');
+		const token = await createTestToken({ status: 'draft' });
+
+		const { data, response } = await client.GET('/tokens/{id}', {
+			params: { path: { id: token.slug } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.id).toBe(token.id);
+		expect(data?.data?.status).toBe('draft');
 	});
 });

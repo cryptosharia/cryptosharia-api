@@ -7,28 +7,19 @@ import z from '$lib/zod-openapi';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/services/assets';
+import { logUserActivity } from '$lib/services/activity-logger';
 import type { Role } from '$lib/auth/rbac';
 
 /**
  * PUT /users/:id/role - Assign role to user
  */
-export const PUT: RequestHandler = async ({
-	params,
-	request,
-	locals
-}: {
-	params: { id: string };
-	request: Request;
-	locals: App.Locals;
-}) => {
+export const PUT: RequestHandler = async (event) => {
+	const { params, request, locals } = event;
 	const { id } = params;
 
 	// 1. Authorization
-	try {
-		requirePermission(locals, 'users.manage_role');
-	} catch (apiError) {
-		return apiError as Response;
-	}
+	const authError = requirePermission(locals, 'users.manage_role');
+	if (authError) return authError;
 
 	// 2. Validation
 	let body: unknown;
@@ -75,14 +66,20 @@ export const PUT: RequestHandler = async ({
 			return ApiResponse.notFound('User not found');
 		}
 
-		return ApiResponse.ok(
-			UsersIdGetResponse.parse({
-				...user,
-				avatar: toAssetMetadata(user.avatar),
-				role: user.role
-			}),
-			'Role assigned successfully'
-		);
+		const result = UsersIdGetResponse.parse({
+			...user,
+			avatar: toAssetMetadata(user.avatar),
+			role: user.role
+		});
+
+		await logUserActivity(event, {
+			action: 'role.update',
+			subjectType: 'user',
+			subjectId: id,
+			description: `Role changed to ${role ?? 'null (regular user)'}`
+		});
+
+		return ApiResponse.ok(result, 'Role assigned successfully');
 	} catch (error) {
 		console.error('Update user role error:', error);
 		return ApiResponse.internalServerError('Failed to update user role');

@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
 import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import { postsGet, postsIdGet, postsSlugGet } from '../posts';
-import { tokensGet, tokensIdGet, tokensQuotesGet, tokensSlugGet } from '../tokens';
+import { postsGet, postsDetailGet } from '../posts';
+import { tokensGet, tokensDetailGet, tokensQuotesGet } from '../tokens';
 import { messagesGet, messagesPost } from '../messages';
 import { seedDemoPost } from '../seed';
 import { imgbbPost } from '../imgbb';
@@ -15,13 +15,7 @@ import {
 	authSignupPost,
 	authVerifyPost
 } from '../auth';
-import {
-	usersGet,
-	usersIdGet,
-	usersIdPatch,
-	usersIdStatusPut,
-	usersIdRolePut
-} from '../users';
+import { usersGet, usersIdGet, usersIdPatch, usersIdStatusPut, usersIdRolePut } from '../users';
 
 const PATHS = [
 	docsGet,
@@ -38,11 +32,9 @@ const PATHS = [
 	usersIdStatusPut,
 	usersIdRolePut,
 	postsGet,
-	postsIdGet,
-	postsSlugGet,
+	postsDetailGet,
 	tokensGet,
-	tokensIdGet,
-	tokensSlugGet,
+	tokensDetailGet,
 	tokensQuotesGet,
 	messagesGet,
 	messagesPost,

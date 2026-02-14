@@ -7,12 +7,14 @@ import z from '$lib/zod-openapi';
 import { AuthSigninPostBody, AuthSigninPostResponse } from '..';
 import { verifyPassword, needsRehash, hashPassword } from '$lib/auth/password';
 import { signAccessToken, createRefreshToken } from '$lib/auth/tokens';
+import { logActivity } from '$lib/services/activity-logger';
 
 /**
  * POST /auth/signin
  * Authenticate user with email and password.
  */
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	const { request } = event;
 	// 1. Parse and validate request body
 	let body: unknown;
 	try {
@@ -77,7 +79,16 @@ export const POST: RequestHandler = async ({ request }) => {
 		// 9. Store refresh token in database
 		await db.insert(refreshTokens).values(refreshToken);
 
-		// 8. Return response (sanitized via parse)
+		// 8. Log activity
+		const ipAddress = event.request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+		await logActivity({
+			userId: user.id,
+			action: 'signin',
+			subjectType: 'auth',
+			ipAddress
+		});
+
+		// 9. Return response (sanitized via parse)
 		return ApiResponse.ok(
 			AuthSigninPostResponse.parse({
 				user,

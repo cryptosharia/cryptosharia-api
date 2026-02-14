@@ -1568,7 +1568,7 @@ export interface paths {
         put?: never;
         /**
          * Upload Image to ImgBB
-         * @description Proxies an image upload to the ImgBB service and gets the resulting URLs.
+         * @description Proxies an image upload to the ImgBB service. Only image files (JPEG, PNG, WebP, GIF, HEIC, etc.) are accepted, with a maximum size of 32MB. Requires `posts.manage` permission.
          */
         post: {
             parameters: {
@@ -1582,7 +1582,7 @@ export interface paths {
                     "multipart/form-data": {
                         /**
                          * Format: binary
-                         * @description The image file to upload
+                         * @description The image file to upload (max 32MB, image/* MIME types only)
                          */
                         image?: string;
                     };
@@ -1616,7 +1616,7 @@ export interface paths {
                         };
                     };
                 };
-                /** @description No image file provided in the request */
+                /** @description Invalid request: missing image, unsupported file type, or exceeds 32MB limit */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -1627,6 +1627,15 @@ export interface paths {
                 };
                 /** @description Invalid or missing API key */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Requires posts.manage permission */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };

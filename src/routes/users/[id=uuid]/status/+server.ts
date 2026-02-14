@@ -6,20 +6,19 @@ import z from '$lib/zod-openapi';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/services/assets';
+import { logUserActivity } from '$lib/services/activity-logger';
 import { UsersIdStatusPutBody, UsersIdGetResponse } from '../../index';
 
 /**
  * PUT /users/:id/status - Update user administrative status
  */
-export const PUT: RequestHandler = async ({ params, request, locals }) => {
+export const PUT: RequestHandler = async (event) => {
+	const { params, request, locals } = event;
 	const id = params.id;
 
 	// 1. Authorization: users.manage_status
-	try {
-		requirePermission(locals, 'users.manage_status');
-	} catch (apiError) {
-		return apiError as Response;
-	}
+	const authError = requirePermission(locals, 'users.manage_status');
+	if (authError) return authError;
 
 	// 2. Prevent self-modification (Safety)
 	if (locals.user?.id === id) {
@@ -63,14 +62,20 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 			return ApiResponse.notFound('User not found after update');
 		}
 
-		return ApiResponse.ok(
-			UsersIdGetResponse.parse({
-				...userWithRole,
-				avatar: toAssetMetadata(userWithRole.avatar),
-				role: userWithRole.role
-			}),
-			`User status successfully updated to ${status}`
-		);
+		const result = UsersIdGetResponse.parse({
+			...userWithRole,
+			avatar: toAssetMetadata(userWithRole.avatar),
+			role: userWithRole.role
+		});
+
+		await logUserActivity(event, {
+			action: 'status.update',
+			subjectType: 'user',
+			subjectId: id,
+			description: `Status changed to ${status}`
+		});
+
+		return ApiResponse.ok(result, `User status successfully updated to ${status}`);
 	} catch (error) {
 		console.error('Update user status error:', error);
 		return ApiResponse.internalServerError('Failed to update user status');

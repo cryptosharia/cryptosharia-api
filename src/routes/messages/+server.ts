@@ -18,11 +18,8 @@ import { escapeHtml } from '$lib/utils';
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
 	// Authorization
-	try {
-		requirePermission(locals, 'messages.read');
-	} catch (apiError) {
-		return apiError as Response;
-	}
+	const authError = requirePermission(locals, 'messages.read');
+	if (authError) return authError;
 
 	const params = Object.fromEntries(url.searchParams);
 	const result = MessagesGetQuery.safeParse(params);
