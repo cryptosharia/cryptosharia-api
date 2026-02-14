@@ -1,10 +1,9 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { PaginatedData } from '$lib/types';
-import ApiResponse from '$lib/api-response';
-import { PostsGetQuery, PostsGetItem } from '.';
+import { ApiResponse, PaginatedData } from '$lib/api';
 import z from '$lib/zod-openapi';
-import { toAssetMetadata } from '$lib/assets';
+import { PostsGetQuery, PostsGetItem } from '.';
+import { toAssetMetadata } from '$lib/services/assets';
 import { posts, postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables';
 import { and, count, ilike, inArray, notInArray, or } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';

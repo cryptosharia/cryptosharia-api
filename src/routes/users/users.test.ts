@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-	createApiTestClient,
-	createAuthenticatedClient,
-	createTestUser,
-	signTestUserIn
-} from '$lib/test-utils';
+import { createApiTestClient, createAuthenticatedClient, createTestUser } from '$lib/test-utils';
 
 const client = createApiTestClient();
 

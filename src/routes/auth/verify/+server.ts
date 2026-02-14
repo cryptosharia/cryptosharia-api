@@ -1,10 +1,10 @@
 import { db } from '$lib/db';
 import { emailVerifications, users } from '$lib/db/tables';
 import { eq, and, gt, isNull } from 'drizzle-orm';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
+import z from '$lib/zod-openapi';
 import { AuthVerifyPostBody } from '..';
 import type { RequestHandler } from './$types';
-import z from '$lib/zod-openapi';
 
 export const POST: RequestHandler = async ({ request }) => {
 	let body: unknown;

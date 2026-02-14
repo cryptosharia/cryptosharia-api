@@ -1,13 +1,12 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { users, userStatusEnum } from '$lib/db/tables';
-import ApiResponse from '$lib/api-response';
-import type { PaginatedData } from '$lib/types';
+import { ApiResponse, type PaginatedData } from '$lib/api';
 import z from '$lib/zod-openapi';
 import { and, ilike, inArray, or, count } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';
 import { requirePermission } from '$lib/auth/permissions';
-import { toAssetMetadata } from '$lib/assets';
+import { toAssetMetadata } from '$lib/services/assets';
 import type { Role } from '$lib/auth/rbac';
 import { UsersGetQuery, UsersGetItem } from './index';
 

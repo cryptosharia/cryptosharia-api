@@ -1,11 +1,11 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { users } from '$lib/db/tables';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
+import z from '$lib/zod-openapi';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
-import z from '$lib/zod-openapi';
-import { toAssetMetadata } from '$lib/assets';
+import { toAssetMetadata } from '$lib/services/assets';
 import { UsersIdStatusPutBody, UsersIdGetResponse } from '../../index';
 
 /**

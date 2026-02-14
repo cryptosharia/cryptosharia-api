@@ -1,9 +1,9 @@
 import { CMC_API_KEY } from '$env/static/private';
 import { db } from '$lib/db';
 import { tokens } from '$lib/db/tables';
-import ApiResponse from '$lib/api-response';
-import { eq } from 'drizzle-orm';
+import { ApiResponse } from '$lib/api';
 import z from '$lib/zod-openapi';
+import { eq } from 'drizzle-orm';
 import { TokensQuotesGetQuery, TokensQuotesGetItem } from '..';
 import type { RequestHandler } from './$types';
 

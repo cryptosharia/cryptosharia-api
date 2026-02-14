@@ -1,4 +1,4 @@
-import type { Asset } from './db/types';
+import type { Asset } from '../db/types';
 
 /**
  * Shape of a database asset record for URL generation.

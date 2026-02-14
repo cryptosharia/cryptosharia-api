@@ -1,5 +1,5 @@
 import { ImgbbImage } from '$lib/db/types';
-import OpenApiResponse from '$lib/openapi-response';
+import { OpenApiResponse } from '$lib/api';
 import z from '$lib/zod-openapi';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 

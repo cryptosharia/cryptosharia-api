@@ -1,6 +1,6 @@
-import { sendEmail } from '$lib/email';
+import { sendEmail } from '$lib/services/email';
 import { Message } from '$lib/db/types';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse, type PaginatedData } from '$lib/api';
 import z from '$lib/zod-openapi';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
@@ -10,7 +10,6 @@ import { and, ilike, inArray, or, count } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';
 import { waitUntil } from '@vercel/functions';
 import { requirePermission } from '$lib/auth/permissions';
-import type { PaginatedData } from '$lib/types';
 import { escapeHtml } from '$lib/utils';
 
 /**

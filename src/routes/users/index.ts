@@ -1,8 +1,7 @@
+import { OpenApiResponse, UserMetadata, PaginatedData, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
-import OpenApiResponse from '$lib/openapi-response';
 import { User } from '$lib/db/types';
 import { userRoleEnum } from '$lib/db/tables';
-import { UserMetadata, PaginatedData, AssetMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import { zQueryArray } from '$lib/utils';
 

@@ -3,7 +3,7 @@ import { db } from '$lib/db';
 import * as schema from '$lib/db/tables';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
 import { eq } from 'drizzle-orm';
 import { hashPassword } from '$lib/auth/password';
 import type { Role } from '$lib/auth/rbac';

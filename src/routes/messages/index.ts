@@ -1,9 +1,8 @@
 import { zQueryArray } from '$lib/utils';
-import OpenApiResponse from '$lib/openapi-response';
-import { Message } from '$lib/db/types';
-import { PaginatedData } from '$lib/types';
-import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
+import { OpenApiResponse, PaginatedData } from '$lib/api';
 import z from '$lib/zod-openapi';
+import { Message } from '$lib/db/types';
+import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 /**
  * Zod schema for validating message query parameters.

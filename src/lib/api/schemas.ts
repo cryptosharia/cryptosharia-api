@@ -1,4 +1,4 @@
-import z from './zod-openapi';
+import z from '$lib/zod-openapi';
 
 // --- Global Application Types ---
 

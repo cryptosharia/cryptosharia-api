@@ -1,10 +1,9 @@
 import { shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
 import { zQueryArray } from '$lib/utils';
-import OpenApiResponse from '$lib/openapi-response';
-import { Token } from '$lib/db/types';
-import { PaginatedData, UserMetadata, AssetMetadata } from '$lib/types';
-import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
+import { OpenApiResponse, PaginatedData, UserMetadata, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
+import { Token } from '$lib/db/types';
+import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 /**
  * Zod schema for validating token query parameters.

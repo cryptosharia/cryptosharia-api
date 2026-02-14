@@ -4,8 +4,8 @@ import { tokens } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
 import { hasPermission } from '$lib/auth/permissions';
 import { TokensGetData } from '..';
-import ApiResponse from '$lib/api-response';
-import { toAssetMetadata } from '$lib/assets';
+import { ApiResponse } from '$lib/api';
+import { toAssetMetadata } from '$lib/services/assets';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	const { id } = params;

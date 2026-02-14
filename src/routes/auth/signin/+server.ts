@@ -2,11 +2,11 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { users, refreshTokens } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
+import z from '$lib/zod-openapi';
 import { AuthSigninPostBody, AuthSigninPostResponse } from '..';
 import { verifyPassword, needsRehash, hashPassword } from '$lib/auth/password';
 import { signAccessToken, createRefreshToken } from '$lib/auth/tokens';
-import z from '$lib/zod-openapi';
 
 /**
  * POST /auth/signin

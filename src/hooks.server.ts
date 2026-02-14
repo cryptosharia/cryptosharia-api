@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/private';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
 import type { Handle } from '@sveltejs/kit';
 import { verifyAccessToken } from '$lib/auth/tokens';
 import { getUserPermissions } from '$lib/auth/permissions';

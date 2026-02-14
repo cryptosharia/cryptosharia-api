@@ -1,4 +1,4 @@
-import type { ApiResponse as ApiResponseType } from '$lib/types';
+import type { ApiResponse as ApiResponseType } from './schemas';
 
 /**
  * Standardized API response utilities for runtime usage.

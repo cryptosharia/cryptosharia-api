@@ -1,5 +1,5 @@
-import { ApiResponse as ApiResponseSchema } from '$lib/types';
-import z from './zod-openapi';
+import { ApiResponse as ApiResponseSchema } from './schemas';
+import z from '$lib/zod-openapi';
 
 export default class OpenApiResponse {
 	static ok<T extends z.ZodTypeAny>(schema?: T, description = 'OK') {

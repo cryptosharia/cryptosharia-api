@@ -1,4 +1,4 @@
-import OpenApiResponse from '$lib/openapi-response';
+import { OpenApiResponse } from '$lib/api';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 export const seedDemoPost: RouteConfig = {

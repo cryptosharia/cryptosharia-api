@@ -2,8 +2,8 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { users } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
-import ApiResponse from '$lib/api-response';
-import { toAssetMetadata } from '$lib/assets';
+import { ApiResponse } from '$lib/api';
+import { toAssetMetadata } from '$lib/services/assets';
 import { AuthMeGetResponse } from '..';
 
 /**

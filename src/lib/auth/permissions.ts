@@ -1,5 +1,5 @@
 import { type Role, ROLE_PERMISSIONS } from '$lib/auth/rbac';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
 
 /**
  * Fetches all unique permission keys for a given role from the static config.

@@ -2,9 +2,9 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
 import { eq, and, isNull } from 'drizzle-orm';
-import ApiResponse from '$lib/api-response';
-import { AuthSignoutPostBody } from '..';
+import { ApiResponse } from '$lib/api';
 import z from '$lib/zod-openapi';
+import { AuthSignoutPostBody } from '..';
 
 /**
  * POST /auth/signout

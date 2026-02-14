@@ -2,12 +2,12 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { users, userRoleEnum } from '$lib/db/tables';
 import { UsersIdGetResponse, UsersIdRolePutBody } from '../../index';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
+import z from '$lib/zod-openapi';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
-import { toAssetMetadata } from '$lib/assets';
+import { toAssetMetadata } from '$lib/services/assets';
 import type { Role } from '$lib/auth/rbac';
-import z from '$lib/zod-openapi';
 
 /**
  * PUT /users/:id/role - Assign role to user

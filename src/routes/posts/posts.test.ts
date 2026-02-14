@@ -6,7 +6,7 @@ import {
 	createTestPost
 } from '$lib/test-utils';
 import { db } from '$lib/db';
-import { posts, assets } from '$lib/db/tables';
+import { assets } from '$lib/db/tables';
 
 const client = createApiTestClient();
 

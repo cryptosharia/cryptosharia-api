@@ -2,10 +2,10 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
 import { eq, and, isNull, gt } from 'drizzle-orm';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
+import z from '$lib/zod-openapi';
 import { AuthRefreshPostBody, AuthRefreshPostResponse } from '..';
 import { signAccessToken, createRefreshToken } from '$lib/auth/tokens';
-import z from '$lib/zod-openapi';
 
 /**
  * POST /auth/refresh

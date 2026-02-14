@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { IMGBB_API_KEY } from '$env/static/private';
-import ApiResponse from '$lib/api-response';
+import { ApiResponse } from '$lib/api';
 import { db } from '$lib/db';
 import { imgbbImages } from '$lib/db/tables';
 import { ImgbbImage } from '$lib/db/types';

@@ -1,4 +1,4 @@
-import z from './zod-openapi';
+import z from '$lib/zod-openapi';
 
 /**
  * Escapes PostgreSQL LIKE/ILIKE special characters to prevent wildcard abuse (DoS vector).

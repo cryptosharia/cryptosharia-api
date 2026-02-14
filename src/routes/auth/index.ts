@@ -1,8 +1,7 @@
+import { OpenApiResponse, UserMetadata, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
-import OpenApiResponse from '$lib/openapi-response';
 import { User } from '$lib/db/types';
 import { userRoleEnum } from '$lib/db/tables';
-import { UserMetadata, AssetMetadata } from '$lib/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 // --- Auth: Sign In ---
