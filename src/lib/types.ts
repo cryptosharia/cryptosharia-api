@@ -18,7 +18,7 @@ export const ApiResponse = z
 		success: z.boolean(),
 		message: z.string(),
 		errors: z.record(z.string(), z.array(z.string())).optional(),
-		data: z.any().optional()
+		data: z.unknown().optional()
 	})
 	.openapi('ApiResponse');
 
@@ -49,6 +49,14 @@ export const Pagination = z
 	.openapi('Pagination');
 
 export type Pagination = z.infer<typeof Pagination>;
+
+/**
+ * Builds a Pagination object from total count, page, and limit.
+ * Eliminates repeated Math.ceil(total / limit) across handlers.
+ */
+export function buildPagination(total: number, page: number, limit: number): Pagination {
+	return { total, page, limit, totalPages: Math.ceil(total / limit) };
+}
 
 /**
  * Creates a paginated response schema for a given item schema.

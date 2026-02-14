@@ -7,6 +7,7 @@ import z from '$lib/zod-openapi';
 import { toAssetMetadata } from '$lib/assets';
 import { posts, postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables';
 import { and, count, ilike, inArray, notInArray, or } from 'drizzle-orm';
+import { escapeLikePattern } from '$lib/utils';
 
 import { hasPermission } from '$lib/auth/permissions';
 
@@ -64,7 +65,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			}
 
 			if (search) {
-				const query = `%${search}%`;
+				const query = `%${escapeLikePattern(search)}%`;
 				filters.push(
 					or(
 						ilike(table.title, query),

@@ -14,9 +14,13 @@ import { MESSAGES, POSTS, TOKENS, USERS } from './data';
  * Populates the system with mock data for development and testing.
  * Strictly forbidden in production.
  */
-export const POST: RequestHandler = async () => {
-	// Strictly forbidden in production
-	if (!dev && env.VERCEL_ENV !== 'preview') {
+export const POST: RequestHandler = async ({ request }) => {
+	// Triple guard: dev OR preview only + API key must be the test key
+	const isAllowedEnv = dev || env.VERCEL_ENV === 'preview';
+	const apiKey = request.headers.get('Api-Key');
+	const isTestKey = apiKey === env.CS_API_KEY_TEST;
+
+	if (!isAllowedEnv || !isTestKey) {
 		return ApiResponse.forbidden('Demo seeding is strictly forbidden in production');
 	}
 

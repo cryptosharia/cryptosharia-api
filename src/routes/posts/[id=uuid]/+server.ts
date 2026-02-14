@@ -2,11 +2,12 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { posts } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
+import { hasPermission } from '$lib/auth/permissions';
 import { PostsGetData } from '..';
 import ApiResponse from '$lib/api-response';
 import { toAssetMetadata } from '$lib/assets';
 
-export const GET: RequestHandler = async ({ params }: { params: { id: string } }) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
 	const { id } = params;
 
 	try {
@@ -35,6 +36,11 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 		});
 
 		if (!post) {
+			return ApiResponse.notFound('Post not found');
+		}
+
+		// Require permission for non-published content
+		if (post.status !== 'published' && !hasPermission(locals, 'posts.manage')) {
 			return ApiResponse.notFound('Post not found');
 		}
 

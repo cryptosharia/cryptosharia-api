@@ -45,7 +45,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		// 4. Update User Status
 		const [updatedUser] = await db
 			.update(users)
-			.set({ status, updatedAt: new Date() })
+			.set({ status, updatedBy: locals.user!.id })
 			.where(eq(users.id, id))
 			.returning();
 

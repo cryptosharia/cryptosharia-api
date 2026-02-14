@@ -1,10 +1,11 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { users } from '$lib/db/tables';
+import { users, userStatusEnum } from '$lib/db/tables';
 import ApiResponse from '$lib/api-response';
 import type { PaginatedData } from '$lib/types';
 import z from '$lib/zod-openapi';
 import { and, ilike, inArray, or, count } from 'drizzle-orm';
+import { escapeLikePattern } from '$lib/utils';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/assets';
 import type { Role } from '$lib/auth/rbac';
@@ -48,11 +49,11 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		}
 
 		if (statuses && statuses.length > 0) {
-			filters.push(inArray(users.status, statuses as (typeof UserStatus._type)[]));
+			filters.push(inArray(users.status, statuses as (typeof userStatusEnum.enumValues)[number][]));
 		}
 
 		if (search) {
-			const query = `%${search}%`;
+			const query = `%${escapeLikePattern(search)}%`;
 			filters.push(or(ilike(users.name, query), ilike(users.email, query)));
 		}
 

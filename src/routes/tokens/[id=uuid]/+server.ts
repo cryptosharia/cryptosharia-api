@@ -2,11 +2,12 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { tokens } from '$lib/db/tables';
 import { eq } from 'drizzle-orm';
+import { hasPermission } from '$lib/auth/permissions';
 import { TokensGetData } from '..';
 import ApiResponse from '$lib/api-response';
 import { toAssetMetadata } from '$lib/assets';
 
-export const GET: RequestHandler = async ({ params }: { params: { id: string } }) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
 	const { id } = params;
 
 	try {
@@ -35,6 +36,11 @@ export const GET: RequestHandler = async ({ params }: { params: { id: string } }
 		});
 
 		if (!token) {
+			return ApiResponse.notFound('Token not found');
+		}
+
+		// Require permission for non-published content
+		if (token.status !== 'published' && !hasPermission(locals, 'tokens.manage')) {
 			return ApiResponse.notFound('Token not found');
 		}
 

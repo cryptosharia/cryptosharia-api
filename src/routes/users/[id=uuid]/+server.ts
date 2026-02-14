@@ -97,7 +97,6 @@ export const PATCH: RequestHandler = async ({
 			.set({
 				name,
 				avatarId,
-				updatedAt: new Date(),
 				updatedBy: locals.user.id
 			})
 			.where(eq(users.id, id))

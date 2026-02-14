@@ -7,6 +7,7 @@ import z from '$lib/zod-openapi';
 import { toAssetMetadata } from '$lib/assets';
 import { tokens, shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
 import { and, ilike, inArray, notInArray, or, count } from 'drizzle-orm';
+import { escapeLikePattern } from '$lib/utils';
 
 import { hasPermission } from '$lib/auth/permissions';
 
@@ -61,7 +62,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			}
 
 			if (search) {
-				const query = `%${search}%`;
+				const query = `%${escapeLikePattern(search)}%`;
 				filters.push(
 					or(ilike(table.name, query), ilike(table.ticker, query), ilike(table.slug, query))
 				);

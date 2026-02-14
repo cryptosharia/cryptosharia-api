@@ -9,6 +9,8 @@ import z from '$lib/zod-openapi';
 import { generateRandomToken } from '$lib/auth/tokens';
 import { sendEmail } from '$lib/email';
 import { escapeHtml } from '$lib/utils';
+import { dev } from '$app/environment';
+import { DEV_BASE_URL, BASE_DOMAIN } from '$lib/constants';
 
 export const POST: RequestHandler = async ({ request, url }) => {
 	let body: unknown;
@@ -95,7 +97,10 @@ export const POST: RequestHandler = async ({ request, url }) => {
 		// 6. Send Verification Email (Synchronous for Auth Reliability)
 		if (notify) {
 			const safeName = escapeHtml(name);
-			const verificationLink = `https://admin.cryptosharia.id/verify/${verificationToken}`;
+			const baseUrl = dev
+				? DEV_BASE_URL.replace('${PORT}', '3000')
+				: `https://accounts.${BASE_DOMAIN}`;
+			const verificationLink = `${baseUrl}/verify/${verificationToken}`;
 
 			await sendEmail({
 				to: email,

@@ -29,10 +29,10 @@ You are a **Senior Partner and Co-Architect**, not a submissive tool. Your goal 
 Before every commit or finalizing a task, perform a comprehensive scan for:
 
 - **Security Issues**:
-  - **Mass Assignment**: Are we blindly spreading `req.body` into a DB update? (ALWAYS omit sensitive fields like `role_id`).
+  - **Mass Assignment**: Are we blindly spreading `request.json()` into a DB update? (ALWAYS omit sensitive fields like `role`).
   - **Injection**: Are we using prepared statements (Drizzle ORM) correctly?
   - **Auth/Authz**: Are we checking permissions AND ownership for every private route?
-  - **Data Leakage**: Are we leaking password hashes or internal UUIDs in public API responses?
+  - **Data Leakage**: Are we leaking password hashes or sensitive internal data in public API responses? (Note: UUIDs in `UserMetadata` are acceptable since they are opaque to end users.)
 - **Bad Practices**:
   - **No `any`**: NEVER use the `any` type unless absolutely unavoidable. Use proper types, interfaces, or `unknown` with type narrowing.
   - **Other**: Never do hardcoded absolute paths, unused imports, inconsistent naming, bad business logic, etc.
@@ -42,7 +42,7 @@ Before every commit or finalizing a task, perform a comprehensive scan for:
 ## Self-Improvement:
 
 1.  **Proactive Rule Updates**: Automatically update this `GEMINI.md` file when new decisions, preferences, or corrections are made. This includes architecture decisions, ecosystem changes, coding conventions, and behavior preferences. Do not wait to be asked.
-2.  **API Documentation Maintenance**: Automatically update `docs/API_DOCS.md` whenever an endpoint is added, modified, or a new architectural rule is established. This document is the "Source of Truth" for all ecosystem consumers.
+2.  **API Documentation Maintenance**: The OpenAPI spec at `/openapi.json` is the primary source of truth. `docs/API_DOCS.md` is a supplementary human-readable overview and should be kept in sync when architectural rules change.
 
 ---
 
@@ -61,6 +61,7 @@ CryptoSharia is a modular digital ecosystem designed for long-term professional 
 2.  **Unified Identity (Accounts)**: Use the "One Account for All" principle. Security and user management must be handled centrally within the API.
 3.  **Server-to-Server Security**: Platforms are primarily SvelteKit apps. Prioritize secure communication between frontend servers and the API (BFF pattern).
 4.  **Modular & Scalable**: Design components and endpoints assuming they will be consumed by multiple different services with varying needs.
+5.  **BFF-Only Architecture (No CORS)**: All platforms communicate with the API via their SvelteKit server (Backend-for-Frontend pattern). Direct browser-to-API requests are not supported. Therefore, CORS headers are intentionally absent.
 
 ## Naming Convention
 
@@ -85,8 +86,8 @@ CryptoSharia is a modular digital ecosystem designed for long-term professional 
 **Unified `users` table** for everyone (users and staff).
 
 - Everyone is a user. Some users also have admin powers.
-- `role_id = NULL` → Regular user (can use Community, Academy, Store, Media, etc)
-- `role_id = "<role_name>"` → Staff/Admin (user features + admin dashboard access)
+- `role = NULL` → Regular user (can use Community, Academy, Store, Media, etc)
+- `role = "<role_name>"` → Staff/Admin (user features + admin dashboard access)
 - Admins can also use all user features (subscribe, purchase, etc.)
 
 ## Identification Layering
@@ -124,7 +125,6 @@ Shared metadata structures must use official Zod shorthands (e.g., `z.uuid()`, `
 
 - **`UserMetadata`**: `id`, `name`, `email`.
 - **`AssetMetadata`**: `id`, `url`, `filename`, `size`, `mimeType`, `width`, `height`.
-- **`RoleMetadata`**: `id`, `name`, `slug`.
 
 ## Access Control
 
@@ -153,7 +153,7 @@ Access granted or redirect to www
 **Cookie Configuration:**
 
 - `domain=.cryptosharia.id` (shared across all subdomains)
-- `httpOnly=true`, `secure=true`, `sameSite=strict`
+- `httpOnly=true`, `secure=true`, `sameSite=lax` (must be `lax` for cross-subdomain SSO redirects to work)
 
 ## Path Parameters
 

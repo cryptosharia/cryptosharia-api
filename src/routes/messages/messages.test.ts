@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { createApiTestClient, createTestUser, signTestUserIn } from '$lib/test-utils';
+import { createApiTestClient, createAuthenticatedClient } from '$lib/test-utils';
 
 describe('Messages API Integration', () => {
 	const client = createApiTestClient();
+
+	// -----------------------------------------------------------------------
+	// POST /messages (public)
+	// -----------------------------------------------------------------------
 
 	describe('POST /messages', () => {
 		it('should successfully create a message with valid data and notify: false query param', async () => {
@@ -13,9 +17,7 @@ describe('Messages API Integration', () => {
 			};
 
 			const { response, data } = await client.POST('/messages', {
-				params: {
-					query: { notify: false }
-				},
+				params: { query: { notify: false } },
 				body: payload
 			});
 
@@ -28,17 +30,9 @@ describe('Messages API Integration', () => {
 		});
 
 		it('should return 400 for invalid email format', async () => {
-			const payload = {
-				name: 'John Doe',
-				email: 'not-an-email',
-				message: 'Valid message content'
-			};
-
 			const { response, error } = await client.POST('/messages', {
-				params: {
-					query: { notify: false }
-				},
-				body: payload
+				params: { query: { notify: false } },
+				body: { name: 'John Doe', email: 'not-an-email', message: 'Valid message content' }
 			});
 
 			expect(response.status).toBe(400);
@@ -47,34 +41,17 @@ describe('Messages API Integration', () => {
 		});
 
 		it('should return 400 for empty message', async () => {
-			const payload = {
-				name: 'John Doe',
-				email: 'john@example.com',
-				message: ''
-			};
-
 			const { response } = await client.POST('/messages', {
-				params: {
-					query: { notify: false }
-				},
-				body: payload
+				params: { query: { notify: false } },
+				body: { name: 'John Doe', email: 'john@example.com', message: '' }
 			});
-
 			expect(response.status).toBe(400);
 		});
 
 		it('should return 400 when name exceeds max length (120)', async () => {
-			const payload = {
-				name: 'a'.repeat(121),
-				email: 'john@example.com',
-				message: 'Valid message'
-			};
-
 			const { response, error } = await client.POST('/messages', {
-				params: {
-					query: { notify: false }
-				},
-				body: payload
+				params: { query: { notify: false } },
+				body: { name: 'a'.repeat(121), email: 'john@example.com', message: 'Valid message' }
 			});
 
 			expect(response.status).toBe(400);
@@ -82,23 +59,19 @@ describe('Messages API Integration', () => {
 		});
 
 		it('should return 400 when message exceeds max length (5000)', async () => {
-			const payload = {
-				name: 'John Doe',
-				email: 'john@example.com',
-				message: 'a'.repeat(5001)
-			};
-
 			const { response, error } = await client.POST('/messages', {
-				params: {
-					query: { notify: false }
-				},
-				body: payload
+				params: { query: { notify: false } },
+				body: { name: 'John Doe', email: 'john@example.com', message: 'a'.repeat(5001) }
 			});
 
 			expect(response.status).toBe(400);
 			expect(error?.errors?.message).toBeDefined();
 		});
 	});
+
+	// -----------------------------------------------------------------------
+	// GET /messages (admin-only)
+	// -----------------------------------------------------------------------
 
 	describe('GET /messages', () => {
 		it('should be blocked without an API key', async () => {
@@ -109,12 +82,9 @@ describe('Messages API Integration', () => {
 		});
 
 		it('should return a list of messages when authorized', async () => {
-			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
-			const accessToken = await signTestUserIn(admin.email);
+			const { client: adminClient } = await createAuthenticatedClient('admin');
 
-			const { response, data } = await client.GET('/messages', {
-				headers: { Authorization: `Bearer ${accessToken}` }
-			});
+			const { response, data } = await adminClient.GET('/messages');
 
 			expect(response.status).toBe(200);
 			expect(data?.success).toBe(true);
@@ -124,8 +94,7 @@ describe('Messages API Integration', () => {
 		});
 
 		it('should filter messages by sender email', async () => {
-			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
-			const accessToken = await signTestUserIn(admin.email);
+			const { client: adminClient } = await createAuthenticatedClient('admin');
 			const email = `filter-${Math.random()}@example.com`;
 
 			// Seed a specific message
@@ -134,11 +103,8 @@ describe('Messages API Integration', () => {
 				body: { name: 'Filter Me', email, message: 'Target message' }
 			});
 
-			const { response, data } = await client.GET('/messages', {
-				params: {
-					query: { senders: [email] }
-				},
-				headers: { Authorization: `Bearer ${accessToken}` }
+			const { response, data } = await adminClient.GET('/messages', {
+				params: { query: { senders: [email] } }
 			});
 
 			expect(response.status).toBe(200);
@@ -148,11 +114,9 @@ describe('Messages API Integration', () => {
 		});
 
 		it('should search messages by content', async () => {
-			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
-			const accessToken = await signTestUserIn(admin.email);
+			const { client: adminClient } = await createAuthenticatedClient('admin');
 			const uniqueKeyword = `sharia-${Math.random()}`;
 
-			// Seed a specific message
 			await client.POST('/messages', {
 				params: { query: { notify: false } },
 				body: {
@@ -162,11 +126,8 @@ describe('Messages API Integration', () => {
 				}
 			});
 
-			const { response, data } = await client.GET('/messages', {
-				params: {
-					query: { search: uniqueKeyword }
-				},
-				headers: { Authorization: `Bearer ${accessToken}` }
+			const { response, data } = await adminClient.GET('/messages', {
+				params: { query: { search: uniqueKeyword } }
 			});
 
 			expect(response.status).toBe(200);
@@ -176,14 +137,10 @@ describe('Messages API Integration', () => {
 		});
 
 		it('should handle pagination', async () => {
-			const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
-			const accessToken = await signTestUserIn(admin.email);
+			const { client: adminClient } = await createAuthenticatedClient('admin');
 
-			const { response, data } = await client.GET('/messages', {
-				params: {
-					query: { limit: 1, page: 1 }
-				},
-				headers: { Authorization: `Bearer ${accessToken}` }
+			const { response, data } = await adminClient.GET('/messages', {
+				params: { query: { limit: 1, page: 1 } }
 			});
 
 			expect(response.status).toBe(200);

@@ -7,6 +7,7 @@ import { db } from '$lib/db';
 import { messages } from '$lib/db/tables';
 import { MessagesGetQuery, MessagesGetItem, MessagesPostBody, MessagesPostQuery } from './index';
 import { and, ilike, inArray, or, count } from 'drizzle-orm';
+import { escapeLikePattern } from '$lib/utils';
 import { waitUntil } from '@vercel/functions';
 import { requirePermission } from '$lib/auth/permissions';
 import type { PaginatedData } from '$lib/types';
@@ -44,11 +45,12 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		}
 
 		if (search) {
+			const query = `%${escapeLikePattern(search)}%`;
 			filters.push(
 				or(
-					ilike(messages.name, `%${search}%`),
-					ilike(messages.email, `%${search}%`),
-					ilike(messages.message, `%${search}%`)
+					ilike(messages.name, query),
+					ilike(messages.email, query),
+					ilike(messages.message, query)
 				)
 			);
 		}
@@ -80,8 +82,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			'Messages retrieved successfully'
 		);
 	} catch (error) {
-		console.error('Post message error:', error);
-		return ApiResponse.internalServerError('Failed to send message');
+		console.error('Get messages error:', error);
+		return ApiResponse.internalServerError('Failed to retrieve messages');
 	}
 };
 

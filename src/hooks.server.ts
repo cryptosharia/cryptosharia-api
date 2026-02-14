@@ -5,6 +5,11 @@ import { verifyAccessToken } from '$lib/auth/tokens';
 import { getUserPermissions } from '$lib/auth/permissions';
 import type { Role } from '$lib/auth/rbac';
 
+// Cache valid API keys at module load (not per-request)
+const validApiKeys = Object.entries(env)
+	.filter(([key]) => key.startsWith('CS_API_KEY_'))
+	.map(([, value]) => value);
+
 export const handle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
 
@@ -14,20 +19,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
-	// 2. Identify all valid API Keys from .env
-	// Keys must start with CS_API_KEY_
-	const validApiKeys = Object.entries(env)
-		.filter(([key]) => key.startsWith('CS_API_KEY_'))
-		.map(([, value]) => value);
-
-	// 3. Check for Api-Key header (Mandatory for all 1st party platforms)
+	// 2. Check for Api-Key header (Mandatory for all 1st party platforms)
 	const apiKey = event.request.headers.get('Api-Key');
 
 	if (!apiKey || !validApiKeys.includes(apiKey)) {
 		return ApiResponse.unauthorized();
 	}
 
-	// 4. Extract and verify JWT if present in Authorization header
+	// 3. Extract and verify JWT if present in Authorization header
 	const authHeader = event.request.headers.get('Authorization');
 	if (authHeader && authHeader.startsWith('Bearer ')) {
 		const token = authHeader.split(' ')[1];

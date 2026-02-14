@@ -46,26 +46,31 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		const user = storedToken.user;
 
-		// 3. Rotate refresh token (Security: One-time use)
-		// Revoke the old one
-		await db
-			.update(refreshTokens)
-			.set({ revokedAt: new Date() })
-			.where(eq(refreshTokens.token, oldToken));
+		// 3. Enforce Account Status
+		if (user.status !== 'active') {
+			return ApiResponse.forbidden('Your account is not active. Please contact support.');
+		}
 
-		// Generate a new access token
+		// 4. Rotate refresh token atomically (Security: One-time use)
 		const accessToken = await signAccessToken({
 			userId: user.id,
 			role: user.role
 		});
 
-		// Generate a new opaque refresh token
 		const refreshToken = createRefreshToken(user.id);
 
-		// Store the new refresh token
-		await db.insert(refreshTokens).values(refreshToken);
+		await db.transaction(async (tx) => {
+			// Revoke the old one
+			await tx
+				.update(refreshTokens)
+				.set({ revokedAt: new Date() })
+				.where(eq(refreshTokens.token, oldToken));
 
-		// 4. Return response
+			// Store the new refresh token
+			await tx.insert(refreshTokens).values(refreshToken);
+		});
+
+		// 5. Return response
 		return ApiResponse.ok(
 			AuthRefreshPostResponse.parse({
 				user,

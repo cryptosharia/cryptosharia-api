@@ -56,7 +56,6 @@ export const PUT: RequestHandler = async ({
 			.update(users)
 			.set({
 				role: role as Role,
-				updatedAt: new Date(),
 				updatedBy: locals.user!.id
 			})
 			.where(eq(users.id, id))

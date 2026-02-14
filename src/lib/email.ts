@@ -33,5 +33,6 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
 		console.info(`EMAIL_SERVICE: Email sent successfully to ${to}`);
 	} catch (error) {
 		console.error('EMAIL_SERVICE_ERROR:', error);
+		throw error;
 	}
 }

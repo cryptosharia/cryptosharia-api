@@ -1,77 +1,41 @@
 import { describe, it, expect } from 'vitest';
-import { db } from '$lib/db';
-import { tokens, assets } from '$lib/db/tables';
 import {
 	createApiTestClient,
+	createAuthenticatedClient,
 	createTestAsset,
-	createTestUser,
-	signTestUserIn
+	createTestToken
 } from '$lib/test-utils';
+import { db } from '$lib/db';
+import { assets } from '$lib/db/tables';
 
 const client = createApiTestClient();
 
 describe('Tokens API Integration', () => {
-	const createTokenSeed = async () => {
-		const asset = await createTestAsset();
-		return [
-			{
-				name: 'Bitcoin',
-				ticker: 'BTC',
-				slug: 'bitcoin',
-				shariaStatus: 'halal' as const,
-				rank: 1,
-				status: 'published' as const,
-				excerpt: 'Digital gold.',
-				content: 'Bitcoin content.',
-				website: 'https://bitcoin.org',
-				logoId: asset.id
-			},
-			{
-				name: 'Ethereum',
-				ticker: 'ETH',
-				slug: 'ethereum',
-				shariaStatus: 'halal' as const,
-				rank: 2,
-				status: 'published' as const,
-				excerpt: 'Smart contracts.',
-				content: 'Ethereum content.',
-				website: 'https://ethereum.org',
-				logoId: asset.id
-			},
-			{
-				name: 'XRP',
-				ticker: 'XRP',
-				slug: 'ripple',
-				shariaStatus: 'syubhat' as const,
-				rank: 5,
-				status: 'published' as const,
-				excerpt: 'Ripple.',
-				content: 'XRP content.',
-				website: 'https://ripple.com',
-				logoId: asset.id
-			},
-			{
-				name: 'Cardano',
-				ticker: 'ADA',
-				slug: 'cardano',
-				shariaStatus: 'halal' as const,
-				rank: 10,
-				status: 'published' as const,
-				excerpt: 'Proof of stake.',
-				content: 'Cardano content.',
-				website: 'https://cardano.org',
-				logoId: asset.id
-			}
-		];
-	};
+	// -----------------------------------------------------------------------
+	// List (GET /tokens)
+	// -----------------------------------------------------------------------
 
 	it('should filter tokens by sharia status', async () => {
-		await db.insert(tokens).values(await createTokenSeed());
+		const asset = await createTestAsset();
+		await createTestToken({
+			name: 'Bitcoin',
+			ticker: 'BTC',
+			slug: 'bitcoin',
+			shariaStatus: 'halal',
+			rank: 1,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'XRP',
+			ticker: 'XRP',
+			slug: 'ripple',
+			shariaStatus: 'syubhat',
+			rank: 5,
+			logoId: asset.id
+		});
 
 		const { data, response } = await client.GET('/tokens', {
-			params: {
-				query: { shariaStatuses: ['syubhat'] }
-			}
+			params: { query: { shariaStatuses: ['syubhat'] } }
 		});
 
 		expect(response.status).toBe(200);
@@ -80,12 +44,31 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should filter by multiple slugs', async () => {
-		await db.insert(tokens).values(await createTokenSeed());
+		const asset = await createTestAsset();
+		await createTestToken({
+			name: 'Bitcoin',
+			ticker: 'BTC',
+			slug: 'bitcoin',
+			rank: 1,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'Ethereum',
+			ticker: 'ETH',
+			slug: 'ethereum',
+			rank: 2,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'Cardano',
+			ticker: 'ADA',
+			slug: 'cardano',
+			rank: 10,
+			logoId: asset.id
+		});
 
 		const { data, response } = await client.GET('/tokens', {
-			params: {
-				query: { slugs: ['bitcoin', 'ethereum'] }
-			}
+			params: { query: { slugs: ['bitcoin', 'ethereum'] } }
 		});
 
 		expect(response.status).toBe(200);
@@ -95,27 +78,58 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should exclude specific slugs', async () => {
-		await db.insert(tokens).values(await createTokenSeed());
+		const asset = await createTestAsset();
+		await createTestToken({
+			name: 'Bitcoin',
+			ticker: 'BTC',
+			slug: 'bitcoin',
+			rank: 1,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'XRP',
+			ticker: 'XRP',
+			slug: 'ripple',
+			rank: 5,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'Ethereum',
+			ticker: 'ETH',
+			slug: 'ethereum',
+			rank: 2,
+			logoId: asset.id
+		});
 
 		const { data, response } = await client.GET('/tokens', {
-			params: {
-				query: { exclude: ['bitcoin', 'ripple'] }
-			}
+			params: { query: { exclude: ['bitcoin', 'ripple'] } }
 		});
 
 		expect(response.status).toBe(200);
-		expect(data?.data?.items).toHaveLength(2);
+		expect(data?.data?.items).toHaveLength(1);
 		expect(data?.data?.items?.map((i) => i.slug)).not.toContain('bitcoin');
 		expect(data?.data?.items?.map((i) => i.slug)).not.toContain('ripple');
 	});
 
 	it('should search tokens by name or ticker', async () => {
-		await db.insert(tokens).values(await createTokenSeed());
+		const asset = await createTestAsset();
+		await createTestToken({
+			name: 'Bitcoin',
+			ticker: 'BTC',
+			slug: 'bitcoin',
+			rank: 1,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'Ethereum',
+			ticker: 'ETH',
+			slug: 'ethereum',
+			rank: 2,
+			logoId: asset.id
+		});
 
 		const { data, response } = await client.GET('/tokens', {
-			params: {
-				query: { search: 'ETH' }
-			}
+			params: { query: { search: 'ETH' } }
 		});
 
 		expect(response.status).toBe(200);
@@ -124,15 +138,34 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should combine multiple filters (shariaStatuses AND search)', async () => {
-		await db.insert(tokens).values(await createTokenSeed());
+		const asset = await createTestAsset();
+		await createTestToken({
+			name: 'Bitcoin',
+			ticker: 'BTC',
+			slug: 'bitcoin',
+			shariaStatus: 'halal',
+			rank: 1,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'Cardano',
+			ticker: 'ADA',
+			slug: 'cardano',
+			shariaStatus: 'halal',
+			rank: 10,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'XRP',
+			ticker: 'XRP',
+			slug: 'ripple',
+			shariaStatus: 'syubhat',
+			rank: 5,
+			logoId: asset.id
+		});
 
 		const { data, response } = await client.GET('/tokens', {
-			params: {
-				query: {
-					shariaStatuses: ['halal'],
-					search: 'Cardano'
-				}
-			}
+			params: { query: { shariaStatuses: ['halal'], search: 'Cardano' } }
 		});
 
 		expect(response.status).toBe(200);
@@ -141,12 +174,19 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should handle pagination', async () => {
-		await db.insert(tokens).values(await createTokenSeed());
+		const asset = await createTestAsset();
+		for (let i = 0; i < 4; i++) {
+			await createTestToken({
+				name: `Token ${i}`,
+				ticker: `T${i}`,
+				slug: `token-${i}`,
+				rank: i + 1,
+				logoId: asset.id
+			});
+		}
 
 		const { data, response } = await client.GET('/tokens', {
-			params: {
-				query: { limit: 2, page: 1 }
-			}
+			params: { query: { limit: 2, page: 1 } }
 		});
 
 		expect(response.status).toBe(200);
@@ -155,122 +195,180 @@ describe('Tokens API Integration', () => {
 		expect(data?.data?.pagination.totalPages).toBe(2);
 	});
 
+	// -----------------------------------------------------------------------
+	// Detail by Slug (GET /tokens/{slug})
+	// -----------------------------------------------------------------------
+
 	it('should exclude content from list results and include in single item', async () => {
-		const asset = await createTestAsset();
-		await db.insert(tokens).values({
+		await createTestToken({
 			name: 'Detailed Token',
 			ticker: 'DET',
 			slug: 'detailed-token',
-			shariaStatus: 'halal',
-			rank: 10,
-			status: 'published',
-			excerpt: '...',
 			content: 'Secret Content',
-			website: 'https://example.com',
-			logoId: asset.id
+			rank: 10
 		});
 
 		const { data: listData } = await client.GET('/tokens');
 		expect(listData?.data?.items?.[0]).not.toHaveProperty('content');
 
-		const { data: singleData, response: singleResponse } = await client.GET('/tokens/{slug}', {
-			params: {
-				path: { slug: 'detailed-token' }
-			}
+		const { data: singleData, response } = await client.GET('/tokens/{slug}', {
+			params: { path: { slug: 'detailed-token' } }
 		});
 
-		expect(singleResponse.status).toBe(200);
+		expect(response.status).toBe(200);
 		expect(singleData?.data?.content).toBe('Secret Content');
 	});
 
 	it('should return 404 for non-existent token slug', async () => {
 		const { response } = await client.GET('/tokens/{slug}', {
-			params: {
-				path: { slug: 'non-existent' }
-			}
+			params: { path: { slug: 'non-existent' } }
 		});
-
 		expect(response.status).toBe(404);
 	});
 
+	it('should NOT allow finding a draft token by slug', async () => {
+		await createTestToken({
+			slug: 'draft-token-slug',
+			ticker: 'DRAFT',
+			status: 'draft',
+			rank: 1000
+		});
+
+		const { response } = await client.GET('/tokens/{slug}', {
+			params: { path: { slug: 'draft-token-slug' } }
+		});
+		expect(response.status).toBe(404);
+	});
+
+	// -----------------------------------------------------------------------
+	// Status / Permission Filtering (GET /tokens with statuses)
+	// -----------------------------------------------------------------------
+
 	it('should filter tokens by status (restricting non-published for unauthorized)', async () => {
-		const asset = await createTestAsset();
+		await createTestToken({
+			name: 'Archived Coin',
+			ticker: 'ARC',
+			slug: 'archived-coin',
+			status: 'archived',
+			rank: 100
+		});
 
-		await db.insert(tokens).values([
-			{
-				name: 'Archived Coin',
-				ticker: 'ARC',
-				slug: 'archived-coin',
-				shariaStatus: 'halal' as const,
-				rank: 100,
-				status: 'archived' as const,
-				excerpt: '...',
-				content: '...',
-				website: 'https://example.com',
-				logoId: asset.id
-			}
-		]);
-
-		// 1. Default (guest) - should NOT return archived
+		// 1. Guest — should NOT return archived
 		const { data: defaultData, response: defaultResponse } = await client.GET('/tokens');
 		expect(defaultResponse.status).toBe(200);
 		expect(defaultData?.data?.items?.some((i) => i.slug === 'archived-coin')).toBe(false);
 
-		// 2. Explicit archive (guest) - should return 403 Forbidden (strict security fix)
+		// 2. Guest explicit archived — should return 403
 		const { response: archiveResponse } = await client.GET('/tokens', {
-			params: {
-				query: { statuses: ['archived'] }
-			}
+			params: { query: { statuses: ['archived'] } }
 		});
 		expect(archiveResponse.status).toBe(403);
 
-		// 3. Admin (authorized) - should return archived
-		const admin = await createTestUser({ role: 'admin', isEmailVerified: true });
-		const accessToken = await signTestUserIn(admin.email);
+		// 3. Admin — should return archived
+		const { client: adminClient } = await createAuthenticatedClient('admin');
 
-		const { data: adminData } = await client.GET('/tokens', {
-			params: {
-				query: { statuses: ['archived'] }
-			},
-			headers: { Authorization: `Bearer ${accessToken}` }
+		const { data: adminData } = await adminClient.GET('/tokens', {
+			params: { query: { statuses: ['archived'] } }
 		});
 		expect(adminData?.data?.items?.some((i) => i.slug === 'archived-coin')).toBe(true);
 
-		// 4. Admin (No filter) - should return ALL statuses
-		const { data: adminAllData } = await client.GET('/tokens', {
-			headers: { Authorization: `Bearer ${accessToken}` }
-		});
+		// 4. Admin no filter — should return ALL statuses
+		const { data: adminAllData } = await adminClient.GET('/tokens');
 		expect(adminAllData?.data?.items?.some((i) => i.slug === 'archived-coin')).toBe(true);
 
-		// 5. Regular Member (authorized but not staff) - should return 403
-		const member = await createTestUser({ role: 'member', isEmailVerified: true });
-		const memberToken = await signTestUserIn(member.email);
-		const { response: memberResponse } = await client.GET('/tokens', {
-			params: { query: { statuses: ['archived'] } },
-			headers: { Authorization: `Bearer ${memberToken}` }
+		// 5. Member — should return 403 for archived filter
+		const { client: memberClient } = await createAuthenticatedClient('member');
+		const { response: memberResponse } = await memberClient.GET('/tokens', {
+			params: { query: { statuses: ['archived'] } }
 		});
 		expect(memberResponse.status).toBe(403);
 
-		// 6. Guest Mixed Statuses - should return 403
+		// 6. Guest mixed statuses — should return 403
 		const { response: mixedResponse } = await client.GET('/tokens', {
 			params: { query: { statuses: ['published', 'archived'] } }
 		});
 		expect(mixedResponse.status).toBe(403);
 	});
 
+	// -----------------------------------------------------------------------
+	// Detail by UUID (GET /tokens/{id}) — SEC-2 coverage
+	// -----------------------------------------------------------------------
+
+	it('should allow admin to find any token by UUID (including drafts)', async () => {
+		const token = await createTestToken({
+			slug: 'admin-uuid-draft',
+			ticker: 'AUD',
+			status: 'draft',
+			rank: 1001
+		});
+		const { client: adminClient } = await createAuthenticatedClient('admin');
+
+		const { data, response } = await adminClient.GET('/tokens/{id}', {
+			params: { path: { id: token.id } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.slug).toBe('admin-uuid-draft');
+		expect(data?.data?.status).toBe('draft');
+	});
+
+	it('should return 404 when guest fetches draft token by UUID', async () => {
+		const token = await createTestToken({
+			slug: 'guest-uuid-draft',
+			ticker: 'GUD',
+			status: 'draft',
+			rank: 1002
+		});
+
+		const { response } = await client.GET('/tokens/{id}', {
+			params: { path: { id: token.id } }
+		});
+
+		expect(response.status).toBe(404);
+	});
+
+	it('should return 404 when member fetches draft token by UUID', async () => {
+		const token = await createTestToken({
+			slug: 'member-uuid-draft',
+			ticker: 'MUD',
+			status: 'draft',
+			rank: 1003
+		});
+		const { client: memberClient } = await createAuthenticatedClient('member');
+
+		const { response } = await memberClient.GET('/tokens/{id}', {
+			params: { path: { id: token.id } }
+		});
+
+		expect(response.status).toBe(404);
+	});
+
+	it('should allow guest to fetch published token by UUID', async () => {
+		const token = await createTestToken({
+			slug: 'guest-uuid-published',
+			ticker: 'GUP',
+			status: 'published',
+			rank: 1004
+		});
+
+		const { data, response } = await client.GET('/tokens/{id}', {
+			params: { path: { id: token.id } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.slug).toBe('guest-uuid-published');
+	});
+
+	// -----------------------------------------------------------------------
+	// Metadata & Assets
+	// -----------------------------------------------------------------------
+
 	it('should include audit metadata as objects in response', async () => {
-		const asset = await createTestAsset();
-		await db.insert(tokens).values({
+		await createTestToken({
 			name: 'Metadata Object Token',
 			ticker: 'MTO',
 			slug: 'meta-obj-token',
-			shariaStatus: 'halal',
-			rank: 1,
-			status: 'published',
-			excerpt: '...',
-			content: '...',
-			website: 'https://example.com',
-			logoId: asset.id
+			rank: 1
 		});
 
 		const { data } = await client.GET('/tokens');
@@ -280,8 +378,6 @@ describe('Tokens API Integration', () => {
 		expect(item).toHaveProperty('createdAt');
 		expect(item).toHaveProperty('updatedAt');
 
-		// In our test environment, these might be null if no user is associated,
-		// but if they exist, they MUST be objects with name and email.
 		if (item?.createdBy) {
 			expect(typeof item.createdBy).toBe('object');
 			expect(item.createdBy).toHaveProperty('id');
@@ -297,63 +393,7 @@ describe('Tokens API Integration', () => {
 		}
 	});
 
-	it('should NOT allow finding a draft token by slug', async () => {
-		const asset = await createTestAsset();
-		const slug = 'draft-token-slug';
-		await db.insert(tokens).values({
-			name: 'Draft Token',
-			slug,
-			ticker: 'DRAFT',
-			status: 'draft',
-			shariaStatus: 'syubhat',
-			excerpt: '...',
-			content: '...',
-			rank: 1000,
-			website: 'https://example.com',
-			logoId: asset.id
-		});
-
-		const { response } = await client.GET('/tokens/{slug}', {
-			params: {
-				path: { slug }
-			}
-		});
-
-		expect(response.status).toBe(404);
-	});
-
-	it('should allow finding any token by UUID', async () => {
-		const asset = await createTestAsset();
-		const slug = 'internal-token-slug';
-		const [token] = await db
-			.insert(tokens)
-			.values({
-				name: 'Internal Token',
-				slug,
-				ticker: 'INT',
-				status: 'draft',
-				shariaStatus: 'syubhat',
-				excerpt: '...',
-				content: '...',
-				rank: 1001,
-				website: 'https://example.com',
-				logoId: asset.id
-			})
-			.returning({ id: tokens.id });
-
-		const { data, response } = await client.GET('/tokens/{id}', {
-			params: {
-				path: { id: token.id }
-			}
-		});
-
-		expect(response.status).toBe(200);
-		expect(data?.data?.slug).toBe(slug);
-		expect(data?.data?.status).toBe('draft');
-	});
-
 	it('should return final form for logo if assigned', async () => {
-		// 1. Setup: Create an asset and a token referencing it
 		const [asset] = await db
 			.insert(assets)
 			.values({
@@ -367,26 +407,18 @@ describe('Tokens API Integration', () => {
 			})
 			.returning();
 
-		const slug = 'token-with-logo';
-		await db.insert(tokens).values({
+		await createTestToken({
 			name: 'Token with Logo',
 			ticker: 'TWL',
-			slug,
-			shariaStatus: 'halal',
+			slug: 'token-with-logo',
 			rank: 10,
-			status: 'published',
-			excerpt: '...',
-			content: '...',
-			website: 'https://example.com',
 			logoId: asset.id
 		});
 
-		// 2. Act
 		const { data } = await client.GET('/tokens/{slug}', {
-			params: { path: { slug } }
+			params: { path: { slug: 'token-with-logo' } }
 		});
 
-		// 3. Assert
 		const token = data?.data;
 		expect(token?.logo).toBeDefined();
 		expect(token?.logo?.id).toBe(asset.id);
