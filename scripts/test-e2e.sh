@@ -55,7 +55,7 @@ echo "✅ Server is ready!"
 
 # 5. Run Tests
 echo "Running tests..."
-npm run test:unit -- --run
+npx vitest --reporter=tree --run
 
 # Exit with the test result
 EXIT_CODE=$?

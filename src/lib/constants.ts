@@ -16,3 +16,7 @@ export const JWT_ISSUER = API_DOMAIN;
 
 /** Development base URL */
 export const DEV_BASE_URL = 'http://localhost:5173';
+
+/** Rate limiting configurations */
+export const RATELIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+export const RATELIMIT_MAX = process.env.NODE_ENV === 'test' ? 1000 : 100; // prod = 100, test = 1000

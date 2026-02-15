@@ -12,6 +12,7 @@ import { MESSAGES, POSTS, TOKENS, USERS } from './data';
 /**
  * POST /seed/demo
  * Populates the system with mock data for development and testing.
+ * **WARNING: This will wipe out all existing data.**
  * Strictly forbidden in production.
  */
 export const POST: RequestHandler = async ({ request }) => {

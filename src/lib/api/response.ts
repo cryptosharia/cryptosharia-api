@@ -88,6 +88,16 @@ export default class ApiResponse {
 		);
 	}
 
+	static tooManyRequests(message = 'Too Many Requests'): Response {
+		return Response.json(
+			{
+				success: false,
+				message
+			} satisfies ApiResponseType,
+			{ status: 429 }
+		);
+	}
+
 	static internalServerError(message = 'Internal Server Error'): Response {
 		return Response.json(
 			{

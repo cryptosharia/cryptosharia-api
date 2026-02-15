@@ -211,8 +211,8 @@ describe('Tokens API Integration', () => {
 		const { data: listData } = await client.GET('/tokens');
 		expect(listData?.data?.items?.[0]).not.toHaveProperty('content');
 
-		const { data: singleData, response } = await client.GET('/tokens/{slug}', {
-			params: { path: { slug: 'detailed-token' } }
+		const { data: singleData, response } = await client.GET('/tokens/{id}', {
+			params: { path: { id: 'detailed-token' } }
 		});
 
 		expect(response.status).toBe(200);
@@ -220,8 +220,8 @@ describe('Tokens API Integration', () => {
 	});
 
 	it('should return 404 for non-existent token slug', async () => {
-		const { response } = await client.GET('/tokens/{slug}', {
-			params: { path: { slug: 'non-existent' } }
+		const { response } = await client.GET('/tokens/{id}', {
+			params: { path: { id: 'non-existent' } }
 		});
 		expect(response.status).toBe(404);
 	});
@@ -234,8 +234,8 @@ describe('Tokens API Integration', () => {
 			rank: 1000
 		});
 
-		const { response } = await client.GET('/tokens/{slug}', {
-			params: { path: { slug: 'draft-token-slug' } }
+		const { response } = await client.GET('/tokens/{id}', {
+			params: { path: { id: 'draft-token-slug' } }
 		});
 		expect(response.status).toBe(404);
 	});

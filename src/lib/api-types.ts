@@ -979,22 +979,22 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Post by ID
-         * @description Retrieve any post using its UUID regardless of its status.
+         * Get Post by Identifier
+         * @description Retrieve a single post using its UUID or Slug. Support for draft preview is automatically handled based on user permissions.
          */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description The UUID of the post */
+                    /** @description The UUID or Slug of the post */
                     id: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Post retrieved successfully by ID */
+                /** @description Post retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1015,77 +1015,6 @@ export interface paths {
                     };
                 };
                 /** @description Post not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Failed to retrieve post due to an internal server error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/posts/{slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Published Post by Slug
-         * @description Retrieve a single published post using its slug.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description The slug of the post */
-                    slug: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Published post retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["PostsGetData"];
-                        };
-                    };
-                };
-                /** @description Invalid or missing API key */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Post not found or is not published */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -1210,22 +1139,22 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Token by ID
-         * @description Retrieve any cryptocurrency token using its UUID regardless of its status.
+         * Get Token by Identifier
+         * @description Retrieve a single cryptocurrency token using its UUID or Slug. Support for draft preview is automatically handled based on user permissions.
          */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description The UUID of the cryptocurrency token */
+                    /** @description The UUID or Slug of the cryptocurrency token */
                     id: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Token retrieved successfully by ID */
+                /** @description Token retrieved successfully */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1246,77 +1175,6 @@ export interface paths {
                     };
                 };
                 /** @description Token not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Failed to retrieve token due to an internal server error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tokens/{slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Published Token by Slug
-         * @description Retrieve a single published cryptocurrency token using its slug.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description The slug of the cryptocurrency token */
-                    slug: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Published token retrieved successfully */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data: components["schemas"]["TokensGetData"];
-                        };
-                    };
-                };
-                /** @description Invalid or missing API key */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"];
-                    };
-                };
-                /** @description Token not found or is not published */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -1568,7 +1426,7 @@ export interface paths {
         put?: never;
         /**
          * Upload Image to ImgBB
-         * @description Proxies an image upload to the ImgBB service. Only image files (JPEG, PNG, WebP, GIF, HEIC, etc.) are accepted, with a maximum size of 32MB. Requires `posts.manage` permission.
+         * @description Proxies an image upload to the ImgBB service. Only image files (JPEG, PNG, WebP, GIF, HEIC, etc.) are accepted, with a maximum size of 32MB. Requires `posts.manage` or `tokens.manage` permission.
          */
         post: {
             parameters: {
@@ -1634,7 +1492,7 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                /** @description Requires posts.manage permission */
+                /** @description Requires posts.manage or tokens.manage permission */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1680,7 +1538,7 @@ export interface paths {
         put?: never;
         /**
          * Seed Demo Data
-         * @description Initialize the database with sample data (Users, Posts, Tokens, Messages) for development and testing.
+         * @description Initialize the database with sample data (Users, Posts, Tokens, Messages) for development and testing. **WARNING: This will wipe out all existing data.**
          */
         post: {
             parameters: {

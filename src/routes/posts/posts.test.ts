@@ -134,8 +134,8 @@ describe('Posts API Integration', () => {
 	it('should get a single post by slug', async () => {
 		await createTestPost({ title: 'Single Post Test', slug: 'single-post-test' });
 
-		const { data, response } = await client.GET('/posts/{slug}', {
-			params: { path: { slug: 'single-post-test' } }
+		const { data, response } = await client.GET('/posts/{id}', {
+			params: { path: { id: 'single-post-test' } }
 		});
 
 		expect(response.status).toBe(200);
@@ -144,8 +144,8 @@ describe('Posts API Integration', () => {
 	});
 
 	it('should return 404 for non-existent post slug', async () => {
-		const { response } = await client.GET('/posts/{slug}', {
-			params: { path: { slug: 'non-existent-slug' } }
+		const { response } = await client.GET('/posts/{id}', {
+			params: { path: { id: 'non-existent-slug' } }
 		});
 		expect(response.status).toBe(404);
 	});
@@ -164,8 +164,8 @@ describe('Posts API Integration', () => {
 		expect(item).not.toHaveProperty('content');
 
 		// Single should have content
-		const { data: singleData } = await client.GET('/posts/{slug}', {
-			params: { path: { slug: 'content-test-post' } }
+		const { data: singleData } = await client.GET('/posts/{id}', {
+			params: { path: { id: 'content-test-post' } }
 		});
 		expect(singleData?.data?.content).toBe('This secret content should not be in the list!');
 	});
@@ -173,8 +173,8 @@ describe('Posts API Integration', () => {
 	it('should NOT allow finding a draft by slug (falls through to [slug])', async () => {
 		await createTestPost({ slug: 'draft-slug-test', status: 'draft' });
 
-		const { response } = await client.GET('/posts/{slug}', {
-			params: { path: { slug: 'draft-slug-test' } }
+		const { response } = await client.GET('/posts/{id}', {
+			params: { path: { id: 'draft-slug-test' } }
 		});
 		expect(response.status).toBe(404);
 	});

@@ -6,7 +6,7 @@ export const seedDemoPost: RouteConfig = {
 	method: 'post',
 	summary: 'Seed Demo Data',
 	description:
-		'Initialize the database with sample data (Users, Posts, Tokens, Messages) for development and testing.',
+		'Initialize the database with sample data (Users, Posts, Tokens, Messages) for development and testing. **WARNING: This will wipe out all existing data.**',
 	responses: {
 		...OpenApiResponse.created(undefined, 'Demo data seeded successfully'),
 		...OpenApiResponse.forbidden('Demo seeding is strictly forbidden in production'),
