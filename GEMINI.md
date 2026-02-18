@@ -48,7 +48,13 @@ Before every commit or finalizing a task, perform a comprehensive scan for:
 
 ---
 
-# CryptoSharia Ecosystem Context
+# CryptoSharia
+
+**PT Kripto Syariah Indonesia** — a pioneer of Sharia-compliant crypto in Indonesia. Early-stage company with a small internal team contributing on a voluntary basis (no formal organizational hierarchy yet). The community model is simple: internal team (staff/contributors) vs. members (community users).
+
+The mission: helping Indonesian Muslims navigate the crypto space the halal way — through education, token screenings, media, and community.
+
+## Ecosystem Context
 
 CryptoSharia is a modular digital ecosystem designed for long-term professional growth. All work must align with these architectural pillars:
 
@@ -60,6 +66,7 @@ CryptoSharia is a modular digital ecosystem designed for long-term professional 
     - **CryptoSharia Community**: Platforms for community interactions and discussions, although we will still use third party platforms for the communication itself (e.g. WhatsApp, Discord, Telegram, etc).
     - **CryptoSharia Academy**: Learning management system, courses, and anything related to education things.
     - **CryptoSharia Store**: The central place for everything related to CryptoSharia ecosystem's buying & payment things, including merchandise, digital products, and also the subscription plans & buying premium contents for the CryptoSharia Academy, CryptoSharia Media, CryptoSharia Community, etc.
+    - **CryptoSharia UI**: Standardized design system and reusable component library for the entire CryptoSharia ecosystem.
 2.  **Unified Identity (Accounts)**: Use the "One Account for All" principle. Security and user management must be handled centrally within the API.
 3.  **Server-to-Server Security**: Platforms are primarily SvelteKit apps. Prioritize secure communication between frontend servers and the API (BFF pattern).
 4.  **Modular & Scalable**: Design components and endpoints assuming they will be consumed by multiple different services with varying needs.
@@ -78,6 +85,7 @@ CryptoSharia is a modular digital ecosystem designed for long-term professional 
 | CryptoSharia Community | `community.cryptosharia.id` |
 | CryptoSharia Academy   | `academy.cryptosharia.id`   |
 | CryptoSharia Store     | `store.cryptosharia.id`     |
+| CryptoSharia UI        | `ui.cryptosharia.id`        |
 
 ---
 
@@ -85,11 +93,11 @@ CryptoSharia is a modular digital ecosystem designed for long-term professional 
 
 ## Identity Model
 
-**Unified `users` table** for everyone (users and staff).
+**Unified `users` table** for everyone — each user has a role.
 
 - Everyone is a user. Some users also have admin powers.
-- `role = NULL` → Regular user (can use Community, Academy, Store, Media, etc)
-- `role = "<role_name>"` → Staff/Admin (user features + admin dashboard access)
+- `role = "member"` → Regular user (can use Community, Academy, Store, Media, etc)
+- `role = "admin"` / `role = "super_admin"` / other roles → Staff/Admin (user features + admin dashboard access)
 - Admins can also use all user features (subscribe, purchase, etc.)
 
 ## Identification Layering
