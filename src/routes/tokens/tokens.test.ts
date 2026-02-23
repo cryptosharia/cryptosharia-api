@@ -278,16 +278,18 @@ describe('Tokens API Integration', () => {
 
 		// 5. Member — should return 403 for archived filter
 		const { client: memberClient } = await createAuthenticatedClient('member');
-		const { response: memberResponse } = await memberClient.GET('/tokens', {
-			params: { query: { statuses: ['archived'] } }
-		});
-		expect(memberResponse.status).toBe(403);
 
-		// 6. Guest mixed statuses — should return 403
-		const { response: mixedResponse } = await client.GET('/tokens', {
-			params: { query: { statuses: ['published', 'archived'] } }
-		});
-		expect(mixedResponse.status).toBe(403);
+		const forbiddenCases = [
+			{ requestClient: memberClient, statuses: ['archived'] as const },
+			{ requestClient: client, statuses: ['published', 'archived'] as const }
+		];
+
+		for (const { requestClient, statuses } of forbiddenCases) {
+			const { response } = await requestClient.GET('/tokens', {
+				params: { query: { statuses: [...statuses] } }
+			});
+			expect(response.status).toBe(403);
+		}
 	});
 
 	// -----------------------------------------------------------------------
@@ -312,36 +314,28 @@ describe('Tokens API Integration', () => {
 		expect(data?.data?.status).toBe('draft');
 	});
 
-	it('should return 404 when guest fetches draft token by UUID', async () => {
-		const token = await createTestToken({
-			slug: 'guest-uuid-draft',
-			ticker: 'GUD',
-			status: 'draft',
-			rank: 1002
-		});
+	it.each([
+		{ actor: 'guest', ticker: 'GUD', rank: 1002 },
+		{ actor: 'member', ticker: 'MUD', rank: 1003 }
+	] as const)(
+		'should return 404 when $actor fetches draft token by UUID',
+		async ({ actor, ticker, rank }) => {
+			const token = await createTestToken({
+				slug: `${actor}-uuid-draft`,
+				ticker,
+				status: 'draft',
+				rank
+			});
+			const requestClient =
+				actor === 'member' ? (await createAuthenticatedClient('member')).client : client;
 
-		const { response } = await client.GET('/tokens/{id}', {
-			params: { path: { id: token.id } }
-		});
+			const { response } = await requestClient.GET('/tokens/{id}', {
+				params: { path: { id: token.id } }
+			});
 
-		expect(response.status).toBe(404);
-	});
-
-	it('should return 404 when member fetches draft token by UUID', async () => {
-		const token = await createTestToken({
-			slug: 'member-uuid-draft',
-			ticker: 'MUD',
-			status: 'draft',
-			rank: 1003
-		});
-		const { client: memberClient } = await createAuthenticatedClient('member');
-
-		const { response } = await memberClient.GET('/tokens/{id}', {
-			params: { path: { id: token.id } }
-		});
-
-		expect(response.status).toBe(404);
-	});
+			expect(response.status).toBe(404);
+		}
+	);
 
 	it('should allow guest to fetch published token by UUID', async () => {
 		const token = await createTestToken({

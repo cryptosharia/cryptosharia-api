@@ -11,13 +11,11 @@ import { AuthMeGetResponse } from '..';
  * Get current authenticated user profile.
  */
 export const GET: RequestHandler = async ({ locals }) => {
-	// 1. Check if user is attached by middleware
 	if (!locals.user) {
 		return ApiResponse.unauthorized('Not authenticated');
 	}
 
 	try {
-		// 2. Fetch fresh user data with role information
 		const userWithRole = await db.query.users.findFirst({
 			where: eq(users.id, locals.user.id),
 			with: {
@@ -29,7 +27,6 @@ export const GET: RequestHandler = async ({ locals }) => {
 			return ApiResponse.unauthorized('User session not found');
 		}
 
-		// 3. Return response (sanitized via parse)
 		return ApiResponse.ok(
 			AuthMeGetResponse.parse({
 				...userWithRole,

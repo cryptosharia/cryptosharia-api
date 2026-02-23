@@ -1,8 +1,8 @@
+import type { RequestHandler } from './$types';
 import { sendEmail } from '$lib/services/email';
 import { Message } from '$lib/db/types';
 import { ApiResponse, type PaginatedData } from '$lib/api';
-import z from '$lib/zod-openapi';
-import type { RequestHandler } from './$types';
+import { parseJsonBody, parseQueryParams } from '$lib/api/request';
 import { db } from '$lib/db';
 import { messages } from '$lib/db/tables';
 import { MessagesGetQuery, MessagesGetItem, MessagesPostBody, MessagesPostQuery } from './index';
@@ -17,20 +17,15 @@ import { escapeHtml } from '$lib/utils';
  * Fetches messages with optional filtering, searching, and pagination.
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
-	// Authorization
 	const authError = requirePermission(locals, 'messages.read');
 	if (authError) return authError;
 
-	const params = Object.fromEntries(url.searchParams);
-	const result = MessagesGetQuery.safeParse(params);
-
-	if (!result.success) {
-		return ApiResponse.badRequest(
-			z.flattenError(result.error).fieldErrors as Record<string, string[]>
-		);
+	const parsedQuery = parseQueryParams(url, MessagesGetQuery);
+	if (!parsedQuery.ok) {
+		return parsedQuery.response;
 	}
 
-	const { search, senders, limit, page } = result.data;
+	const { search, senders, limit, page } = parsedQuery.data;
 	const offset = (page - 1) * limit;
 
 	try {
@@ -87,27 +82,18 @@ export const GET: RequestHandler = async ({ url, locals }) => {
  * POST /messages
  * Creates a new message (contact form submission).
  */
-export const POST: RequestHandler = async (event) => {
-	const { request, url } = event;
+export const POST: RequestHandler = async ({ request, url }) => {
 	try {
-		const queryParams = Object.fromEntries(url.searchParams);
-		const body = await request.json();
-
-		const queryResult = MessagesPostQuery.safeParse(queryParams);
-		const bodyResult = MessagesPostBody.safeParse(body);
-
-		if (!bodyResult.success) {
-			return ApiResponse.badRequest(
-				z.flattenError(bodyResult.error).fieldErrors as Record<string, string[]>
-			);
+		const parsedQuery = parseQueryParams(url, MessagesPostQuery);
+		const parsedBody = await parseJsonBody(request, MessagesPostBody);
+		if (!parsedBody.ok) {
+			return parsedBody.response;
 		}
 
-		// 1. Insert into database
-		const insertData = bodyResult.data;
+		const insertData = parsedBody.data;
 		const [insertedMessage] = await db.insert(messages).values(insertData).returning();
 
-		// 2. Forward request to Google Apps Script (background task)
-		const notify = queryResult.success ? queryResult.data.notify : true;
+		const notify = parsedQuery.ok ? parsedQuery.data.notify : true;
 
 		if (notify) {
 			const safeName = escapeHtml(insertData.name);
@@ -116,7 +102,7 @@ export const POST: RequestHandler = async (event) => {
 
 			waitUntil(
 				sendEmail({
-					to: 'cryptoshariaforum@gmail.com', // Admin notification
+					to: 'cryptoshariaforum@gmail.com',
 					subject: `New Contact Message from ${safeName}`,
 					html: `
 						<p><strong>Name:</strong> ${safeName}</p>

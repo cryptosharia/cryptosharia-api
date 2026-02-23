@@ -16,3 +16,5 @@ export const docsGet: RouteConfig = {
 		}
 	}
 };
+
+export const docsRoutes: RouteConfig[] = [docsGet];

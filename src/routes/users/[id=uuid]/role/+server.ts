@@ -3,7 +3,7 @@ import { db } from '$lib/db';
 import { users, userRoleEnum } from '$lib/db/tables';
 import { UsersIdGetResponse, UsersIdRolePutBody } from '../../index';
 import { ApiResponse } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseJsonBody } from '$lib/api/request';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/services/assets';
@@ -17,32 +17,21 @@ export const PUT: RequestHandler = async (event) => {
 	const { params, request, locals } = event;
 	const { id } = params;
 
-	// 1. Authorization
 	const authError = requirePermission(locals, 'users.manage_role');
 	if (authError) return authError;
 
-	// 2. Validation
-	let body: unknown;
-	try {
-		body = await request.json();
-	} catch {
-		return ApiResponse.badRequest({ body: ['Invalid JSON'] });
+	const parsedBody = await parseJsonBody(request, UsersIdRolePutBody);
+	if (!parsedBody.ok) {
+		return parsedBody.response;
 	}
 
-	const result = UsersIdRolePutBody.safeParse(body);
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
-	}
-
-	const { role } = result.data;
+	const { role } = parsedBody.data;
 
 	try {
-		// 3. Verify role exists in enum (if not null)
 		if (role && !userRoleEnum.enumValues.includes(role as Role)) {
 			return ApiResponse.badRequest({ role: ['Invalid role'] });
 		}
 
-		// 4. Update User
 		const [updatedUser] = await db
 			.update(users)
 			.set({
@@ -56,7 +45,6 @@ export const PUT: RequestHandler = async (event) => {
 			return ApiResponse.notFound('User not found');
 		}
 
-		// Fetch for response
 		const user = await db.query.users.findFirst({
 			where: eq(users.id, id),
 			with: { avatar: true }

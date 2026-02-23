@@ -1,29 +1,20 @@
+import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { emailVerifications, users } from '$lib/db/tables';
 import { eq, and, gt, isNull } from 'drizzle-orm';
 import { ApiResponse } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseJsonBody } from '$lib/api/request';
 import { AuthVerifyPostBody } from '..';
-import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
-	let body: unknown;
-	try {
-		body = await request.json();
-	} catch {
-		return ApiResponse.badRequest({ body: ['Invalid JSON'] });
+	const parsedBody = await parseJsonBody(request, AuthVerifyPostBody);
+	if (!parsedBody.ok) {
+		return parsedBody.response;
 	}
 
-	// 1. Validation
-	const parseResult = AuthVerifyPostBody.safeParse(body);
-	if (!parseResult.success) {
-		return ApiResponse.badRequest(z.flattenError(parseResult.error).fieldErrors);
-	}
-
-	const { token } = parseResult.data;
+	const { token } = parsedBody.data;
 
 	try {
-		// 2. Find valid token
 		const verification = await db.query.emailVerifications.findFirst({
 			where: and(
 				eq(emailVerifications.token, token),
@@ -36,9 +27,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			return ApiResponse.notFound('Invalid or expired verification token');
 		}
 
-		// 3. Atomically verify user and revoke token
 		await db.transaction(async (tx) => {
-			// Mark user as verified
 			await tx
 				.update(users)
 				.set({
@@ -46,7 +35,6 @@ export const POST: RequestHandler = async ({ request }) => {
 				})
 				.where(eq(users.id, verification.userId));
 
-			// Revoke used token (one-time use policy)
 			await tx
 				.update(emailVerifications)
 				.set({ revokedAt: new Date() })

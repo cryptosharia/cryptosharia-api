@@ -1,7 +1,7 @@
 import { OpenApiResponse, UserMetadata, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
 import { User } from '$lib/db/types';
-import { userRoleEnum } from '$lib/db/tables';
+import { userRoleEnum } from '$lib/db/schema/auth';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 // --- Auth: Sign In ---
@@ -239,3 +239,12 @@ export const authVerifyPost: RouteConfig = {
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
+
+export const authRoutes: RouteConfig[] = [
+	authSignupPost,
+	authVerifyPost,
+	authSigninPost,
+	authSignoutPost,
+	authRefreshPost,
+	authMeGet
+];

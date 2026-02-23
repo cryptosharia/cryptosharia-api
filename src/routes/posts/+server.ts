@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { ApiResponse, PaginatedData } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseQueryParams } from '$lib/api/request';
 import { PostsGetQuery, PostsGetItem } from '.';
 import { toAssetMetadata } from '$lib/services/assets';
 import { posts, postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables';
@@ -14,26 +14,14 @@ import { hasPermission } from '$lib/auth/permissions';
  * Handles GET requests to fetch posts with filtering, searching, and pagination.
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
-	// 1. Validate query parameters using Zod
-	const params = Object.fromEntries(
-		Array.from(url.searchParams.keys()).map((key) => [
-			key,
-			url.searchParams.getAll(key).length > 1
-				? url.searchParams.getAll(key)
-				: url.searchParams.get(key)
-		])
-	);
-	const result = PostsGetQuery.safeParse(params);
-
-	// If validation fails, return a 400 Bad Request
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
+	const parsedQuery = parseQueryParams(url, PostsGetQuery);
+	if (!parsedQuery.ok) {
+		return parsedQuery.response;
 	}
 
-	const { sections, types, slugs, search, limit, page, exclude, statuses } = result.data;
+	const { sections, types, slugs, search, limit, page, exclude, statuses } = parsedQuery.data;
 	const offset = (page - 1) * limit;
 
-	// 2. Security Check: If non-published statuses are explicitly requested, require permission
 	if (statuses && statuses.some((s) => s !== 'published')) {
 		if (!hasPermission(locals, 'posts.manage')) {
 			return ApiResponse.forbidden(
@@ -43,7 +31,6 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	}
 
 	try {
-		// 3. Define filters for both list and count queries
 		const getFilters = (table: typeof posts) => {
 			const filters = [];
 
@@ -79,10 +66,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 				filters.push(notInArray(table.slug, exclude as string[]));
 			}
 
-			// 🔓 Filter by status
 			let allowedStatuses = statuses;
 
-			// Default behavior if no status filter is provided
 			if (!allowedStatuses && !hasPermission(locals, 'posts.manage')) {
 				allowedStatuses = ['published'];
 			}
@@ -96,7 +81,6 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			return filters.length > 0 ? and(...filters) : undefined;
 		};
 
-		// 3. Fetch data and count in parallel
 		const [postsList, [countResult]] = await Promise.all([
 			db.query.posts.findMany({
 				where: getFilters(posts),
@@ -130,7 +114,6 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 		const total = countResult.value;
 
-		// 4. Return the paginated success response
 		return ApiResponse.ok<PaginatedData<PostsGetItem>>(
 			{
 				items: postsList.map((p) =>

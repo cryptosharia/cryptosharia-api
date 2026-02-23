@@ -4,6 +4,14 @@ import { signAccessToken } from '$lib/auth/tokens';
 
 const client = createApiTestClient();
 
+async function getMeWithToken(token: string) {
+	return client.GET('/auth/me', {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+}
+
 describe('GET /auth/me', () => {
 	it('should return user info with valid access token', async () => {
 		const testUser = await createTestUser();
@@ -12,11 +20,7 @@ describe('GET /auth/me', () => {
 			role: testUser.role
 		});
 
-		const { data, response } = await client.GET('/auth/me', {
-			headers: {
-				Authorization: `Bearer ${accessToken}`
-			}
-		});
+		const { data, response } = await getMeWithToken(accessToken);
 
 		expect(response.status).toBe(200);
 
@@ -40,11 +44,7 @@ describe('GET /auth/me', () => {
 			role: testUser.role
 		});
 
-		const { data, response } = await client.GET('/auth/me', {
-			headers: {
-				Authorization: `Bearer ${accessToken}`
-			}
-		});
+		const { data, response } = await getMeWithToken(accessToken);
 
 		expect(response.status).toBe(200);
 
@@ -62,11 +62,7 @@ describe('GET /auth/me', () => {
 			role: 'member'
 		});
 
-		const { response } = await client.GET('/auth/me', {
-			headers: {
-				Authorization: `Bearer ${accessToken}`
-			}
-		});
+		const { response } = await getMeWithToken(accessToken);
 
 		expect(response.status).toBe(401);
 	});
@@ -77,23 +73,11 @@ describe('GET /auth/me', () => {
 		expect(response.status).toBe(401);
 	});
 
-	it('should return 401 with invalid token', async () => {
-		const { response } = await client.GET('/auth/me', {
-			headers: {
-				Authorization: 'Bearer invalid-token'
-			}
-		});
-
-		expect(response.status).toBe(401);
-	});
-
-	it('should return 401 with expired token', async () => {
-		const { response } = await client.GET('/auth/me', {
-			headers: {
-				Authorization: 'Bearer expired.token.string'
-			}
-		});
-
+	it.each([
+		{ name: 'invalid token', token: 'invalid-token' },
+		{ name: 'expired token', token: 'expired.token.string' }
+	])('should return 401 with $name', async ({ token }) => {
+		const { response } = await getMeWithToken(token);
 		expect(response.status).toBe(401);
 	});
 });

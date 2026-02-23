@@ -29,43 +29,36 @@ describe('Messages API Integration', () => {
 			expect(data?.data?.id).toBeDefined();
 		});
 
-		it('should return 400 for invalid email format', async () => {
-			const { response, error } = await client.POST('/messages', {
-				params: { query: { notify: false } },
-				body: { name: 'John Doe', email: 'not-an-email', message: 'Valid message content' }
-			});
-
-			expect(response.status).toBe(400);
-			expect(error).toBeDefined();
-			expect(error?.errors?.email).toBeDefined();
-		});
-
-		it('should return 400 for empty message', async () => {
-			const { response } = await client.POST('/messages', {
-				params: { query: { notify: false } },
+		it.each([
+			{
+				name: 'invalid email format',
+				body: { name: 'John Doe', email: 'not-an-email', message: 'Valid message content' },
+				errorField: 'email'
+			},
+			{
+				name: 'empty message',
 				body: { name: 'John Doe', email: 'john@example.com', message: '' }
-			});
-			expect(response.status).toBe(400);
-		});
-
-		it('should return 400 when name exceeds max length (120)', async () => {
+			},
+			{
+				name: 'name exceeds max length (120)',
+				body: { name: 'a'.repeat(121), email: 'john@example.com', message: 'Valid message' },
+				errorField: 'name'
+			},
+			{
+				name: 'message exceeds max length (5000)',
+				body: { name: 'John Doe', email: 'john@example.com', message: 'a'.repeat(5001) },
+				errorField: 'message'
+			}
+		])('should return 400 for $name', async ({ body, errorField }) => {
 			const { response, error } = await client.POST('/messages', {
 				params: { query: { notify: false } },
-				body: { name: 'a'.repeat(121), email: 'john@example.com', message: 'Valid message' }
+				body
 			});
 
 			expect(response.status).toBe(400);
-			expect(error?.errors?.name).toBeDefined();
-		});
-
-		it('should return 400 when message exceeds max length (5000)', async () => {
-			const { response, error } = await client.POST('/messages', {
-				params: { query: { notify: false } },
-				body: { name: 'John Doe', email: 'john@example.com', message: 'a'.repeat(5001) }
-			});
-
-			expect(response.status).toBe(400);
-			expect(error?.errors?.message).toBeDefined();
+			if (errorField) {
+				expect(error?.errors?.[errorField]).toBeDefined();
+			}
 		});
 	});
 

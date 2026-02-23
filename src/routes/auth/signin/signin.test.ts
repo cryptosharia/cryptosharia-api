@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
-import { createApiTestClient, createTestUser } from '$lib/test-utils';
+import {
+	createApiTestClient,
+	createTestUser,
+	createVerifiedTestUserWithPassword
+} from '$lib/test-utils';
 import { eq } from 'drizzle-orm';
-import { hashPassword } from '$lib/auth/password';
 
 const client = createApiTestClient();
 
 describe('POST /auth/signin', () => {
 	it('should return tokens and user info on successful signin', async () => {
 		const password = 'mypassword321';
-		const user = await createTestUser({
-			hashedPassword: await hashPassword(password),
-			isEmailVerified: true
-		});
+		const user = await createVerifiedTestUserWithPassword(password);
 
 		const { data, response } = await client.POST('/auth/signin', {
 			body: { email: user.email, password }
@@ -57,26 +57,23 @@ describe('POST /auth/signin', () => {
 		expect(error?.success).toBe(false);
 	});
 
-	it('should return 400 for invalid email format', async () => {
-		const { response } = await client.POST('/auth/signin', {
+	it.each([
+		{
+			name: 'invalid email format',
 			body: { email: 'not-an-email', password: 'somePassword123' }
-		});
-		expect(response.status).toBe(400);
-	});
-
-	it('should return 400 for short password', async () => {
-		const { response } = await client.POST('/auth/signin', {
+		},
+		{
+			name: 'short password',
 			body: { email: 'valid@email.com', password: 'short' }
-		});
+		}
+	])('should return 400 for $name', async ({ body }) => {
+		const { response } = await client.POST('/auth/signin', { body });
 		expect(response.status).toBe(400);
 	});
 
 	it('should store refresh token in database on successful signin', async () => {
 		const password = 'mypassword321';
-		const user = await createTestUser({
-			hashedPassword: await hashPassword(password),
-			isEmailVerified: true
-		});
+		const user = await createVerifiedTestUserWithPassword(password);
 
 		await client.POST('/auth/signin', {
 			body: { email: user.email, password }
@@ -96,29 +93,9 @@ describe('POST /auth/signin', () => {
 	// SEC-6: Account status enforcement
 	// -----------------------------------------------------------------------
 
-	it('should return 403 for banned user', async () => {
+	it.each(['banned', 'suspended'] as const)('should return 403 for %s user', async (status) => {
 		const password = 'mypassword321';
-		const user = await createTestUser({
-			hashedPassword: await hashPassword(password),
-			isEmailVerified: true,
-			status: 'banned'
-		});
-
-		const { response, error } = await client.POST('/auth/signin', {
-			body: { email: user.email, password }
-		});
-
-		expect(response.status).toBe(403);
-		expect(error?.message).toContain('not active');
-	});
-
-	it('should return 403 for suspended user', async () => {
-		const password = 'mypassword321';
-		const user = await createTestUser({
-			hashedPassword: await hashPassword(password),
-			isEmailVerified: true,
-			status: 'suspended'
-		});
+		const user = await createVerifiedTestUserWithPassword(password, { status });
 
 		const { response, error } = await client.POST('/auth/signin', {
 			body: { email: user.email, password }

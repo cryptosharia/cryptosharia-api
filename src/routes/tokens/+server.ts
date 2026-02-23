@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { TokensGetQuery, TokensGetItem } from '.';
 import { ApiResponse, PaginatedData } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseQueryParams } from '$lib/api/request';
 import { toAssetMetadata } from '$lib/services/assets';
 import { tokens, shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
 import { and, ilike, inArray, notInArray, or, count } from 'drizzle-orm';
@@ -14,26 +14,14 @@ import { hasPermission } from '$lib/auth/permissions';
  * Handles GET requests to fetch tokens with filtering, searching, and pagination.
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
-	// 1. Validate query parameters using Zod
-	const params = Object.fromEntries(
-		Array.from(url.searchParams.keys()).map((key) => [
-			key,
-			url.searchParams.getAll(key).length > 1
-				? url.searchParams.getAll(key)
-				: url.searchParams.get(key)
-		])
-	);
-	const result = TokensGetQuery.safeParse(params);
-
-	// If validation fails, return a 400 Bad Request
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
+	const parsedQuery = parseQueryParams(url, TokensGetQuery);
+	if (!parsedQuery.ok) {
+		return parsedQuery.response;
 	}
 
-	const { shariaStatuses, slugs, search, limit, page, exclude, statuses } = result.data;
+	const { shariaStatuses, slugs, search, limit, page, exclude, statuses } = parsedQuery.data;
 	const offset = (page - 1) * limit;
 
-	// 2. Security Check: If non-published statuses are explicitly requested, require permission
 	if (statuses && statuses.some((s) => s !== 'published')) {
 		if (!hasPermission(locals, 'tokens.manage')) {
 			return ApiResponse.forbidden(
@@ -43,7 +31,6 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	}
 
 	try {
-		// 3. Define filters for the query
 		const getFilters = (table: typeof tokens) => {
 			const filters = [];
 
@@ -71,10 +58,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 				filters.push(notInArray(table.slug, exclude as string[]));
 			}
 
-			// 🔓 Filter by status
 			let allowedStatuses = statuses;
 
-			// If no status filter is provided and not staff, default to 'published'
 			if (!allowedStatuses && !hasPermission(locals, 'tokens.manage')) {
 				allowedStatuses = ['published'];
 			}
@@ -88,7 +73,6 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			return filters.length > 0 ? and(...filters) : undefined;
 		};
 
-		// 3. Fetch data and count in parallel
 		const [tokensList, [countResult]] = await Promise.all([
 			db.query.tokens.findMany({
 				where: getFilters(tokens),
@@ -122,7 +106,6 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 		const total = countResult.value;
 
-		// 4. Return the paginated success response
 		return ApiResponse.ok<PaginatedData<TokensGetItem>>(
 			{
 				items: tokensList.map((t) =>

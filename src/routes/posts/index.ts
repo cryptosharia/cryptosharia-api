@@ -1,4 +1,4 @@
-import { postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables';
+import { postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/schema/content';
 import { zQueryArray } from '$lib/utils';
 import { OpenApiResponse, PaginatedData, UserMetadata, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
@@ -101,3 +101,5 @@ export const postsDetailGet: RouteConfig = {
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
+
+export const postsRoutes: RouteConfig[] = [postsGet, postsDetailGet];

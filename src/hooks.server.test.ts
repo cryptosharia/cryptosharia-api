@@ -22,17 +22,12 @@ describe('API Key Authentication (Hooks Integration)', () => {
 		expect(response.status).toBe(200);
 	});
 
-	it('should block requests without an API key', async () => {
-		// Use a dedicated client without a key for this test
+	it.each([
+		{ name: 'without an API key', apiKey: '' },
+		{ name: 'with an invalid API key', apiKey: 'wrong-key' }
+	])('should block requests $name', async ({ apiKey }) => {
 		const { response } = await client.GET('/posts', {
-			headers: { 'Api-Key': '' }
-		});
-		expect(response.status).toBe(401);
-	});
-
-	it('should block requests with an invalid API key', async () => {
-		const { response } = await client.GET('/posts', {
-			headers: { 'Api-Key': 'wrong-key' }
+			headers: { 'Api-Key': apiKey }
 		});
 		expect(response.status).toBe(401);
 	});

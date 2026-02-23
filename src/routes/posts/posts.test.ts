@@ -224,16 +224,18 @@ describe('Posts API Integration', () => {
 
 		// 5. Member — should return 403 for draft filter
 		const { client: memberClient } = await createAuthenticatedClient('member');
-		const { response: memberResponse } = await memberClient.GET('/posts', {
-			params: { query: { statuses: ['draft'] } }
-		});
-		expect(memberResponse.status).toBe(403);
 
-		// 6. Guest mixed statuses — should return 403
-		const { response: mixedResponse } = await client.GET('/posts', {
-			params: { query: { statuses: ['published', 'draft'] } }
-		});
-		expect(mixedResponse.status).toBe(403);
+		const forbiddenCases = [
+			{ requestClient: memberClient, statuses: ['draft'] as const },
+			{ requestClient: client, statuses: ['published', 'draft'] as const }
+		];
+
+		for (const { requestClient, statuses } of forbiddenCases) {
+			const { response } = await requestClient.GET('/posts', {
+				params: { query: { statuses: [...statuses] } }
+			});
+			expect(response.status).toBe(403);
+		}
 	});
 
 	// -----------------------------------------------------------------------
@@ -253,26 +255,20 @@ describe('Posts API Integration', () => {
 		expect(data?.data?.status).toBe('draft');
 	});
 
-	it('should return 404 when guest fetches draft post by UUID', async () => {
-		const post = await createTestPost({ slug: 'guest-uuid-draft', status: 'draft' });
+	it.each(['guest', 'member'] as const)(
+		'should return 404 when %s fetches draft post by UUID',
+		async (actor) => {
+			const post = await createTestPost({ slug: `${actor}-uuid-draft`, status: 'draft' });
+			const requestClient =
+				actor === 'member' ? (await createAuthenticatedClient('member')).client : client;
 
-		const { response } = await client.GET('/posts/{id}', {
-			params: { path: { id: post.id } }
-		});
+			const { response } = await requestClient.GET('/posts/{id}', {
+				params: { path: { id: post.id } }
+			});
 
-		expect(response.status).toBe(404);
-	});
-
-	it('should return 404 when member fetches draft post by UUID', async () => {
-		const post = await createTestPost({ slug: 'member-uuid-draft', status: 'draft' });
-		const { client: memberClient } = await createAuthenticatedClient('member');
-
-		const { response } = await memberClient.GET('/posts/{id}', {
-			params: { path: { id: post.id } }
-		});
-
-		expect(response.status).toBe(404);
-	});
+			expect(response.status).toBe(404);
+		}
+	);
 
 	it('should allow guest to fetch published post by UUID', async () => {
 		const post = await createTestPost({ slug: 'guest-uuid-published', status: 'published' });

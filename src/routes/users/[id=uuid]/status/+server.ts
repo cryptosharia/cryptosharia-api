@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { users } from '$lib/db/tables';
 import { ApiResponse } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseJsonBody } from '$lib/api/request';
 import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/services/assets';
@@ -16,32 +16,21 @@ export const PUT: RequestHandler = async (event) => {
 	const { params, request, locals } = event;
 	const id = params.id;
 
-	// 1. Authorization: users.manage_status
 	const authError = requirePermission(locals, 'users.manage_status');
 	if (authError) return authError;
 
-	// 2. Prevent self-modification (Safety)
 	if (locals.user?.id === id) {
 		return ApiResponse.forbidden('You cannot change your own administrative status');
 	}
 
-	// 3. Validation
-	let body: unknown;
-	try {
-		body = await request.json();
-	} catch {
-		return ApiResponse.badRequest({ body: ['Invalid JSON'] });
+	const parsedBody = await parseJsonBody(request, UsersIdStatusPutBody);
+	if (!parsedBody.ok) {
+		return parsedBody.response;
 	}
 
-	const parseResult = UsersIdStatusPutBody.safeParse(body);
-	if (!parseResult.success) {
-		return ApiResponse.badRequest(z.flattenError(parseResult.error).fieldErrors);
-	}
-
-	const { status } = parseResult.data;
+	const { status } = parsedBody.data;
 
 	try {
-		// 4. Update User Status
 		const [updatedUser] = await db
 			.update(users)
 			.set({ status, updatedBy: locals.user!.id })
@@ -52,7 +41,6 @@ export const PUT: RequestHandler = async (event) => {
 			return ApiResponse.notFound('User not found');
 		}
 
-		// Fetch with role for full response
 		const userWithRole = await db.query.users.findFirst({
 			where: eq(users.id, id),
 			with: { avatar: true }

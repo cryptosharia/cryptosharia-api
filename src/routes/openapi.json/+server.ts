@@ -1,46 +1,6 @@
 import type { RequestHandler } from './$types';
 import { OpenApiGeneratorV31, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import { postsGet, postsDetailGet } from '../posts';
-import { tokensGet, tokensDetailGet, tokensQuotesGet } from '../tokens';
-import { messagesGet, messagesPost } from '../messages';
-import { seedDemoPost } from '../seed';
-import { imgbbPost } from '../imgbb';
-import { openapiGet } from '.';
-import { docsGet } from '../(docs)';
-import {
-	authMeGet,
-	authRefreshPost,
-	authSigninPost,
-	authSignoutPost,
-	authSignupPost,
-	authVerifyPost
-} from '../auth';
-import { usersGet, usersIdGet, usersIdPatch, usersIdStatusPut, usersIdRolePut } from '../users';
-
-const PATHS = [
-	docsGet,
-	openapiGet,
-	authSignupPost,
-	authVerifyPost,
-	authSigninPost,
-	authSignoutPost,
-	authRefreshPost,
-	authMeGet,
-	usersGet,
-	usersIdGet,
-	usersIdPatch,
-	usersIdStatusPut,
-	usersIdRolePut,
-	postsGet,
-	postsDetailGet,
-	tokensGet,
-	tokensDetailGet,
-	tokensQuotesGet,
-	messagesGet,
-	messagesPost,
-	imgbbPost,
-	seedDemoPost
-];
+import { ROUTE_REGISTRY } from './registry';
 
 export const GET: RequestHandler = async () => {
 	const registry = new OpenAPIRegistry();
@@ -60,7 +20,7 @@ export const GET: RequestHandler = async () => {
 	});
 
 	// Register paths
-	for (const path of PATHS) {
+	for (const path of ROUTE_REGISTRY) {
 		registry.registerPath(path);
 	}
 

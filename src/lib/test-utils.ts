@@ -6,9 +6,10 @@
 import createClient from 'openapi-fetch';
 import type { paths } from './api-types';
 import { db } from './db';
-import { users, posts, tokens, assets } from './db/tables';
+import { users, posts, tokens, assets, refreshTokens } from './db/tables';
 import { env } from '$env/dynamic/private';
 import { hashPassword } from './auth/password';
+import { generateRandomToken } from './auth/tokens';
 import type { Role } from './auth/rbac';
 
 const TEST_USER_PASSWORD = 'password12345';
@@ -75,6 +76,41 @@ export async function createAuthenticatedClient(role: Role = 'member') {
 	});
 
 	return { client, user, accessToken };
+}
+
+/**
+ * Creates an email-verified test user with a caller-controlled plaintext password.
+ */
+export async function createVerifiedTestUserWithPassword(
+	password: string,
+	overrides?: Partial<typeof users.$inferInsert>
+) {
+	return createTestUser({
+		hashedPassword: await hashPassword(password),
+		isEmailVerified: true,
+		...overrides
+	});
+}
+
+/**
+ * Inserts a refresh token directly into DB for testing refresh flows.
+ */
+export async function insertTestRefreshToken(
+	userId: string,
+	opts?: { expired?: boolean; revoked?: boolean }
+) {
+	const token = generateRandomToken();
+	const expiresAt = new Date();
+	expiresAt.setDate(expiresAt.getDate() + (opts?.expired ? -1 : 7));
+
+	await db.insert(refreshTokens).values({
+		userId,
+		token,
+		expiresAt,
+		revokedAt: opts?.revoked ? new Date() : undefined
+	});
+
+	return token;
 }
 
 // ---------------------------------------------------------------------------

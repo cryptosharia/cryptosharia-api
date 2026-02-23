@@ -3,7 +3,7 @@ import { db } from '$lib/db';
 import { users } from '$lib/db/tables';
 import { UsersIdGetResponse, UsersIdPatchBody } from '..';
 import { ApiResponse } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseJsonBody } from '$lib/api/request';
 import { eq } from 'drizzle-orm';
 import { hasPermission } from '$lib/auth/permissions';
 import { toAssetMetadata } from '$lib/services/assets';
@@ -12,16 +12,9 @@ import { logUserActivity } from '$lib/services/activity-logger';
 /**
  * GET /users/:id - Get user detail
  */
-export const GET: RequestHandler = async ({
-	params,
-	locals
-}: {
-	params: { id: string };
-	locals: App.Locals;
-}) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
 	const { id } = params;
 
-	// 1. Authorization: users.read OR ownership
 	const isOwner = locals.user?.id === id;
 	const canRead = hasPermission(locals, 'users.read');
 
@@ -62,7 +55,6 @@ export const PATCH: RequestHandler = async (event) => {
 	const { params, request, locals } = event;
 	const { id } = params;
 
-	// 1. Authorization: users.update OR ownership
 	const isOwner = locals.user?.id === id;
 	const canUpdate = hasPermission(locals, 'users.update');
 
@@ -70,20 +62,12 @@ export const PATCH: RequestHandler = async (event) => {
 		return ApiResponse.forbidden('Insufficient permissions');
 	}
 
-	// 2. Validation
-	let body: unknown;
-	try {
-		body = await request.json();
-	} catch {
-		return ApiResponse.badRequest({ body: ['Invalid JSON'] });
+	const parsedBody = await parseJsonBody(request, UsersIdPatchBody);
+	if (!parsedBody.ok) {
+		return parsedBody.response;
 	}
 
-	const result = UsersIdPatchBody.safeParse(body);
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
-	}
-
-	const { name, avatarId } = result.data;
+	const { name, avatarId } = parsedBody.data;
 
 	try {
 		const [updatedUser] = await db
@@ -100,7 +84,6 @@ export const PATCH: RequestHandler = async (event) => {
 			return ApiResponse.notFound('User not found');
 		}
 
-		// Fetch with role for response
 		const userWithRole = await db.query.users.findFirst({
 			where: eq(users.id, updatedUser.id),
 			with: {

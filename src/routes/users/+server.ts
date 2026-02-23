@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { users, userStatusEnum } from '$lib/db/tables';
 import { ApiResponse, type PaginatedData } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseQueryParams } from '$lib/api/request';
 import { and, ilike, inArray, or, count } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';
 import { requirePermission } from '$lib/auth/permissions';
@@ -14,30 +14,18 @@ import { UsersGetQuery, UsersGetItem } from './index';
  * GET /users - List users with filtering and pagination
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
-	// 1. Authorization
 	const authError = requirePermission(locals, 'users.read');
 	if (authError) return authError;
 
-	// 2. Validation
-	const params = Object.fromEntries(
-		Array.from(url.searchParams.keys()).map((key) => [
-			key,
-			url.searchParams.getAll(key).length > 1
-				? url.searchParams.getAll(key)
-				: url.searchParams.get(key)
-		])
-	);
-	const result = UsersGetQuery.safeParse(params);
-
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
+	const parsedQuery = parseQueryParams(url, UsersGetQuery);
+	if (!parsedQuery.ok) {
+		return parsedQuery.response;
 	}
 
-	const { search, limit, page, roles, statuses } = result.data;
+	const { search, limit, page, roles, statuses } = parsedQuery.data;
 	const offset = (page - 1) * limit;
 
 	try {
-		// 3. Filters
 		const filters = [];
 
 		if (roles && roles.length > 0) {
@@ -55,7 +43,6 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 		const where = filters.length > 0 ? and(...filters) : undefined;
 
-		// 4. Query
 		const [usersList, [countResult]] = await Promise.all([
 			db.query.users.findMany({
 				where,

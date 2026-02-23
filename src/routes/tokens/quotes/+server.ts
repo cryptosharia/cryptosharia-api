@@ -1,21 +1,19 @@
+import type { RequestHandler } from './$types';
 import { CMC_API_KEY } from '$env/static/private';
 import { db } from '$lib/db';
 import { tokens } from '$lib/db/tables';
 import { ApiResponse } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseQueryParams } from '$lib/api/request';
 import { eq } from 'drizzle-orm';
 import { TokensQuotesGetQuery, TokensQuotesGetItem } from '..';
-import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url, fetch }) => {
-	const params = Object.fromEntries(url.searchParams);
-	const result = TokensQuotesGetQuery.safeParse(params);
-
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
+	const parsedQuery = parseQueryParams(url, TokensQuotesGetQuery);
+	if (!parsedQuery.ok) {
+		return parsedQuery.response;
 	}
 
-	const { slugs } = result.data;
+	const { slugs } = parsedQuery.data;
 
 	try {
 		const res = await fetch(
@@ -35,7 +33,6 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		const json = await res.json();
 		const cmcData = json.data;
 
-		// Type definitions based on CoinMarketCap API response
 		type CMCQuote = {
 			slug: string;
 			cmc_rank: number;
@@ -52,11 +49,9 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 			};
 		};
 
-		// Map and update concurrently
 		const quotes = await Promise.all(
 			(Object.values(cmcData) as CMCQuote[]).map(async (quote) => {
-				// Normalize data structure
-				const data: z.infer<typeof TokensQuotesGetItem> = {
+				const data = {
 					slug: quote.slug,
 					rank: quote.cmc_rank,
 					infiniteSupply: quote.infinite_supply,

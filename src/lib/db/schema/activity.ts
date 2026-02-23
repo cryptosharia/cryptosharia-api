@@ -1,0 +1,1 @@
+export { activityLogs } from '../tables';

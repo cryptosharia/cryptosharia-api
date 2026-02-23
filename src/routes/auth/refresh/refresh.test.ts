@@ -1,34 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
-import { createApiTestClient, createTestUser } from '$lib/test-utils';
+import { createApiTestClient, createTestUser, insertTestRefreshToken } from '$lib/test-utils';
 import { eq } from 'drizzle-orm';
-import { generateRandomToken } from '$lib/auth/tokens';
 
 const client = createApiTestClient();
-
-/**
- * Helper to insert a refresh token directly in DB for a given user.
- */
-async function insertRefreshToken(userId: string, opts?: { expired?: boolean; revoked?: boolean }) {
-	const token = generateRandomToken();
-	const expiresAt = new Date();
-	expiresAt.setDate(expiresAt.getDate() + (opts?.expired ? -1 : 7));
-
-	await db.insert(refreshTokens).values({
-		userId,
-		token,
-		expiresAt,
-		revokedAt: opts?.revoked ? new Date() : undefined
-	});
-
-	return token;
-}
 
 describe('POST /auth/refresh', () => {
 	it('should rotate token and return new tokens', async () => {
 		const user = await createTestUser();
-		const oldToken = await insertRefreshToken(user.id);
+		const oldToken = await insertTestRefreshToken(user.id);
 
 		const { data, response } = await client.POST('/auth/refresh', {
 			body: { refreshToken: oldToken }
@@ -54,20 +35,12 @@ describe('POST /auth/refresh', () => {
 		expect(newToken?.userId).toBe(user.id);
 	});
 
-	it('should return 401 for revoked token', async () => {
+	it.each([
+		{ name: 'revoked token', options: { revoked: true } },
+		{ name: 'expired token', options: { expired: true } }
+	])('should return 401 for $name', async ({ options }) => {
 		const user = await createTestUser();
-		const token = await insertRefreshToken(user.id, { revoked: true });
-
-		const { response } = await client.POST('/auth/refresh', {
-			body: { refreshToken: token }
-		});
-
-		expect(response.status).toBe(401);
-	});
-
-	it('should return 401 for expired token', async () => {
-		const user = await createTestUser();
-		const token = await insertRefreshToken(user.id, { expired: true });
+		const token = await insertTestRefreshToken(user.id, options);
 
 		const { response } = await client.POST('/auth/refresh', {
 			body: { refreshToken: token }
@@ -88,27 +61,18 @@ describe('POST /auth/refresh', () => {
 	// SEC-6: Account status enforcement on refresh
 	// -----------------------------------------------------------------------
 
-	it('should return 403 for banned user on refresh', async () => {
-		const user = await createTestUser({ status: 'banned' });
-		const token = await insertRefreshToken(user.id);
+	it.each(['banned', 'suspended'] as const)(
+		'should return 403 for %s user on refresh',
+		async (status) => {
+			const user = await createTestUser({ status });
+			const token = await insertTestRefreshToken(user.id);
 
-		const { response, error } = await client.POST('/auth/refresh', {
-			body: { refreshToken: token }
-		});
+			const { response, error } = await client.POST('/auth/refresh', {
+				body: { refreshToken: token }
+			});
 
-		expect(response.status).toBe(403);
-		expect(error?.message).toContain('not active');
-	});
-
-	it('should return 403 for suspended user on refresh', async () => {
-		const user = await createTestUser({ status: 'suspended' });
-		const token = await insertRefreshToken(user.id);
-
-		const { response, error } = await client.POST('/auth/refresh', {
-			body: { refreshToken: token }
-		});
-
-		expect(response.status).toBe(403);
-		expect(error?.message).toContain('not active');
-	});
+			expect(response.status).toBe(403);
+			expect(error?.message).toContain('not active');
+		}
+	);
 });

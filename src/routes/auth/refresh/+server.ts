@@ -3,7 +3,7 @@ import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
 import { eq, and, isNull, gt } from 'drizzle-orm';
 import { ApiResponse } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseJsonBody } from '$lib/api/request';
 import { AuthRefreshPostBody, AuthRefreshPostResponse } from '..';
 import { signAccessToken, createRefreshToken } from '$lib/auth/tokens';
 
@@ -12,23 +12,14 @@ import { signAccessToken, createRefreshToken } from '$lib/auth/tokens';
  * Rotate refresh token and issue new access token.
  */
 export const POST: RequestHandler = async ({ request }) => {
-	// 1. Parse and validate request body
-	let body: unknown;
-	try {
-		body = await request.json();
-	} catch {
-		return ApiResponse.badRequest({ body: ['Invalid JSON'] });
+	const parsedBody = await parseJsonBody(request, AuthRefreshPostBody);
+	if (!parsedBody.ok) {
+		return parsedBody.response;
 	}
 
-	const result = AuthRefreshPostBody.safeParse(body);
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
-	}
-
-	const { refreshToken: oldToken } = result.data;
+	const { refreshToken: oldToken } = parsedBody.data;
 
 	try {
-		// 2. Find and validate old token
 		const storedToken = await db.query.refreshTokens.findFirst({
 			where: and(
 				eq(refreshTokens.token, oldToken),
@@ -46,12 +37,10 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		const user = storedToken.user;
 
-		// 3. Enforce Account Status
 		if (user.status !== 'active') {
 			return ApiResponse.forbidden('Your account is not active. Please contact support.');
 		}
 
-		// 4. Rotate refresh token atomically (Security: One-time use)
 		const accessToken = await signAccessToken({
 			userId: user.id,
 			role: user.role
@@ -60,17 +49,14 @@ export const POST: RequestHandler = async ({ request }) => {
 		const refreshToken = createRefreshToken(user.id);
 
 		await db.transaction(async (tx) => {
-			// Revoke the old one
 			await tx
 				.update(refreshTokens)
 				.set({ revokedAt: new Date() })
 				.where(eq(refreshTokens.token, oldToken));
 
-			// Store the new refresh token
 			await tx.insert(refreshTokens).values(refreshToken);
 		});
 
-		// 5. Return response
 		return ApiResponse.ok(
 			AuthRefreshPostResponse.parse({
 				user,

@@ -94,3 +94,5 @@ export const messagesPost: RouteConfig = {
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
+
+export const messagesRoutes: RouteConfig[] = [messagesGet, messagesPost];

@@ -204,24 +204,12 @@ describe('Users API Integration', () => {
 			expect(data?.data?.status).toBe('suspended');
 		});
 
-		it('should return 403 for regular admin (non-super)', async () => {
-			const { client: adminClient } = await createAuthenticatedClient('admin');
+		it.each(['admin', 'member'] as const)('should return 403 for %s role', async (role) => {
+			const { client: roleClient } = await createAuthenticatedClient(role);
 			const user = await createTestUser();
 
-			const { response } = await adminClient.PUT('/users/{id}/status', {
+			const { response } = await roleClient.PUT('/users/{id}/status', {
 				params: { path: { id: user.id } },
-				body: { status: 'suspended' }
-			});
-
-			expect(response.status).toBe(403);
-		});
-
-		it('should return 403 for regular user', async () => {
-			const { client: memberClient } = await createAuthenticatedClient('member');
-			const otherUser = await createTestUser();
-
-			const { response } = await memberClient.PUT('/users/{id}/status', {
-				params: { path: { id: otherUser.id } },
 				body: { status: 'suspended' }
 			});
 
@@ -247,24 +235,12 @@ describe('Users API Integration', () => {
 			expect(data?.data?.role).toBe('admin');
 		});
 
-		it('should return 403 for regular admin (non-super)', async () => {
-			const { client: adminClient } = await createAuthenticatedClient('admin');
+		it.each(['admin', 'member'] as const)('should return 403 for %s role', async (role) => {
+			const { client: roleClient } = await createAuthenticatedClient(role);
 			const user = await createTestUser();
 
-			const { response } = await adminClient.PUT('/users/{id}/role', {
+			const { response } = await roleClient.PUT('/users/{id}/role', {
 				params: { path: { id: user.id } },
-				body: { role: 'admin' }
-			});
-
-			expect(response.status).toBe(403);
-		});
-
-		it('should return 403 for regular user', async () => {
-			const { client: memberClient } = await createAuthenticatedClient('member');
-			const otherUser = await createTestUser();
-
-			const { response } = await memberClient.PUT('/users/{id}/role', {
-				params: { path: { id: otherUser.id } },
 				body: { role: 'admin' }
 			});
 

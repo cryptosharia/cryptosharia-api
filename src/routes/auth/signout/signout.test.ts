@@ -1,24 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
-import { createApiTestClient, createTestUser } from '$lib/test-utils';
+import { createApiTestClient, createTestUser, insertTestRefreshToken } from '$lib/test-utils';
 import { eq } from 'drizzle-orm';
-import { generateRandomToken } from '$lib/auth/tokens';
 
 const client = createApiTestClient();
 
 describe('POST /auth/signout', () => {
 	it('should revoke a valid refresh token', async () => {
 		const user = await createTestUser();
-		const token = generateRandomToken();
-		const expiresAt = new Date();
-		expiresAt.setDate(expiresAt.getDate() + 7);
-
-		await db.insert(refreshTokens).values({
-			userId: user.id,
-			token,
-			expiresAt
-		});
+		const token = await insertTestRefreshToken(user.id);
 
 		// 2. Call signout
 		const { data, response } = await client.POST('/auth/signout', {
@@ -48,17 +39,7 @@ describe('POST /auth/signout', () => {
 
 	it('should handle already revoked tokens gracefully', async () => {
 		const user = await createTestUser();
-		const token = generateRandomToken();
-		const revokedAt = new Date();
-		const expiresAt = new Date();
-		expiresAt.setDate(expiresAt.getDate() + 7);
-
-		await db.insert(refreshTokens).values({
-			userId: user.id,
-			token,
-			expiresAt,
-			revokedAt
-		});
+		const token = await insertTestRefreshToken(user.id, { revoked: true });
 
 		const { data, response } = await client.POST('/auth/signout', {
 			body: { refreshToken: token }

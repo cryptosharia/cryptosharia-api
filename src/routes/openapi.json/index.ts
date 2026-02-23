@@ -17,3 +17,5 @@ export const openapiGet: RouteConfig = {
 		}
 	}
 };
+
+export const openapiRoutes: RouteConfig[] = [openapiGet];

@@ -3,7 +3,7 @@ import { db } from '$lib/db';
 import { refreshTokens } from '$lib/db/tables';
 import { eq, and, isNull } from 'drizzle-orm';
 import { ApiResponse } from '$lib/api';
-import z from '$lib/zod-openapi';
+import { parseJsonBody } from '$lib/api/request';
 import { AuthSignoutPostBody } from '..';
 
 /**
@@ -11,31 +11,20 @@ import { AuthSignoutPostBody } from '..';
  * Revoke a refresh token.
  */
 export const POST: RequestHandler = async ({ request }) => {
-	// 1. Parse and validate request body
-	let body: unknown;
-	try {
-		body = await request.json();
-	} catch {
-		return ApiResponse.badRequest({ body: ['Invalid JSON'] });
+	const parsedBody = await parseJsonBody(request, AuthSignoutPostBody);
+	if (!parsedBody.ok) {
+		return parsedBody.response;
 	}
 
-	const result = AuthSignoutPostBody.safeParse(body);
-	if (!result.success) {
-		return ApiResponse.badRequest(z.flattenError(result.error).fieldErrors);
-	}
-
-	const { refreshToken } = result.data;
+	const { refreshToken } = parsedBody.data;
 
 	try {
-		// 2. Revoke the token in the database
-		// We only target tokens that haven't been revoked yet
 		const [revokedToken] = await db
 			.update(refreshTokens)
 			.set({ revokedAt: new Date() })
 			.where(and(eq(refreshTokens.token, refreshToken), isNull(refreshTokens.revokedAt)))
 			.returning();
 
-		// We return success even if no token was found/revoked to keep it idempotent
 		return ApiResponse.ok(
 			undefined,
 			revokedToken ? 'Signed out successfully' : 'Session already ended or invalid'

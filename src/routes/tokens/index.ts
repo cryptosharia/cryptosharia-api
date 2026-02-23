@@ -1,4 +1,4 @@
-import { shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
+import { shariaStatusEnum, contentStatusEnum } from '$lib/db/schema/content';
 import { zQueryArray } from '$lib/utils';
 import { OpenApiResponse, PaginatedData, UserMetadata, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
@@ -151,3 +151,5 @@ export const tokensQuotesGet: RouteConfig = {
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
+
+export const tokensRoutes: RouteConfig[] = [tokensGet, tokensDetailGet, tokensQuotesGet];

@@ -38,3 +38,5 @@ export const imgbbPost: RouteConfig = {
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
+
+export const imgbbRoutes: RouteConfig[] = [imgbbPost];

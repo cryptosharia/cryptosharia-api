@@ -44,7 +44,7 @@ Before every commit or finalizing a task, perform a comprehensive scan for:
 ## Self-Improvement:
 
 1.  **Proactive Rule Updates**: Automatically update this `GEMINI.md` file when new decisions, preferences, or corrections are made. This includes architecture decisions, ecosystem changes, coding conventions, and behavior preferences. Do not wait to be asked.
-2.  **API Documentation Maintenance**: The OpenAPI spec at `/openapi.json` is the primary source of truth. `docs/API_DOCS.md` is a supplementary human-readable overview and should be kept in sync when architectural rules change.
+2.  **API Documentation Maintenance**: The OpenAPI spec at `/openapi.json` is the primary source of truth. `docs/api-docs.md` is a supplementary human-readable overview and should be kept in sync when architectural rules change.
 
 ---
 

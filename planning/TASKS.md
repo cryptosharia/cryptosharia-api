@@ -90,7 +90,7 @@
 - [x] Write unit tests for authentication utilities <!-- id: 132 -->
 - [x] Write integration tests for all user endpoints <!-- id: 133 -->
 - [x] Write integration tests for messages endpoint <!-- id: 134 -->
-- [x] Create comprehensive API Documentation (`docs/API_DOCS.md`) <!-- id: 135 -->
+- [x] Create comprehensive API Documentation (`docs/api-docs.md`) <!-- id: 135 -->
 - [ ] Create production-ready seed data <!-- id: 136 -->
 
 ## Phase 9: Database Seeding

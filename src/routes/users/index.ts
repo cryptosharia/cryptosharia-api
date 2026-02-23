@@ -1,7 +1,7 @@
 import { OpenApiResponse, UserMetadata, PaginatedData, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
 import { User } from '$lib/db/types';
-import { userRoleEnum } from '$lib/db/tables';
+import { userRoleEnum } from '$lib/db/schema/auth';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import { zQueryArray } from '$lib/utils';
 
@@ -193,3 +193,11 @@ export const usersIdRolePut: RouteConfig = {
 	},
 	security: [{ ApiKeyAuth: [], BearerAuth: [] }]
 };
+
+export const usersRoutes: RouteConfig[] = [
+	usersGet,
+	usersIdGet,
+	usersIdPatch,
+	usersIdStatusPut,
+	usersIdRolePut
+];

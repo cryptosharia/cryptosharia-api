@@ -14,3 +14,5 @@ export const seedDemoPost: RouteConfig = {
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
+
+export const seedRoutes: RouteConfig[] = [seedDemoPost];

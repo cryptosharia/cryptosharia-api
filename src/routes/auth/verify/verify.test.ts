@@ -8,6 +8,23 @@ import { hashPassword } from '$lib/auth/password';
 describe('POST /auth/verify', () => {
 	const client = createApiTestClient();
 
+	const signup = (body: { name: string; email: string; password: string }) =>
+		client.POST('/auth/signup', {
+			params: { query: { notify: false } },
+			body
+		});
+
+	async function createVerificationToken(userId: string, token: string, hourOffset: number) {
+		const expiresAt = new Date();
+		expiresAt.setHours(expiresAt.getHours() + hourOffset);
+
+		await db.insert(emailVerifications).values({
+			userId,
+			token,
+			expiresAt
+		});
+	}
+
 	it('should verify a user successfully with a valid token', async () => {
 		// 1. Setup: Create an unverified user and a token
 		const password = 'password-length-12';
@@ -23,14 +40,7 @@ describe('POST /auth/verify', () => {
 			.returning();
 
 		const token = 'valid-token-123';
-		const expiresAt = new Date();
-		expiresAt.setHours(expiresAt.getHours() + 6); // 6 hours of expiration
-
-		await db.insert(emailVerifications).values({
-			userId: user.id,
-			token,
-			expiresAt
-		});
+		await createVerificationToken(user.id, token, 6);
 
 		// 2. Execute Verification
 		const { data, response } = await client.POST('/auth/verify', {
@@ -75,14 +85,7 @@ describe('POST /auth/verify', () => {
 			.returning();
 
 		const token = 'expired-token';
-		const expiresAt = new Date();
-		expiresAt.setHours(expiresAt.getHours() - 1); // Expired 1 hour ago
-
-		await db.insert(emailVerifications).values({
-			userId: user.id,
-			token,
-			expiresAt
-		});
+		await createVerificationToken(user.id, token, -1);
 
 		const { response } = await client.POST('/auth/verify', {
 			body: { token }
@@ -96,10 +99,7 @@ describe('POST /auth/verify', () => {
 		const password = 'password-length-12';
 
 		// 1. Signup (unverified)
-		await client.POST('/auth/signup', {
-			params: { query: { notify: false } },
-			body: { name: 'Blocked', email, password }
-		});
+		await signup({ name: 'Blocked', email, password });
 
 		// 2. Attempt Signin -> Should fail (mask as unauthorized/not found)
 		const signinRes = await client.POST('/auth/signin', {
@@ -128,10 +128,7 @@ describe('POST /auth/verify', () => {
 		const password = 'password-length-12';
 
 		// 1. First Signup
-		await client.POST('/auth/signup', {
-			params: { query: { notify: false } },
-			body: { name: 'Multi', email, password }
-		});
+		await signup({ name: 'Multi', email, password });
 
 		const user = await db.query.users.findFirst({ where: eq(users.email, email) });
 		const token1 = await db.query.emailVerifications.findFirst({
@@ -141,10 +138,7 @@ describe('POST /auth/verify', () => {
 		expect(token1?.revokedAt).toBeNull();
 
 		// 2. Second Signup (Graceful)
-		await client.POST('/auth/signup', {
-			params: { query: { notify: false } },
-			body: { name: 'Multi Updated', email, password }
-		});
+		await signup({ name: 'Multi Updated', email, password });
 
 		// 3. Verify Token 1 is now revoked
 		const token1Refetched = await db.query.emailVerifications.findFirst({
