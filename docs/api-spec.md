@@ -136,6 +136,7 @@ Verified behavior:
 - User can fetch own profile.
 - Admin can fetch any user.
 - Member fetching another user is blocked (`403`).
+- Unauthenticated is blocked (`401`).
 - Unknown user returns `404`.
 
 ### `PATCH /users/{id}`
@@ -149,6 +150,7 @@ Verified behavior:
 - User can update own profile.
 - Admin can update any user.
 - Member updating someone else is blocked (`403`).
+- Unauthenticated is blocked (`401`).
 
 ### `PUT /users/{id}/status`
 

@@ -117,6 +117,7 @@ export const usersIdPatch: RouteConfig = {
 	},
 	responses: {
 		...OpenApiResponse.ok(UsersIdGetResponse, 'User updated successfully'),
+		...OpenApiResponse.unauthorized('Authentication required'),
 		...OpenApiResponse.badRequest('Invalid update data provided'),
 		...OpenApiResponse.notFound('User not found'),
 		...OpenApiResponse.forbidden('Insufficient permissions to update this user'),
@@ -152,6 +153,7 @@ export const usersIdStatusPut: RouteConfig = {
 	},
 	responses: {
 		...OpenApiResponse.ok(UsersIdGetResponse, 'User status updated successfully'),
+		...OpenApiResponse.unauthorized('Authentication required'),
 		...OpenApiResponse.badRequest('Invalid status provided'),
 		...OpenApiResponse.notFound('User not found'),
 		...OpenApiResponse.forbidden('Insufficient permissions to manage user status'),
@@ -186,6 +188,7 @@ export const usersIdRolePut: RouteConfig = {
 	},
 	responses: {
 		...OpenApiResponse.ok(UsersIdGetResponse, 'Role assigned successfully'),
+		...OpenApiResponse.unauthorized('Authentication required'),
 		...OpenApiResponse.badRequest('Invalid role provided'),
 		...OpenApiResponse.notFound('User not found'),
 		...OpenApiResponse.forbidden('Insufficient permissions to manage user roles'),

@@ -139,6 +139,16 @@ describe('Users API Integration', () => {
 
 			expect(response.status).toBe(404);
 		});
+
+		it('should return 401 for unauthorized request', async () => {
+			const user = await createTestUser();
+
+			const { response } = await client.GET('/users/{id}', {
+				params: { path: { id: user.id } }
+			});
+
+			expect(response.status).toBe(401);
+		});
 	});
 
 	// -----------------------------------------------------------------------
@@ -183,6 +193,17 @@ describe('Users API Integration', () => {
 			});
 
 			expect(response.status).toBe(403);
+		});
+
+		it('should return 401 for unauthorized request', async () => {
+			const user = await createTestUser();
+
+			const { response } = await client.PATCH('/users/{id}', {
+				params: { path: { id: user.id } },
+				body: { name: 'Unauthorized update' }
+			});
+
+			expect(response.status).toBe(401);
 		});
 	});
 

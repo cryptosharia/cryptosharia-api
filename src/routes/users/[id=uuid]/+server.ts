@@ -15,7 +15,11 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	const isOwner = locals.user?.id === id;
 	const canRead = hasPermission(locals, 'users.read');
 
-	if (!locals.user || (!isOwner && !canRead)) {
+	if (!locals.user) {
+		return ApiResponse.unauthorized();
+	}
+
+	if (!isOwner && !canRead) {
 		return ApiResponse.forbidden('Insufficient permissions');
 	}
 
@@ -48,7 +52,11 @@ export const PATCH: RequestHandler = async (event) => {
 	const isOwner = locals.user?.id === id;
 	const canUpdate = hasPermission(locals, 'users.update');
 
-	if (!locals.user || (!isOwner && !canUpdate)) {
+	if (!locals.user) {
+		return ApiResponse.unauthorized();
+	}
+
+	if (!isOwner && !canUpdate) {
 		return ApiResponse.forbidden('Insufficient permissions');
 	}
 
