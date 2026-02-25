@@ -32,7 +32,7 @@ export async function logActivity(params: {
  * Automatically extracts userId and IP address from the SvelteKit event.
  */
 export async function logUserActivity(
-	event: { locals: App.Locals; request: Request },
+	event: { locals: App.Locals },
 	params: {
 		action: string;
 		subjectType: string;
@@ -42,12 +42,9 @@ export async function logUserActivity(
 ) {
 	if (!event.locals.user) return;
 
-	// Note: In real production, you might want to handle multiple IPs in x-forwarded-for
-	const ipAddress = event.request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
-
 	await logActivity({
 		userId: event.locals.user.id,
-		ipAddress,
+		ipAddress: event.locals.clientIp,
 		...params
 	});
 }

@@ -1,14 +1,12 @@
 import type { RequestHandler } from './$types';
-import { db } from '$lib/db';
-import { users, userRoleEnum } from '$lib/db/tables';
+import { userRoleEnum } from '$lib/db/tables';
 import { UsersIdGetResponse, UsersIdRolePutBody } from '../../index';
 import { ApiResponse } from '$lib/api';
 import { parseJsonBody } from '$lib/api/request';
-import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
-import { toAssetMetadata } from '$lib/services/assets';
 import { logUserActivity } from '$lib/services/activity-logger';
 import type { Role } from '$lib/auth/rbac';
+import { updateUserRole } from '$lib/services/users';
 
 /**
  * PUT /users/:id/role - Assign role to user
@@ -32,32 +30,18 @@ export const PUT: RequestHandler = async (event) => {
 			return ApiResponse.badRequest({ role: ['Invalid role'] });
 		}
 
-		const [updatedUser] = await db
-			.update(users)
-			.set({
-				role: role as Role,
-				updatedBy: locals.user!.id
-			})
-			.where(eq(users.id, id))
-			.returning();
+		const updatedUser = await updateUserRole({
+			id,
+			role: role as Role,
+			updatedBy: locals.user!.id
+		});
 
 		if (!updatedUser) {
 			return ApiResponse.notFound('User not found');
 		}
 
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, id),
-			with: { avatar: true }
-		});
-
-		if (!user) {
-			return ApiResponse.notFound('User not found');
-		}
-
 		const result = UsersIdGetResponse.parse({
-			...user,
-			avatar: toAssetMetadata(user.avatar),
-			role: user.role
+			...updatedUser
 		});
 
 		await logUserActivity(event, {

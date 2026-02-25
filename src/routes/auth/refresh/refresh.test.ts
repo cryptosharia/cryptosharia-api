@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { db } from '$lib/db';
-import { refreshTokens } from '$lib/db/tables';
+import { refreshTokens, users } from '$lib/db/tables';
 import { createApiTestClient, createTestUser, insertTestRefreshToken } from '$lib/test-utils';
 import { eq } from 'drizzle-orm';
 
@@ -33,6 +33,36 @@ describe('POST /auth/refresh', () => {
 		});
 		expect(newToken).toBeDefined();
 		expect(newToken?.userId).toBe(user.id);
+	});
+
+	it('should allow only one success for concurrent refresh requests using same token', async () => {
+		const user = await createTestUser();
+		const oldToken = await insertTestRefreshToken(user.id);
+
+		const [first, second] = await Promise.all([
+			client.POST('/auth/refresh', { body: { refreshToken: oldToken } }),
+			client.POST('/auth/refresh', { body: { refreshToken: oldToken } })
+		]);
+
+		const statuses = [first.response.status, second.response.status].sort((a, b) => a - b);
+		expect(statuses).toEqual([200, 401]);
+
+		const successful = first.response.status === 200 ? first : second;
+		const rotatedToken = successful.data?.data?.refreshToken;
+		expect(rotatedToken).toBeDefined();
+
+		const oldTokenRow = await db.query.refreshTokens.findFirst({
+			where: eq(refreshTokens.token, oldToken)
+		});
+		expect(oldTokenRow?.revokedAt).not.toBeNull();
+
+		const allUserTokens = await db.query.refreshTokens.findMany({
+			where: eq(refreshTokens.userId, user.id)
+		});
+		const activeTokens = allUserTokens.filter((token) => token.revokedAt === null);
+
+		expect(activeTokens).toHaveLength(1);
+		expect(activeTokens[0]?.token).toBe(rotatedToken);
 	});
 
 	it.each([
@@ -75,4 +105,18 @@ describe('POST /auth/refresh', () => {
 			expect(error?.message).toContain('not active');
 		}
 	);
+
+	it('should return 403 when user becomes suspended after token issuance', async () => {
+		const user = await createTestUser({ status: 'active' });
+		const token = await insertTestRefreshToken(user.id);
+
+		await db.update(users).set({ status: 'suspended' }).where(eq(users.id, user.id));
+
+		const { response, error } = await client.POST('/auth/refresh', {
+			body: { refreshToken: token }
+		});
+
+		expect(response.status).toBe(403);
+		expect(error?.message).toContain('not active');
+	});
 });

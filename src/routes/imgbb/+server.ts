@@ -16,9 +16,9 @@ export const POST: RequestHandler = async (event) => {
 		if (authError) return authError;
 
 		const formData = await event.request.formData();
-		const image = formData.get('image') as File;
+		const image = formData.get('image');
 
-		if (!image) {
+		if (!(image instanceof File)) {
 			return ApiResponse.badRequest({
 				image: ['Image file is required']
 			});

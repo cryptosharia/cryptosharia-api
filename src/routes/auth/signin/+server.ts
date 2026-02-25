@@ -55,7 +55,7 @@ export const POST: RequestHandler = async (event) => {
 		const refreshToken = createRefreshToken(user.id);
 		await db.insert(refreshTokens).values(refreshToken);
 
-		const ipAddress = event.request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+		const ipAddress = event.locals.clientIp;
 		await logActivity({
 			userId: user.id,
 			action: 'signin',

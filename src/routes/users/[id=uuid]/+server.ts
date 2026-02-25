@@ -1,13 +1,10 @@
 import type { RequestHandler } from './$types';
-import { db } from '$lib/db';
-import { users } from '$lib/db/tables';
 import { UsersIdGetResponse, UsersIdPatchBody } from '..';
 import { ApiResponse } from '$lib/api';
 import { parseJsonBody } from '$lib/api/request';
-import { eq } from 'drizzle-orm';
 import { hasPermission } from '$lib/auth/permissions';
-import { toAssetMetadata } from '$lib/services/assets';
 import { logUserActivity } from '$lib/services/activity-logger';
+import { getUserDetail, updateUserProfile } from '$lib/services/users';
 
 /**
  * GET /users/:id - Get user detail
@@ -23,12 +20,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	}
 
 	try {
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, id),
-			with: {
-				avatar: true
-			}
-		});
+		const user = await getUserDetail(id);
 
 		if (!user) {
 			return ApiResponse.notFound('User not found');
@@ -36,9 +28,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 
 		return ApiResponse.ok(
 			UsersIdGetResponse.parse({
-				...user,
-				avatar: toAssetMetadata(user.avatar),
-				role: user.role
+				...user
 			}),
 			'User details retrieved successfully'
 		);
@@ -70,35 +60,19 @@ export const PATCH: RequestHandler = async (event) => {
 	const { name, avatarId } = parsedBody.data;
 
 	try {
-		const [updatedUser] = await db
-			.update(users)
-			.set({
-				name,
-				avatarId,
-				updatedBy: locals.user.id
-			})
-			.where(eq(users.id, id))
-			.returning();
+		const updatedUser = await updateUserProfile({
+			id,
+			name,
+			avatarId,
+			updatedBy: locals.user.id
+		});
 
 		if (!updatedUser) {
 			return ApiResponse.notFound('User not found');
 		}
 
-		const userWithRole = await db.query.users.findFirst({
-			where: eq(users.id, updatedUser.id),
-			with: {
-				avatar: true
-			}
-		});
-
-		if (!userWithRole) {
-			return ApiResponse.notFound('User not found after update');
-		}
-
 		const result = UsersIdGetResponse.parse({
-			...userWithRole,
-			avatar: toAssetMetadata(userWithRole.avatar),
-			role: userWithRole.role
+			...updatedUser
 		});
 
 		await logUserActivity(event, {

@@ -38,4 +38,15 @@ describe('API Key Authentication (Hooks Integration)', () => {
 		});
 		expect(response.status).toBe(200);
 	});
+
+	it('should ignore malformed Forwarded header and still allow private request', async () => {
+		const { response } = await client.GET('/posts', {
+			headers: {
+				'Api-Key': env.CS_API_KEY_TEST!,
+				Forwarded: 'for=not-an-ip'
+			}
+		});
+
+		expect(response.status).toBe(200);
+	});
 });

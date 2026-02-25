@@ -1,13 +1,10 @@
 import type { RequestHandler } from './$types';
-import { db } from '$lib/db';
-import { users } from '$lib/db/tables';
 import { ApiResponse } from '$lib/api';
 import { parseJsonBody } from '$lib/api/request';
-import { eq } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
-import { toAssetMetadata } from '$lib/services/assets';
 import { logUserActivity } from '$lib/services/activity-logger';
 import { UsersIdStatusPutBody, UsersIdGetResponse } from '../../index';
+import { updateUserStatus } from '$lib/services/users';
 
 /**
  * PUT /users/:id/status - Update user administrative status
@@ -31,29 +28,18 @@ export const PUT: RequestHandler = async (event) => {
 	const { status } = parsedBody.data;
 
 	try {
-		const [updatedUser] = await db
-			.update(users)
-			.set({ status, updatedBy: locals.user!.id })
-			.where(eq(users.id, id))
-			.returning();
+		const updatedUser = await updateUserStatus({
+			id,
+			status,
+			updatedBy: locals.user!.id
+		});
 
 		if (!updatedUser) {
 			return ApiResponse.notFound('User not found');
 		}
 
-		const userWithRole = await db.query.users.findFirst({
-			where: eq(users.id, id),
-			with: { avatar: true }
-		});
-
-		if (!userWithRole) {
-			return ApiResponse.notFound('User not found after update');
-		}
-
 		const result = UsersIdGetResponse.parse({
-			...userWithRole,
-			avatar: toAssetMetadata(userWithRole.avatar),
-			role: userWithRole.role
+			...updatedUser
 		});
 
 		await logUserActivity(event, {

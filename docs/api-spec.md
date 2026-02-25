@@ -281,9 +281,10 @@ Verified behavior:
 
 Verified behavior:
 
-- Rate limit headers are present on successful responses.
-- Remaining quota decreases between requests.
-- Different `Forwarded-For` values are bucketed separately.
+- Rate limit hanya diterapkan ke endpoint private (setelah validasi `Api-Key`).
+- Endpoint public (`/` dan `/openapi.json`) tidak dikenai rate limit.
+- Remaining quota menurun antar request private.
+- Nilai `Forwarded: for=<ip>` yang berbeda dipisah ke bucket berbeda.
 
 ## Related Test Files
 

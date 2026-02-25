@@ -4,6 +4,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
+			clientIp: string;
 			user: {
 				id: string;
 				role: import('$lib/auth/rbac').Role;
