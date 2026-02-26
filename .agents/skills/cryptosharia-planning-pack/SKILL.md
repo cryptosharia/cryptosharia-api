@@ -1,6 +1,6 @@
 ---
 name: cryptosharia-planning-pack
-description: Create planning pack files (plan/spec/tasks/execution) and enforce approval-gated implementation
+description: Create planning pack files (spec + tasks) for approval-gated implementation
 ---
 
 # CryptoSharia Planning Pack
@@ -16,22 +16,19 @@ Use this skill for scoped features/refactors with multiple steps, security impac
 
 ## Local supplements
 
-- `references/plan-review-checklist.md`
 - `references/template-pack.md`
 
 ## Workflow
 
 1. Create a plan folder: `planning/<plan-name>/`
-   - Include `plan.md`, `spec.md`, `tasks.md`, and `execution.md`
+   - Include `spec.md` and `tasks.md`
 
 2. Fill each file with concrete, testable content
-   - Use `references/template-pack.md` as the baseline structure
-   - `plan.md`: objective, scope, risks, verification commands
-   - `spec.md`: exact contract and acceptance criteria
-   - `tasks.md`: implementation checklist and execution log
-   - `execution.md`: execution order, allowed files, constraints
+   - Use `references/template-pack.md` as the baseline
+   - `spec.md`: objective, scope, behavior, acceptance criteria
+   - `tasks.md`: checklist, allowed files, constraints
 
-3. Define verification gates in `plan.md`
+3. Define verification gates in `spec.md`
    - `npm run check`
    - `npm run lint`
    - `npm test`
@@ -39,7 +36,7 @@ Use this skill for scoped features/refactors with multiple steps, security impac
 4. Pause for user approval before implementation
    - Do not execute implementation before explicit approval
 
-5. Execute according to `execution.md`
+5. Execute according to `tasks.md`
    - Change only allowed files
    - Keep `tasks.md` and task states updated during execution
 
@@ -54,9 +51,3 @@ Use this skill for scoped features/refactors with multiple steps, security impac
 - Verification commands pass
 - `tasks.md` is fully updated
 - Deviations are explicitly documented
-
-## Final report format
-
-- Files changed
-- Check/test results
-- Deviations from approved spec

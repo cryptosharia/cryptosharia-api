@@ -2,10 +2,10 @@
 
 Use these templates as a starting point for `planning/<plan-name>/`.
 
-## `plan.md`
+## `spec.md`
 
 ```md
-# Plan: <feature-name>
+# Spec: <feature-name>
 
 ## Objective
 
@@ -13,48 +13,12 @@ Use these templates as a starting point for `planning/<plan-name>/`.
 
 ## Scope
 
-- <In-scope item>
-
-## Out of Scope
-
-- <Out-of-scope item>
+- In scope: <item>
+- Out of scope: <item>
 
 ## Architecture Decisions
 
 - <Decision and reason>
-
-## File Change Map
-
-- `path/to/file` - <why it changes>
-
-## Risks and Mitigations
-
-- Risk: <risk>
-  Mitigation: <mitigation>
-
-## Acceptance Criteria
-
-- <Testable outcome>
-
-## Verification
-
-- `npm run check`
-- `npm run lint`
-- `npm test`
-```
-
-## `spec.md`
-
-```md
-# Spec: <feature-name>
-
-## Goal
-
-<User-facing outcome>
-
-## Non-Goals
-
-- <Not included in this iteration>
 
 ## Contracts
 
@@ -78,45 +42,26 @@ Use these templates as a starting point for `planning/<plan-name>/`.
 
 - <Edge case>
 
+## Risks and Mitigations
+
+- Risk: <risk>
+  Mitigation: <mitigation>
+
 ## Acceptance Criteria
 
 - <Must-pass condition>
+
+## Verification
+
+- `npm run check`
+- `npm run lint`
+- `npm test`
 ```
 
 ## `tasks.md`
 
 ```md
 # Tasks: <feature-name>
-
-- [ ] <Implement part A>
-- [ ] <Implement part B>
-- [ ] <Add/update tests>
-- [ ] <Run verification commands>
-
-## Definition of Done
-
-- [ ] Acceptance criteria satisfied
-- [ ] Checks/tests pass
-- [ ] Deviations documented
-
-## Execution Log
-
-- <Timestamped progress updates>
-```
-
-## `execution.md`
-
-```md
-# Execution: <feature-name>
-
-## Context
-
-Implementation must follow `planning/<plan-name>/spec.md`.
-
-## Execution Order
-
-1. <Step 1>
-2. <Step 2>
 
 ## Allowed Files
 
@@ -127,20 +72,31 @@ Implementation must follow `planning/<plan-name>/spec.md`.
 - Do not change external contracts unless spec is updated and approved
 - Do not edit unrelated files
 
-## Escalation
+## Implementation Checklist
+
+- [ ] <Implement part A>
+- [ ] <Implement part B>
+- [ ] <Add/update tests>
+- [ ] <Run verification commands>
+
+## Escalation Triggers
 
 - Contract changes needed
 - More than 2 failed attempts on same blocker
 
-## Done Definition
+## Definition of Done
 
-- Acceptance criteria satisfied
-- Verification commands pass
-- Final diff documented
+- [ ] Acceptance criteria satisfied
+- [ ] Checks/tests pass
+- [ ] Deviations documented
 
-## Final Report Format
+## Execution Log
 
-- Files changed
-- Test/check results
-- Deviations from spec
+- <Timestamped progress updates>
+
+## Final Report
+
+- Files changed: <list>
+- Test/check results: <pass/fail>
+- Deviations from spec: <none or details>
 ```
