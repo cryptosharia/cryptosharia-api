@@ -1,19 +1,37 @@
 # API Implementation Rules
 
-Use this file for API/backend implementation specifics. Collaboration and process rules live in `.agents/rules/entrypoint.md`.
+Use these rules when changing `src/routes/**` or API-facing services.
 
-## API Response Standards
+## 1) Contract First
 
-- **Schema-Driven Mapping**: Always use Zod schemas to map API responses (whitelist approach).
-- **Metadata Expansion**: Use centralized helpers like `toAssetMetadata()` for relations.
-- **Centralized Definitions**: API schemas and OpenAPI `RouteConfig` objects in module root `index.ts`.
+- Define or update `RouteConfig` and Zod schemas in module `index.ts` before editing `+server.ts`.
+- Export request/response/query/params schemas from `index.ts` and reuse them in handlers and tests.
+- If adding a new route module, register it in `src/routes/openapi.json/registry.ts`.
 
-## E2E Testing
+## 2) Handler Structure
 
-- Run tests with `npm test` (executes `scripts/test-e2e.sh`)
-- Tests use real HTTP against a dedicated `local_test` database
+- Keep handlers readable and explicit: auth gate -> parse/validate -> domain orchestration -> response.
+- Use shared helpers (`parseJsonBody`, `parseQueryParams`, `ApiResponse`).
+- Keep meaningful orchestration in route handlers; extract repeated or complex logic into services.
+- Enforce auth semantics consistently: `401` for unauthenticated, `403` for forbidden.
 
-## Quality Gates
+## 3) Input and Write Safety
 
-- Run the checklist in `.agents/rules/security-audit.md` before committing or merging changes.
-- Keep `npm run lint` and `npm run check` passing.
+- Treat request payloads as untrusted (`unknown` + schema validation).
+- Never spread raw request payload directly into DB writes.
+- Explicitly pick allowed fields for create and update operations.
+- Keep ownership and permission checks explicit in the handler or service boundary.
+
+## 4) Response Discipline
+
+- Return responses through `ApiResponse` helpers.
+- Map outgoing data via Zod parse/whitelist (do not pass through raw DB records blindly).
+- Include related metadata via shared mappers (for example `toAssetMetadata`).
+- Avoid leaking internal errors or upstream raw error bodies.
+
+## 5) Tests and Verification
+
+- Update integration tests whenever behavior, status codes, or contracts change.
+- Add at least one negative-path test for auth/validation/security-sensitive changes.
+- Keep OpenAPI responses synchronized with runtime behavior and messages.
+- Run `npm run check`, `npm run lint`, and `npm test`.

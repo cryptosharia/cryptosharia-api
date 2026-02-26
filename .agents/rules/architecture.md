@@ -1,23 +1,63 @@
-# Architecture Principles
+# Architecture Invariants
 
-These principles guide how the project should be designed and extended.
+These are stable architecture decisions for `cryptosharia-api`. Do not change them silently.
 
-## API-First Backbone
+## 1) API-First Backbone
 
-All business logic and authoritative data lives in `cryptosharia-api`. Other platforms are consumers.
+- `cryptosharia-api` is the central backend for first-party CryptoSharia platforms.
+- Business rules and data contracts are defined here and consumed by other apps.
 
-## Unified Identity
+## 2) Tech Stack
 
-Authentication and user management are centralized. All platforms share the same identity system via SSO.
+- **Runtime**: Node.js with SvelteKit
+- **Database**: PostgreSQL with Drizzle ORM
+- **Auth**: JWT (access + refresh), RBAC with permissions
+- **API**: REST with OpenAPI docs, Zod for validation
+- **Rate Limiting**: Token bucket per IP (after API key validation)
+- **File Storage**: ImgBB for image uploads
 
-## Server-to-Server Security
+## 3) Content Model
 
-Consumers are primarily SvelteKit apps calling this API from their server runtime. Direct browser-to-API calls for protected data are not supported.
+- **Tokens**: Crypto assets with Sharia compliance rating (halal/haram/syubhat), rankings, TradingView symbols
+- **Posts**: Articles, news, webinars, videos with sections (news/education/research/activity)
+- **Tags**: Many-to-many tagging for posts and tokens
+- **Messages**: Contact form entries
+- **Assets**: File metadata for images/uploads
 
-## BFF-Only Default
+## 4) Security Boundary at Hooks
 
-CORS headers are intentionally absent. Platforms communicate with the API via their SvelteKit server (Backend-for-Frontend pattern).
+- `src/hooks.server.ts` is the trust boundary for request identity.
+- `event.locals.clientIp` is the canonical client IP value.
+- Forwarded header parsing is centralized in `src/lib/api/trust-boundary.ts`.
 
-## Identity Model
+## 5) Auth Layering Model
 
-A unified `users` table covers both regular users and staff/admin. Staff capabilities are granted via roles/permissions (RBAC), not a separate identity system.
+- Non-public routes require valid `Api-Key` in hooks.
+- JWT parsing is optional in hooks; route handlers decide whether authentication is required.
+- Authorization is enforced by role/permission checks in route logic.
+- Auth status semantics are strict: `401` unauthenticated, `403` forbidden.
+
+## 6) Rate Limiting Model
+
+- Rate limiting is applied to private routes only.
+- Rate limiting occurs after API key validation.
+- Limiter keying is based on trusted client IP from locals.
+
+## 7) Contract-First Route Modules
+
+- Route contracts live in module `index.ts` files (`RouteConfig` + Zod schemas).
+- Handlers in `+server.ts` implement those contracts, not the other way around.
+- OpenAPI output (`/openapi.json`) must reflect runtime behavior.
+
+## 8) Session and Token Invariants
+
+- Access tokens are short-lived JWTs.
+- Refresh tokens are opaque DB-backed tokens.
+- Refresh rotation uses one-time atomic consume/rotate to prevent replay.
+
+## 9) Data and RBAC Model
+
+- `users` is the unified identity table for staff and members.
+- Roles are enum-backed (`super_admin`, `admin`, `posts_manager`, `tokens_manager`, `member`).
+- User status lifecycle is enum-backed (`active`, `inactive`, `suspended`, `banned`).
+- Permission checks use static RBAC mapping in `$lib/auth/rbac.ts`.

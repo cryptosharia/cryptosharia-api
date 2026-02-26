@@ -1,42 +1,53 @@
 # Security Audit Checklist
 
-Use this checklist before committing or merging changes.
+Run this checklist before finalizing work that touches auth, user data, DB writes, caching, or API responses.
 
-## Secrets And Env
+## 1) Secrets and Credentials
 
-- No secrets in browser-visible code (`.svelte`, `+page.ts`, `+layout.ts`).
-- No secrets in `PUBLIC_` env vars.
-- No secrets committed (`.env`, credentials, tokens).
+- No secrets in committed files (`.env`, keys, token dumps, credential files).
+- No secrets in browser-visible code or `PUBLIC_` environment variables.
+- No sensitive tokens in logs, errors, or test snapshots.
 
-## Auth And Authorization
+## 2) Auth and Authorization
 
-- Private routes enforce authentication.
-- Authorization checks are explicit (role/permission) where required.
-- Ownership checks exist for user-owned resources.
+- Private routes remain gated by valid `Api-Key`.
+- Route-level auth requirements are explicit and consistent (`401` vs `403`).
+- Permission and ownership checks exist where required.
+- Refresh token flow remains one-time atomic consume/rotate (replay-safe).
 
-## Write Safety
+## 3) Trust Boundary and Rate Limiting
 
-- Do not blindly spread `request.json()` into DB create/update operations.
-- Explicitly pick allowed fields and omit sensitive fields.
-- Avoid constructing raw SQL strings. Prefer Drizzle query builder/parameterized queries.
+- Client IP source of truth is `event.locals.clientIp` from `hooks.server.ts`.
+- Forwarded header parsing occurs only in `src/lib/api/trust-boundary.ts`.
+- Private-only rate limiting remains after API key validation.
+- Routes/services do not directly trust forwarding headers.
 
-## Data Exposure
+## 4) Write Safety
 
-- Responses do not leak sensitive fields (password hashes, internal tokens, privileged metadata).
-- Do not forward upstream error bodies verbatim if they may contain sensitive details.
-- API responses are schema-driven (Zod parse/whitelist), not direct DB passthrough.
+- No mass assignment from `request.json()` into DB writes.
+- Allowed fields are explicitly whitelisted.
+- Prefer Drizzle query builder/parameterized APIs over raw string SQL.
 
-## Caching
+## 5) Data Exposure and Error Handling
 
-- User-specific or sensitive responses set `cache-control: no-store`.
-- Non-sensitive responses have an explicit cache policy.
+- Responses do not include sensitive fields (password hashes, refresh token records, secrets).
+- Responses are schema-driven (Zod parse/whitelist) for externally exposed payloads.
+- Internal exception details are not returned to clients.
+- Upstream/provider raw error bodies are sanitized before returning.
 
-## Logging
+## 6) Logging and Caching
 
-- Do not log secrets.
-- Avoid logging PII; if needed, minimize and redact.
+- Logs avoid secrets and unnecessary PII.
+- Sensitive or user-specific responses use `cache-control: no-store` when appropriate.
+- Cache policy is explicit for non-sensitive endpoints.
 
-## Type Safety
+## 7) Type Safety and Verification
 
-- Avoid `any`.
-- Prefer `unknown` + narrowing for untrusted inputs.
+- Avoid `any` for untrusted inputs; use `unknown` with narrowing.
+- Add regression tests for fixed security bugs.
+- Final gates: `npm run check`, `npm run lint`, `npm test`.
+
+## Audit Report Format
+
+- Findings: `<none>` or bullet list with `path`, `risk`, and `fix`.
+- Residual risk: explicit statement if anything is intentionally deferred.

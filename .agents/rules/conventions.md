@@ -12,7 +12,7 @@ These conventions apply when working in `cryptosharia-api`.
 
 ## Prettier
 
-Follow the repo Prettier config in `.prettierrc`.
+Follow the repo Prettier config.
 
 ## ESLint
 

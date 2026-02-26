@@ -1,23 +1,54 @@
-# CryptoSharia API Project AI Rules (Entrypoint)
+# CryptoSharia API AI Rules
 
-These rules apply when working in the `cryptosharia-api` repository.
+This is the rule entrypoint for AI work in `cryptosharia-api`.
 
-## Precedence
+## Rule Priority
 
-- Project rules in this repository override any global/personal rules when they conflict.
-- If modular rule files conflict with this entrypoint, this entrypoint wins.
+1. User instructions
+2. `.agents/rules/entrypoint.md`
+3. Other files in `.agents/rules/`
+4. Default assistant behavior
 
-## Non-Negotiable Rules
+## Core Operating Model
 
-- Never execute a plan or implement changes without explicit user approval (for example: "yes", "go", "proceed", "approved").
-- Do not relax security/safety constraints without explicit user instruction.
+- Default flow: inspect -> decide -> implement -> verify -> report.
+- Do not ask for confirmation for low-risk tasks.
+- Ask only for destructive actions, unclear high-impact contract/security changes, or missing secrets/credentials.
+- For scoped features/refactors that need planning artifacts, follow `.agents/rules/planning.md`.
 
-## Collaboration Protocol
+## Canonical Modules vs Skills
 
-- Handshake protocol: research/plan -> propose -> wait for approval -> execute.
-- No hero assumptions: do not run extra commands or do follow-up work unless explicitly approved.
-- Security-first: for changes involving auth, secrets, caching, or data exposure, explicitly state the security impact.
+- Treat `.agents/rules/*` as canonical modules (policy, gates, invariants, and shared context).
+- Treat `.agents/skills/*` as procedures/playbooks for task execution.
+- Skills may reference canonical modules and include local `rules/` or `references/` for workflow-specific detail.
+- Keep shared checklists and non-negotiables in canonical modules to avoid drift.
+
+## Governance Updates
+
+- Apply user feedback immediately for the current session.
+- If a governance change would be reasonable and durable, propose a persistent update to `.agents/rules/*` or `.agents/skills/*`.
+- Do not edit governance files silently; require explicit user confirmation (for example: `codify`) before persistent updates.
+- Codify only stable, repo-wide preferences; keep one-off preferences session-scoped.
+
+## Non-Negotiables
+
+- Security > speed.
+- Do not weaken auth, authorization, trust-boundary, or token safety behavior.
+- Do not commit secrets, credentials, or tokens.
+- Do not change public API contracts silently.
+- Auth semantics are strict: `401` = unauthenticated, `403` = authenticated-but-forbidden.
+
+## Required Verification
+
+- `npm run check`, `npm run lint`, and `npm test` pass for non-trivial changes.
+- OpenAPI docs and runtime behavior stay aligned.
+- If checks cannot run, report exactly what is blocked and what to run manually.
 
 ## Rule Modules
 
-See `.agents/rules/` for the modular rule files.
+- `.agents/rules/api-rules.md` - route contracts, handler patterns, response mapping, OpenAPI sync.
+- `.agents/rules/security-audit.md` - security checklist before finalization.
+- `.agents/rules/conventions.md` - TypeScript, linting, naming, and testing conventions.
+- `.agents/rules/planning.md` - planning policy, approval gate, and escalation rules.
+- `.agents/rules/architecture.md` - technical invariants that should not drift.
+- `.agents/rules/cryptosharia-context.md` - business, product, and domain context.
