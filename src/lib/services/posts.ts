@@ -19,6 +19,19 @@ export async function fetchPostDetail(locals: App.Locals, identifier: string) {
 		},
 		with: {
 			coverImage: true,
+			tags: {
+				columns: {},
+				with: {
+					tag: {
+						columns: {
+							id: true,
+							name: true,
+							slug: true,
+							description: true
+						}
+					}
+				}
+			},
 			createdBy: {
 				columns: {
 					id: true,
@@ -47,6 +60,7 @@ export async function fetchPostDetail(locals: App.Locals, identifier: string) {
 
 	return {
 		...post,
+		tags: post.tags.map((postTag) => postTag.tag),
 		coverImage: toAssetMetadata(post.coverImage)
 	};
 }

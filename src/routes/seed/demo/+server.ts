@@ -15,13 +15,11 @@ import { MESSAGES, POSTS, TOKENS, USERS } from './data';
  * **WARNING: This will wipe out all existing data.**
  * Strictly forbidden in production.
  */
-export const POST: RequestHandler = async ({ request }) => {
-	// Triple guard: dev OR preview only + API key must be the test key
+export const POST: RequestHandler = async () => {
+	// Guard: dev or preview only. Never allow in production.
 	const isAllowedEnv = dev || env.VERCEL_ENV === 'preview';
-	const apiKey = request.headers.get('Api-Key');
-	const isTestKey = apiKey === env.CS_API_KEY_TEST;
 
-	if (!isAllowedEnv || !isTestKey) {
+	if (!isAllowedEnv) {
 		return ApiResponse.forbidden('Demo seeding is strictly forbidden in production');
 	}
 

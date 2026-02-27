@@ -22,6 +22,8 @@ Run this checklist before finalizing work that touches auth, user data, DB write
 - Private-only rate limiting remains after API key validation.
 - Routes/services do not directly trust forwarding headers.
 
+Note: This repo serves JSON APIs consumed server-to-server (via app BFFs). Browser-only concerns like CORS/CSRF/cookie flags apply only if this API later adds browser-facing endpoints.
+
 ## 4) Write Safety
 
 - No mass assignment from `request.json()` into DB writes.

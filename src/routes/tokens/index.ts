@@ -2,7 +2,7 @@ import { shariaStatusEnum, contentStatusEnum } from '$lib/db/schema/content';
 import { zQueryArray } from '$lib/utils';
 import { OpenApiResponse, PaginatedData, UserMetadata, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
-import { Token } from '$lib/db/types';
+import { Token, Tag } from '$lib/db/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 /**
@@ -22,6 +22,9 @@ export const TokensGetQuery = z
 		exclude: zQueryArray(z.string(), {
 			description: 'List of token slugs to exclude.<br>Example: bitcoin,ethereum,sui'
 		}),
+		tags: zQueryArray(z.string(), {
+			description: 'List of tag slugs to filter by.<br>Example: defi,platform'
+		}),
 		search: z.string().optional(),
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1)
@@ -30,12 +33,26 @@ export const TokensGetQuery = z
 		description: 'Query parameters for fetching tokens with filtering, searching, and pagination'
 	});
 
+export const TokensTagItem = Tag.pick({
+	id: true,
+	name: true,
+	slug: true
+}).openapi('TokensTagItem');
+
+export const TokensTagDetail = Tag.pick({
+	id: true,
+	name: true,
+	slug: true,
+	description: true
+}).openapi('TokensTagDetail');
+
 export const TokensGetItem = Token.omit({
 	content: true,
 	logoId: true
 })
 	.extend({
 		logo: AssetMetadata,
+		tags: z.array(TokensTagItem),
 		createdBy: UserMetadata.nullable(),
 		updatedBy: UserMetadata.nullable()
 	})
@@ -47,6 +64,7 @@ export const TokensGetData = Token.omit({
 })
 	.extend({
 		logo: AssetMetadata,
+		tags: z.array(TokensTagDetail),
 		createdBy: UserMetadata.nullable(),
 		updatedBy: UserMetadata.nullable()
 	})

@@ -19,6 +19,19 @@ export async function fetchTokenDetail(locals: App.Locals, identifier: string) {
 		},
 		with: {
 			logo: true,
+			tags: {
+				columns: {},
+				with: {
+					tag: {
+						columns: {
+							id: true,
+							name: true,
+							slug: true,
+							description: true
+						}
+					}
+				}
+			},
 			createdBy: {
 				columns: {
 					id: true,
@@ -47,6 +60,7 @@ export async function fetchTokenDetail(locals: App.Locals, identifier: string) {
 
 	return {
 		...token,
+		tags: token.tags.map((tokenTag) => tokenTag.tag),
 		logo: toAssetMetadata(token.logo)
 	};
 }

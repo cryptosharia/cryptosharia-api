@@ -6,9 +6,24 @@ import {
 	createTestToken
 } from '$lib/test-utils';
 import { db } from '$lib/db';
-import { assets } from '$lib/db/tables';
+import { assets, tokenTags, tags } from '$lib/db/tables';
 
 const client = createApiTestClient();
+
+async function attachTagToToken(tokenId: string, tagSlug: string, description?: string) {
+	const [tag] = await db
+		.insert(tags)
+		.values({
+			name: `Tag ${tagSlug}`,
+			slug: tagSlug,
+			description
+		})
+		.returning();
+
+	await db.insert(tokenTags).values({ tokenId, tagId: tag.id });
+
+	return tag;
+}
 
 describe('Tokens API Integration', () => {
 	// -----------------------------------------------------------------------
@@ -193,6 +208,52 @@ describe('Tokens API Integration', () => {
 		expect(data?.data?.items).toHaveLength(2);
 		expect(data?.data?.pagination.total).toBe(4);
 		expect(data?.data?.pagination.totalPages).toBe(2);
+	});
+
+	it('should include tags in list response and filter tokens by tags query', async () => {
+		const asset = await createTestAsset();
+		const taggedToken = await createTestToken({
+			name: 'Tagged Token',
+			ticker: 'TAGL',
+			slug: 'tagged-token',
+			rank: 20,
+			logoId: asset.id
+		});
+		await createTestToken({
+			name: 'Untagged Token',
+			ticker: 'UNTG',
+			slug: 'untagged-token',
+			rank: 21,
+			logoId: asset.id
+		});
+		await attachTagToToken(taggedToken.id, 'defi');
+
+		const { data, response } = await client.GET('/tokens', {
+			params: { query: { tags: ['defi'] } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.items).toHaveLength(1);
+		expect(data?.data?.items?.[0].slug).toBe('tagged-token');
+		expect(data?.data?.items?.[0].tags).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: 'Tag defi',
+					slug: 'defi'
+				})
+			])
+		);
+	});
+
+	it('should return empty list when tags query does not match any token', async () => {
+		await createTestToken({ slug: 'non-matching-token', ticker: 'NMTK', rank: 30 });
+
+		const { data, response } = await client.GET('/tokens', {
+			params: { query: { tags: ['non-existent-tag'] } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.items).toHaveLength(0);
 	});
 
 	// -----------------------------------------------------------------------
@@ -418,6 +479,30 @@ describe('Tokens API Integration', () => {
 		expect(token?.logo?.id).toBe(asset.id);
 		expect(token?.logo?.url).toContain('picsum.photos');
 		expect(token?.logo?.url).toContain('test/path/logo.png');
+	});
+
+	it('should include tag description in detail response', async () => {
+		const token = await createTestToken({
+			name: 'Token with Tag Description',
+			ticker: 'TDSC',
+			slug: 'token-with-tag-description',
+			rank: 31
+		});
+		await attachTagToToken(token.id, 'platform', 'Tag for platform ecosystem tokens');
+
+		const { data, response } = await client.GET('/tokens/{id}', {
+			params: { path: { id: 'token-with-tag-description' } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.tags).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					slug: 'platform',
+					description: 'Tag for platform ecosystem tokens'
+				})
+			])
+		);
 	});
 
 	it('should allow admins to preview draft token via slug', async () => {

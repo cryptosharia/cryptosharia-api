@@ -683,6 +683,15 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
                 /** @description Insufficient permissions to update this user */
                 403: {
                     headers: {
@@ -754,6 +763,15 @@ export interface paths {
                 };
                 /** @description Invalid status provided */
                 400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Authentication required */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -844,6 +862,15 @@ export interface paths {
                         "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
                 /** @description Insufficient permissions to manage user roles */
                 403: {
                     headers: {
@@ -904,6 +931,8 @@ export interface paths {
                     slugs?: string[];
                     /** @description List of post slugs to exclude.<br>Example: this-is-a-post,this-is-another-post */
                     exclude?: string[];
+                    /** @description List of tag slugs to filter by.<br>Example: education,halal */
+                    tags?: string[];
                     search?: string;
                     limit?: number;
                     page?: number;
@@ -1064,6 +1093,8 @@ export interface paths {
                     slugs?: string[];
                     /** @description List of token slugs to exclude.<br>Example: bitcoin,ethereum,sui */
                     exclude?: string[];
+                    /** @description List of tag slugs to filter by.<br>Example: defi,platform */
+                    tags?: string[];
                     search?: string;
                     limit?: number;
                     page?: number;
@@ -1757,6 +1788,13 @@ export interface components {
             createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             coverImage: components["schemas"]["AssetMetadata"];
+            tags: components["schemas"]["PostsTagItem"][];
+        };
+        PostsTagItem: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
         };
         PostsGetData: {
             /** Format: uuid */
@@ -1784,6 +1822,14 @@ export interface components {
             createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             coverImage: components["schemas"]["AssetMetadata"];
+            tags: components["schemas"]["PostsTagDetail"][];
+        };
+        PostsTagDetail: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            description: string | null;
         };
         PaginatedTokensGetItem: {
             items: components["schemas"]["TokensGetItem"][];
@@ -1812,6 +1858,13 @@ export interface components {
             createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             logo: components["schemas"]["AssetMetadata"];
+            tags: components["schemas"]["TokensTagItem"][];
+        };
+        TokensTagItem: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
         };
         TokensGetData: {
             /** Format: uuid */
@@ -1837,6 +1890,14 @@ export interface components {
             createdBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             updatedBy: components["schemas"]["UserMetadata"] & (Record<string, never> | null);
             logo: components["schemas"]["AssetMetadata"];
+            tags: components["schemas"]["TokensTagDetail"][];
+        };
+        TokensTagDetail: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            description: string | null;
         };
         TokensQuotesGetItem: {
             slug: string;

@@ -5,8 +5,25 @@ import {
 	createTestAsset,
 	createTestPost
 } from '$lib/test-utils';
+import { db } from '$lib/db';
+import { postTags, tags } from '$lib/db/tables';
 
 const client = createApiTestClient();
+
+async function attachTagToPost(postId: string, tagSlug: string, description?: string) {
+	const [tag] = await db
+		.insert(tags)
+		.values({
+			name: `Tag ${tagSlug}`,
+			slug: tagSlug,
+			description
+		})
+		.returning();
+
+	await db.insert(postTags).values({ postId, tagId: tag.id });
+
+	return tag;
+}
 
 describe('Posts API Integration', () => {
 	// -----------------------------------------------------------------------
@@ -125,6 +142,43 @@ describe('Posts API Integration', () => {
 
 		expect(data?.data?.items).toHaveLength(1);
 		expect(data?.data?.items?.[0].slug).toBe('post-b');
+	});
+
+	it('should include tags in list response and filter posts by tags query', async () => {
+		const asset = await createTestAsset();
+		const taggedPost = await createTestPost({
+			slug: 'post-with-education-tag',
+			coverImageId: asset.id
+		});
+		await createTestPost({ slug: 'post-without-education-tag', coverImageId: asset.id });
+		await attachTagToPost(taggedPost.id, 'education');
+
+		const { data, response } = await client.GET('/posts', {
+			params: { query: { tags: ['education'] } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.items).toHaveLength(1);
+		expect(data?.data?.items?.[0].slug).toBe('post-with-education-tag');
+		expect(data?.data?.items?.[0].tags).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: 'Tag education',
+					slug: 'education'
+				})
+			])
+		);
+	});
+
+	it('should return empty list when tags query does not match any post', async () => {
+		await createTestPost({ slug: 'unmatched-post' });
+
+		const { data, response } = await client.GET('/posts', {
+			params: { query: { tags: ['non-existent-tag'] } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.items).toHaveLength(0);
 	});
 
 	// -----------------------------------------------------------------------
@@ -336,6 +390,25 @@ describe('Posts API Integration', () => {
 		expect(post?.coverImage?.id).toBe(asset.id);
 		expect(post?.coverImage?.url).toContain('picsum.photos');
 		expect(post?.coverImage?.url).toContain('test/path/image.jpg');
+	});
+
+	it('should include tag description in detail response', async () => {
+		const post = await createTestPost({ slug: 'post-with-tag-description' });
+		await attachTagToPost(post.id, 'halal', 'Tag for halal-related educational content');
+
+		const { data, response } = await client.GET('/posts/{id}', {
+			params: { path: { id: 'post-with-tag-description' } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.tags).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					slug: 'halal',
+					description: 'Tag for halal-related educational content'
+				})
+			])
+		);
 	});
 
 	it('should allow admins to preview draft post via slug', async () => {

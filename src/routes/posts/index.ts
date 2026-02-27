@@ -2,7 +2,7 @@ import { postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/schema
 import { zQueryArray } from '$lib/utils';
 import { OpenApiResponse, PaginatedData, UserMetadata, AssetMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
-import { Post } from '$lib/db/types';
+import { Post, Tag } from '$lib/db/types';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 export const PostsGetQuery = z
@@ -23,11 +23,27 @@ export const PostsGetQuery = z
 		exclude: zQueryArray(z.string(), {
 			description: 'List of post slugs to exclude.<br>Example: this-is-a-post,this-is-another-post'
 		}),
+		tags: zQueryArray(z.string(), {
+			description: 'List of tag slugs to filter by.<br>Example: education,halal'
+		}),
 		search: z.string().optional(),
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1)
 	})
 	.openapi('PostsGetQuery');
+
+export const PostsTagItem = Tag.pick({
+	id: true,
+	name: true,
+	slug: true
+}).openapi('PostsTagItem');
+
+export const PostsTagDetail = Tag.pick({
+	id: true,
+	name: true,
+	slug: true,
+	description: true
+}).openapi('PostsTagDetail');
 
 export const PostsGetItem = Post.omit({
 	content: true,
@@ -35,6 +51,7 @@ export const PostsGetItem = Post.omit({
 })
 	.extend({
 		coverImage: AssetMetadata,
+		tags: z.array(PostsTagItem),
 		createdBy: UserMetadata.nullable(),
 		updatedBy: UserMetadata.nullable()
 	})
@@ -46,6 +63,7 @@ export const PostsGetData = Post.omit({
 })
 	.extend({
 		coverImage: AssetMetadata,
+		tags: z.array(PostsTagDetail),
 		createdBy: UserMetadata.nullable(),
 		updatedBy: UserMetadata.nullable()
 	})

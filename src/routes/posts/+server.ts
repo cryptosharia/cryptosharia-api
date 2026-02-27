@@ -4,8 +4,15 @@ import { ApiResponse, PaginatedData } from '$lib/api';
 import { parseQueryParams } from '$lib/api/request';
 import { PostsGetQuery, PostsGetItem } from '.';
 import { toAssetMetadata } from '$lib/services/assets';
-import { posts, postSectionEnum, postTypeEnum, contentStatusEnum } from '$lib/db/tables';
-import { and, count, ilike, inArray, notInArray, or } from 'drizzle-orm';
+import {
+	posts,
+	postSectionEnum,
+	postTypeEnum,
+	contentStatusEnum,
+	postTags,
+	tags
+} from '$lib/db/tables';
+import { and, count, eq, ilike, inArray, notInArray, or } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';
 
 import { hasPermission } from '$lib/auth/permissions';
@@ -19,7 +26,17 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		return parsedQuery.response;
 	}
 
-	const { sections, types, slugs, search, limit, page, exclude, statuses } = parsedQuery.data;
+	const {
+		sections,
+		types,
+		slugs,
+		tags: tagFilters,
+		search,
+		limit,
+		page,
+		exclude,
+		statuses
+	} = parsedQuery.data;
 	const offset = (page - 1) * limit;
 
 	if (statuses && statuses.some((s) => s !== 'published')) {
@@ -48,6 +65,16 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 			if (slugs && (slugs as string[]).length > 0) {
 				filters.push(inArray(table.slug, slugs as string[]));
+			}
+
+			if (tagFilters && tagFilters.length > 0) {
+				const matchingPostIds = db
+					.select({ postId: postTags.postId })
+					.from(postTags)
+					.innerJoin(tags, eq(postTags.tagId, tags.id))
+					.where(inArray(tags.slug, tagFilters as string[]));
+
+				filters.push(inArray(table.id, matchingPostIds));
 			}
 
 			if (search) {
@@ -92,6 +119,18 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 				},
 				with: {
 					coverImage: true,
+					tags: {
+						columns: {},
+						with: {
+							tag: {
+								columns: {
+									id: true,
+									name: true,
+									slug: true
+								}
+							}
+						}
+					},
 					createdBy: {
 						columns: {
 							id: true,
@@ -119,6 +158,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 				items: postsList.map((p) =>
 					PostsGetItem.parse({
 						...p,
+						tags: p.tags.map((postTag) => postTag.tag),
 						coverImage: toAssetMetadata(p.coverImage)
 					})
 				),

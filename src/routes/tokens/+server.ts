@@ -4,8 +4,8 @@ import { TokensGetQuery, TokensGetItem } from '.';
 import { ApiResponse, PaginatedData } from '$lib/api';
 import { parseQueryParams } from '$lib/api/request';
 import { toAssetMetadata } from '$lib/services/assets';
-import { tokens, shariaStatusEnum, contentStatusEnum } from '$lib/db/tables';
-import { and, ilike, inArray, notInArray, or, count } from 'drizzle-orm';
+import { tokens, shariaStatusEnum, contentStatusEnum, tokenTags, tags } from '$lib/db/tables';
+import { and, ilike, inArray, notInArray, or, count, eq } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';
 
 import { hasPermission } from '$lib/auth/permissions';
@@ -19,7 +19,16 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		return parsedQuery.response;
 	}
 
-	const { shariaStatuses, slugs, search, limit, page, exclude, statuses } = parsedQuery.data;
+	const {
+		shariaStatuses,
+		slugs,
+		tags: tagFilters,
+		search,
+		limit,
+		page,
+		exclude,
+		statuses
+	} = parsedQuery.data;
 	const offset = (page - 1) * limit;
 
 	if (statuses && statuses.some((s) => s !== 'published')) {
@@ -45,6 +54,16 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 			if (slugs && slugs.length > 0) {
 				filters.push(inArray(table.slug, slugs as string[]));
+			}
+
+			if (tagFilters && tagFilters.length > 0) {
+				const matchingTokenIds = db
+					.select({ tokenId: tokenTags.tokenId })
+					.from(tokenTags)
+					.innerJoin(tags, eq(tokenTags.tagId, tags.id))
+					.where(inArray(tags.slug, tagFilters as string[]));
+
+				filters.push(inArray(table.id, matchingTokenIds));
 			}
 
 			if (search) {
@@ -84,6 +103,18 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 				},
 				with: {
 					logo: true,
+					tags: {
+						columns: {},
+						with: {
+							tag: {
+								columns: {
+									id: true,
+									name: true,
+									slug: true
+								}
+							}
+						}
+					},
 					createdBy: {
 						columns: {
 							id: true,
@@ -111,6 +142,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 				items: tokensList.map((t) =>
 					TokensGetItem.parse({
 						...t,
+						tags: t.tags.map((tokenTag) => tokenTag.tag),
 						logo: toAssetMetadata(t.logo)
 					})
 				),
