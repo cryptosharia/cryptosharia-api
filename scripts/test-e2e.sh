@@ -1,63 +1,75 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Configuration
+set -euo pipefail
+
 ENV_FILE=".env.test"
+SERVER_PID=""
+DB_CREATED=0
 
-echo "🚀 Starting E2E Test Automation..."
+echo "🚀 Starting E2E test automation..."
 
-# 0. Load Environment Variables as single source of truth
-if [ -f "$ENV_FILE" ]; then
-    echo "Loading $ENV_FILE..."
-    set -a
-    source "$ENV_FILE"
-    set +a
+if [[ -f "$ENV_FILE" ]]; then
+	echo "Loading $ENV_FILE..."
+	set -a
+	# shellcheck disable=SC1090
+	source "$ENV_FILE"
+	set +a
 else
-    echo "❌ $ENV_FILE not found!"
-    exit 1
+	echo "❌ $ENV_FILE not found"
+	exit 1
 fi
 
-# 1. Create local_test database in Docker
-echo "Creating database $DATABASE_NAME..."
-docker exec "$DATABASE_CONTAINER" psql -U "$DATABASE_USER" -d postgres -c "CREATE DATABASE $DATABASE_NAME;" > /dev/null 2>&1
-
-# 2. Sync Schema
-echo "Syncing schema (non-interactive)..."
-npx drizzle-kit push --force > /dev/null 2>&1
-
-# 3. Start Test Server
-echo "Starting test server on port $TEST_PORT..."
-ENV_PATH=$ENV_FILE vite dev --port $TEST_PORT &
-SERVER_PID=$!
-
-# Cleanup function to kill the server and drop the DB on exit
 cleanup() {
-    echo "Cleaning up..."
-    kill $SERVER_PID 2>/dev/null
-    # Wait a moment for connections to close before dropping
-    sleep 1
-    docker exec "$DATABASE_CONTAINER" psql -U "$DATABASE_USER" -d postgres -c "DROP DATABASE IF EXISTS $DATABASE_NAME WITH (FORCE);"
+	local exit_code=$?
+	echo "Cleaning up..."
+
+	if [[ -n "$SERVER_PID" ]] && kill -0 "$SERVER_PID" 2>/dev/null; then
+		kill "$SERVER_PID" 2>/dev/null || true
+		wait "$SERVER_PID" 2>/dev/null || true
+	fi
+
+	if [[ "$DB_CREATED" -eq 1 ]]; then
+		docker exec "$DATABASE_CONTAINER" psql -U "$DATABASE_USER" -d postgres -c \
+			"DROP DATABASE IF EXISTS \"$DATABASE_NAME\" WITH (FORCE);" >/dev/null 2>&1 || true
+	fi
+
+	return "$exit_code"
 }
+
 trap cleanup EXIT
 
-# 4. Wait for server to be ready
-echo "Waiting for server to be ready at $TEST_URL..."
+echo "Preparing database $DATABASE_NAME..."
+docker exec "$DATABASE_CONTAINER" psql -U "$DATABASE_USER" -d postgres -c \
+	"DROP DATABASE IF EXISTS \"$DATABASE_NAME\" WITH (FORCE);" >/dev/null 2>&1 || true
+docker exec "$DATABASE_CONTAINER" psql -U "$DATABASE_USER" -d postgres -c \
+	"CREATE DATABASE \"$DATABASE_NAME\";" >/dev/null
+DB_CREATED=1
+
+echo "Syncing schema..."
+npx drizzle-kit push --force >/dev/null
+
+echo "Starting test server on port $TEST_PORT..."
+ENV_PATH="$ENV_FILE" vite dev --host 0.0.0.0 --port "$TEST_PORT" >/dev/null 2>&1 &
+SERVER_PID=$!
+
+echo "Waiting for server at $TEST_URL..."
 MAX_RETRIES=30
 COUNT=0
-while ! curl -s "$TEST_URL" > /dev/null; do
-    sleep 1
-    COUNT=$((COUNT+1))
-    if [ $COUNT -ge $MAX_RETRIES ]; then
-        echo "❌ Server failed to start in time."
-        exit 1
-    fi
+until curl -fsS "$TEST_URL" >/dev/null 2>&1; do
+	sleep 1
+	COUNT=$((COUNT + 1))
+	if [[ $COUNT -ge $MAX_RETRIES ]]; then
+		echo "❌ Server failed to start in time"
+		exit 1
+	fi
 done
-echo "✅ Server is ready!"
+echo "✅ Server is ready"
 
-# 5. Run Tests
 echo "Running tests..."
+set +e
 npx vitest --reporter=tree --run
-
-# Exit with the test result
 EXIT_CODE=$?
+set -e
+
 echo "Tests finished with exit code $EXIT_CODE"
-exit $EXIT_CODE
+exit "$EXIT_CODE"
