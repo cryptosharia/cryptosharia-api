@@ -16,31 +16,31 @@ export const POST: RequestHandler = async (event) => {
 		if (authError) return authError;
 
 		const formData = await event.request.formData();
-		const image = formData.get('image');
+		const file = formData.get('file');
 
-		if (!(image instanceof File)) {
+		if (!(file instanceof File)) {
 			return ApiResponse.badRequest({
-				image: ['Image file is required']
+				file: ['File is required']
 			});
 		}
 
 		// Validate MIME type — only image files allowed
-		if (!image.type.startsWith('image/')) {
+		if (!file.type.startsWith('image/')) {
 			return ApiResponse.badRequest({
-				image: ['Only image files are allowed (e.g., JPEG, PNG, WebP, GIF, HEIC)']
+				file: ['Only image files are allowed (e.g., JPEG, PNG, WebP, GIF, HEIC)']
 			});
 		}
 
 		// Validate file size — max 32MB
-		if (image.size > MAX_IMAGE_SIZE) {
+		if (file.size > MAX_IMAGE_SIZE) {
 			return ApiResponse.badRequest({
-				image: ['Image must be 32MB or less']
+				file: ['Image must be 32MB or less']
 			});
 		}
 
 		// Prepare the form data for IMGBB
 		const imgbbFormData = new FormData();
-		imgbbFormData.set('image', image);
+		imgbbFormData.set('image', file);
 		imgbbFormData.set('name', crypto.randomUUID());
 
 		// We use fetch to proxy the request to IMGBB

@@ -1468,13 +1468,7 @@ export interface paths {
             };
             requestBody?: {
                 content: {
-                    "multipart/form-data": {
-                        /**
-                         * Format: binary
-                         * @description The image file to upload (max 32MB, image/* MIME types only)
-                         */
-                        image?: string;
-                    };
+                    "multipart/form-data": unknown;
                 };
             };
             responses: {

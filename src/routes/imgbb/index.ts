@@ -13,12 +13,16 @@ export const imgbbPost: RouteConfig = {
 		body: {
 			content: {
 				'multipart/form-data': {
-					schema: z.object({
-						image: z.any().openapi({
-							type: 'string',
-							format: 'binary',
-							description: 'The image file to upload (max 32MB, image/* MIME types only)'
-						})
+					// Note: This is intentionally left untyped for OpenAPI type generation.
+					// Consumers generate types with `openapi-typescript` CLI, which does not
+					// infer `format: binary` into `File`/`FormData` without a transform hook.
+					// Leaving this schema as `any` allows the generated request body type
+					// to be `unknown`, so `openapi-fetch` callers can pass a real `FormData`.
+					//
+					// Runtime contract remains: multipart/form-data with field name `image`.
+					schema: z.any().openapi({
+						description:
+							"Multipart form-data payload. Must include a file part named 'file' (max 32MB, image/* MIME types only)."
 					})
 				}
 			}
