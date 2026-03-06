@@ -5,6 +5,7 @@ import { postsRoutes } from '../posts';
 import { tokensRoutes } from '../tokens';
 import { messagesRoutes } from '../messages';
 import { imgbbRoutes } from '../imgbb';
+import { assetsRoutes } from '../assets';
 import { seedRoutes } from '../seed';
 import { docsRoutes } from '../(docs)';
 import { openapiRoutes } from '.';
@@ -18,5 +19,6 @@ export const ROUTE_REGISTRY: RouteConfig[] = [
 	...tokensRoutes,
 	...messagesRoutes,
 	...imgbbRoutes,
+	...assetsRoutes,
 	...seedRoutes
 ];

@@ -1,3 +1,4 @@
+import { VERCEL_BLOB_URL } from '$env/static/private';
 import type { Asset } from '../db/types';
 
 /**
@@ -19,7 +20,16 @@ export function getAssetUrl(asset: AssetRecord): string {
 			return `https://picsum.photos/${pathname}`;
 
 		case 'vercel_blob':
-			// TODO: implement vercel blob url generation
+			if (pathname.startsWith('http')) {
+				return pathname;
+			}
+
+			if (VERCEL_BLOB_URL) {
+				const base = VERCEL_BLOB_URL.replace(/\/+$/, '');
+				const normalizedPath = pathname.replace(/^\/+/, '');
+				return `${base}/${normalizedPath}`;
+			}
+
 			return pathname;
 
 		default:
