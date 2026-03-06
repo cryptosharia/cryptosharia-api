@@ -3,8 +3,10 @@ import {
 	users,
 	activityLogs,
 	refreshTokens,
+	emailVerifications,
 	tokens,
 	assets,
+	imgbbImages,
 	tokenTags,
 	tags,
 	posts,
@@ -44,6 +46,16 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
 export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
 	user: one(users, {
 		fields: [refreshTokens.userId],
+		references: [users.id]
+	})
+}));
+
+/**
+ * Relations for the Email Verifications table.
+ */
+export const emailVerificationsRelations = relations(emailVerifications, ({ one }) => ({
+	user: one(users, {
+		fields: [emailVerifications.userId],
 		references: [users.id]
 	})
 }));
@@ -89,7 +101,15 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
 /**
  * Relations for the Tags table.
  */
-export const tagsRelations = relations(tags, ({ many }) => ({
+export const tagsRelations = relations(tags, ({ one, many }) => ({
+	createdBy: one(users, {
+		fields: [tags.createdBy],
+		references: [users.id]
+	}),
+	updatedBy: one(users, {
+		fields: [tags.updatedBy],
+		references: [users.id]
+	}),
 	tokenTags: many(tokenTags),
 	postTags: many(postTags)
 }));
@@ -128,6 +148,16 @@ export const postTagsRelations = relations(postTags, ({ one }) => ({
 export const assetsRelations = relations(assets, ({ one }) => ({
 	createdBy: one(users, {
 		fields: [assets.createdBy],
+		references: [users.id]
+	})
+}));
+
+/**
+ * Relations for the ImgBB Images table.
+ */
+export const imgbbImagesRelations = relations(imgbbImages, ({ one }) => ({
+	createdBy: one(users, {
+		fields: [imgbbImages.createdBy],
 		references: [users.id]
 	})
 }));

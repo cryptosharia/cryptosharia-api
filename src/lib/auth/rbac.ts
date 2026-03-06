@@ -12,6 +12,7 @@ export const ALL_PERMISSIONS = [
 	'posts.manage',
 	'posts.read',
 	'tokens.manage',
+	'tags.manage',
 	'users.read',
 	'users.update',
 	'users.manage_status',
@@ -28,7 +29,7 @@ export type Permission = (typeof ALL_PERMISSIONS)[number];
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 	super_admin: [...ALL_PERMISSIONS],
 	admin: ALL_PERMISSIONS.filter((p) => !['users.manage_role', 'users.manage_status'].includes(p)),
-	posts_manager: ['posts.manage'],
-	tokens_manager: ['tokens.manage'],
+	posts_manager: ['posts.manage', 'tags.manage'],
+	tokens_manager: ['tokens.manage', 'tags.manage'],
 	member: []
 };

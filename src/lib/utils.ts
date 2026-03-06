@@ -86,3 +86,19 @@ export function escapeHtml(unsafe: string): string {
 export function isUuid(value: string): boolean {
 	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
+
+/**
+ * Converts a string to a URL-friendly slug.
+ * - Lowercases the input
+ * - Trims whitespace
+ * - Replaces spaces with hyphens
+ * - Removes non-alphanumeric characters (except hyphens)
+ */
+export function slugify(input: string): string {
+	return input
+		.toLowerCase()
+		.trim()
+		.replace(/\s+/g, '-')
+		.replace(/[^a-z0-9-]/g, '')
+		.replace(/-+/g, '-');
+}

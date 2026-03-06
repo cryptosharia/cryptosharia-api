@@ -26,18 +26,19 @@ export const POST: RequestHandler = async () => {
 	try {
 		console.log('--- Demo Seeding Started ---');
 
-		// 1. Clear existing content data
+		// 1. Clear existing content data (order matters for FK constraints)
 		await db.delete(schema.refreshTokens);
-		await db.delete(schema.emailVerifications); // Added missing cleanup
+		await db.delete(schema.emailVerifications);
 		await db.delete(schema.postTags);
 		await db.delete(schema.tokenTags);
 		await db.delete(schema.posts);
 		await db.delete(schema.tokens);
 		await db.delete(schema.tags);
-		await db.delete(schema.users); // Delete users before assets (avatarId FK)
+		await db.delete(schema.activityLogs);
 		await db.delete(schema.assets);
+		await db.delete(schema.imgbbImages); // Delete before users (created_by FK)
 		await db.delete(schema.messages);
-		await db.delete(schema.activityLogs); // Clean logs too
+		await db.delete(schema.users);
 
 		// 2. Seed Users
 		const seededUsers: Record<string, string> = {};
@@ -84,7 +85,11 @@ export const POST: RequestHandler = async () => {
 			if (tagNames && tagNames.length > 0) {
 				for (const tagName of tagNames) {
 					const slug = tagName.toLowerCase().replace(/ /g, '-');
-					await db.insert(schema.tags).values({ name: tagName, slug }).onConflictDoNothing();
+					const description = `Tag for ${tagName.toLowerCase()}-related content`;
+					await db
+						.insert(schema.tags)
+						.values({ name: tagName, slug, description, createdBy: adminId, updatedBy: adminId })
+						.onConflictDoNothing();
 					const [tag] = await db.select().from(schema.tags).where(eq(schema.tags.slug, slug));
 					if (tag) {
 						await db
@@ -120,7 +125,11 @@ export const POST: RequestHandler = async () => {
 			if (tagNames && tagNames.length > 0) {
 				for (const tagName of tagNames) {
 					const slug = tagName.toLowerCase().replace(/ /g, '-');
-					await db.insert(schema.tags).values({ name: tagName, slug }).onConflictDoNothing();
+					const description = `Tag for ${tagName.toLowerCase()}-related content`;
+					await db
+						.insert(schema.tags)
+						.values({ name: tagName, slug, description, createdBy: adminId, updatedBy: adminId })
+						.onConflictDoNothing();
 					const [tag] = await db.select().from(schema.tags).where(eq(schema.tags.slug, slug));
 					if (tag) {
 						await db

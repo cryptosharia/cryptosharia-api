@@ -3,6 +3,7 @@ import { authRoutes } from '../auth';
 import { usersRoutes } from '../users';
 import { postsRoutes } from '../posts';
 import { tokensRoutes } from '../tokens';
+import { tagsRoutes } from '../tags';
 import { messagesRoutes } from '../messages';
 import { imgbbRoutes } from '../imgbb';
 import { assetsRoutes } from '../assets';
@@ -17,6 +18,7 @@ export const ROUTE_REGISTRY: RouteConfig[] = [
 	...usersRoutes,
 	...postsRoutes,
 	...tokensRoutes,
+	...tagsRoutes,
 	...messagesRoutes,
 	...imgbbRoutes,
 	...assetsRoutes,
