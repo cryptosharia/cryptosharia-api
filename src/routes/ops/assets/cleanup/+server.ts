@@ -1,5 +1,5 @@
 import { del, BlobNotFoundError } from '@vercel/blob';
-import { VERCEL_BLOB_KEY } from '$env/static/private';
+import { BLOB_READ_WRITE_TOKEN } from '$env/static/private';
 import { ApiResponse } from '$lib/api';
 import { parseQueryParams } from '$lib/api/request';
 import { db } from '$lib/db';
@@ -24,7 +24,7 @@ export const POST: RequestHandler = async ({ url }) => {
 
 	const cutoff = new Date();
 	cutoff.setDate(cutoff.getDate() - maxAgeDays);
-	const blobToken = VERCEL_BLOB_KEY;
+	const blobToken = BLOB_READ_WRITE_TOKEN;
 
 	try {
 		const candidates = await db

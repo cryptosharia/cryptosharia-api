@@ -2,7 +2,7 @@ import { del, put } from '@vercel/blob';
 import { imageSize } from 'image-size';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
-import { VERCEL_BLOB_KEY } from '$env/static/private';
+import { BLOB_READ_WRITE_TOKEN } from '$env/static/private';
 import { requirePermission } from '$lib/auth/permissions';
 import { ApiResponse } from '$lib/api';
 import { db } from '$lib/db';
@@ -93,7 +93,7 @@ export const POST: RequestHandler = async (event) => {
 				access: 'public',
 				addRandomSuffix: false,
 				contentType: file.type || undefined,
-				token: VERCEL_BLOB_KEY
+				token: BLOB_READ_WRITE_TOKEN
 			});
 		} catch (error) {
 			console.error('Vercel Blob upload error:', error);
@@ -121,7 +121,7 @@ export const POST: RequestHandler = async (event) => {
 			asset = insertedAsset;
 		} catch (error) {
 			try {
-				await del(blob.url, { token: VERCEL_BLOB_KEY });
+				await del(blob.url, { token: BLOB_READ_WRITE_TOKEN });
 			} catch (cleanupError) {
 				console.error('Asset upload cleanup error:', cleanupError);
 			}
