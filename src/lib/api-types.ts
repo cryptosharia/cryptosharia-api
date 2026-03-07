@@ -2471,6 +2471,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/assets/cleanup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cleanup Orphan Assets
+         * @description Remove orphaned Vercel Blob assets not referenced by posts, tokens, or user avatars. Requires Api-Key equal to CS_API_KEY_OPS.
+         */
+        post: {
+            parameters: {
+                query?: {
+                    dryRun?: boolean;
+                    limit?: number;
+                    maxAgeDays?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Assets cleanup executed successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["OpsAssetsCleanupData"];
+                        };
+                    };
+                };
+                /** @description Invalid cleanup query parameters provided */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Invalid or missing Api-Key for ops endpoints */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to clean up orphan assets due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/seed/demo": {
         parameters: {
             query?: never;
@@ -2981,6 +3053,21 @@ export interface components {
             createdAt: string;
             /** Format: uuid */
             createdBy: string | null;
+        };
+        OpsAssetsCleanupData: {
+            dryRun: boolean;
+            limit: number;
+            maxAgeDays: number;
+            candidates: number;
+            deleted: number;
+            failed: number;
+            failures: components["schemas"]["OpsAssetsCleanupFailure"][];
+        };
+        OpsAssetsCleanupFailure: {
+            /** Format: uuid */
+            assetId: string;
+            pathname: string;
+            reason: string;
         };
     };
     responses: never;

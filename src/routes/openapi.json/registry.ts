@@ -8,6 +8,7 @@ import { messagesRoutes } from '../messages';
 import { imgbbRoutes } from '../imgbb';
 import { assetsRoutes } from '../assets';
 import { seedRoutes } from '../seed';
+import { opsAssetsCleanupRoutes } from '../ops/assets/cleanup';
 import { docsRoutes } from '../(docs)';
 import { openapiRoutes } from '.';
 
@@ -22,5 +23,6 @@ export const ROUTE_REGISTRY: RouteConfig[] = [
 	...messagesRoutes,
 	...imgbbRoutes,
 	...assetsRoutes,
+	...opsAssetsCleanupRoutes,
 	...seedRoutes
 ];

@@ -49,4 +49,22 @@ describe('API Key Authentication (Hooks Integration)', () => {
 
 		expect(response.status).toBe(200);
 	});
+
+	it('should reject /ops routes when using non-ops Api-Key', async () => {
+		const { response } = await client.POST('/ops/assets/cleanup', {
+			params: { query: { dryRun: true } },
+			headers: { 'Api-Key': env.CS_API_KEY_TEST! }
+		});
+
+		expect(response.status).toBe(401);
+	});
+
+	it('should allow /ops routes with CS_API_KEY_OPS', async () => {
+		const { response } = await client.POST('/ops/assets/cleanup', {
+			params: { query: { dryRun: true } },
+			headers: { 'Api-Key': env.CS_API_KEY_OPS! }
+		});
+
+		expect(response.status).toBe(200);
+	});
 });

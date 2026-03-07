@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { createAuthenticatedClient } from '$lib/test-utils';
 import { env } from '$env/dynamic/private';
 
+// IMPORTANT:
+// This suite is intentionally negative-path only.
+// Do NOT add a "happy path" test that triggers the upstream Vercel Blob call,
+// because it can drain external quota and create flaky tests.
+// Success-path coverage should be done by mocking the market-data provider.
+
 describe('Assets Upload API Integration', () => {
 	it('should return 401 when request has no authenticated user', async () => {
 		const form = new FormData();

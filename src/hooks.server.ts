@@ -1,4 +1,5 @@
 import { env } from '$env/dynamic/private';
+import { CS_API_KEY_OPS } from '$env/static/private';
 import { ApiResponse } from '$lib/api';
 import type { Handle } from '@sveltejs/kit';
 import { verifyAccessToken } from '$lib/auth/tokens';
@@ -16,6 +17,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
 	const apiKey = event.request.headers.get('Api-Key');
 	const publicPaths = ['/', '/openapi.json'];
+	const isOpsPath = pathname.startsWith('/ops/');
 	event.locals.clientIp = event.getClientAddress();
 
 	const withSecurityHeaders = (response: Response) => {
@@ -35,12 +37,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return withSecurityHeaders(await resolve(event));
 	}
 
-	// 2. Check for Api-Key header (Mandatory for all private API routes)
-	if (!apiKey || !validApiKeys.includes(apiKey)) {
+	// 2. Ops path auth gate (requires dedicated ops Api-Key)
+	if (isOpsPath && apiKey !== CS_API_KEY_OPS) {
 		return withSecurityHeaders(ApiResponse.unauthorized());
 	}
 
-	// 3. Private-only Rate Limiting (after Api-Key validation)
+	// 3. Check for Api-Key header (Mandatory for all non-public/private API routes)
+	if (!isOpsPath && (!apiKey || !validApiKeys.includes(apiKey))) {
+		return withSecurityHeaders(ApiResponse.unauthorized());
+	}
+
+	// 4. Private/Ops Rate Limiting (after auth validation)
 	event.locals.clientIp =
 		parseForwardedIp(event.request.headers.get('Forwarded')) || event.getClientAddress();
 	const rl = await defaultLimiter.consume(event.locals.clientIp);
@@ -56,7 +63,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return withPrivateRateLimit(ApiResponse.tooManyRequests());
 	}
 
-	// 4. Extract and verify JWT if present in Authorization header
+	// 5. Extract and verify JWT if present in Authorization header
 	const authHeader = event.request.headers.get('Authorization');
 	if (authHeader && authHeader.startsWith('Bearer ')) {
 		const token = authHeader.split(' ')[1];
@@ -77,7 +84,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	// 5. Continue to the request handler
+	// 6. Continue to the request handler
 	const response = await resolve(event);
 
 	return withPrivateRateLimit(response);

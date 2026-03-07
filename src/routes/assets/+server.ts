@@ -2,7 +2,7 @@ import { del, put } from '@vercel/blob';
 import { imageSize } from 'image-size';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
-import { BLOB_READ_WRITE_TOKEN } from '$env/static/private';
+import { VERCEL_BLOB_KEY } from '$env/static/private';
 import { requirePermission } from '$lib/auth/permissions';
 import { ApiResponse } from '$lib/api';
 import { db } from '$lib/db';
@@ -61,12 +61,6 @@ export const POST: RequestHandler = async (event) => {
 	const authError = requirePermission(event.locals, ['posts.manage', 'tokens.manage']);
 	if (authError) return authError;
 
-	const blobToken = BLOB_READ_WRITE_TOKEN;
-	if (!blobToken) {
-		console.error('Vercel Blob configuration error: missing BLOB_READ_WRITE_TOKEN');
-		return ApiResponse.internalServerError('Blob storage is not configured');
-	}
-
 	try {
 		const formData = await event.request.formData();
 		const file = formData.get('file');
@@ -99,7 +93,7 @@ export const POST: RequestHandler = async (event) => {
 				access: 'public',
 				addRandomSuffix: false,
 				contentType: file.type || undefined,
-				token: blobToken
+				token: VERCEL_BLOB_KEY
 			});
 		} catch (error) {
 			console.error('Vercel Blob upload error:', error);
@@ -127,7 +121,7 @@ export const POST: RequestHandler = async (event) => {
 			asset = insertedAsset;
 		} catch (error) {
 			try {
-				await del(blob.url, { token: blobToken });
+				await del(blob.url, { token: VERCEL_BLOB_KEY });
 			} catch (cleanupError) {
 				console.error('Asset upload cleanup error:', cleanupError);
 			}
