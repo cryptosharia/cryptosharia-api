@@ -1,10 +1,10 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { ApiResponse, PaginatedData } from '$lib/api';
-import { parseQueryParams } from '$lib/api/request';
-import { PostsGetQuery, PostsGetItem } from '.';
-import { toAssetMetadata } from '$lib/services/assets';
+import { parseJsonBody, parseQueryParams } from '$lib/api/request';
+import { PostsCreateBody, PostsGetData, PostsGetItem, PostsGetQuery } from '.';
 import {
+	assets,
 	posts,
 	postSectionEnum,
 	postTypeEnum,
@@ -14,8 +14,9 @@ import {
 } from '$lib/db/tables';
 import { and, count, eq, ilike, inArray, notInArray, or } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';
-
-import { hasPermission } from '$lib/auth/permissions';
+import { requirePermission, hasPermission } from '$lib/auth/permissions';
+import { fetchPostDetail, resolvePostTagIdentifiers } from '$lib/services/posts';
+import { toAssetMetadata } from '$lib/services/assets';
 
 /**
  * Handles GET requests to fetch posts with filtering, searching, and pagination.
@@ -174,5 +175,103 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	} catch (error) {
 		console.error('Fetch posts error:', error);
 		return ApiResponse.internalServerError('Failed to retrieve posts');
+	}
+};
+
+export const POST: RequestHandler = async ({ request, locals }) => {
+	const authError = requirePermission(locals, 'posts.manage');
+	if (authError) return authError;
+
+	const parsedBody = await parseJsonBody(request, PostsCreateBody);
+	if (!parsedBody.ok) {
+		return parsedBody.response;
+	}
+
+	const {
+		title,
+		slug,
+		excerpt,
+		content,
+		coverImageId,
+		section,
+		type,
+		status,
+		isFeatured,
+		eventDate,
+		externalLink,
+		tags: tagIdentifiers
+	} = parsedBody.data;
+
+	try {
+		const [existingPost, existingAsset] = await Promise.all([
+			db.query.posts.findFirst({ where: eq(posts.slug, slug) }),
+			db.query.assets.findFirst({ where: eq(assets.id, coverImageId) })
+		]);
+
+		if (existingPost) {
+			return ApiResponse.conflict('Post with this slug already exists');
+		}
+
+		if (!existingAsset) {
+			return ApiResponse.badRequest({ coverImageId: ['Cover image not found'] });
+		}
+
+		let resolvedTagIds: string[] = [];
+		if (tagIdentifiers !== undefined) {
+			const tagResolution = await resolvePostTagIdentifiers(tagIdentifiers);
+			if (!tagResolution.ok) {
+				return ApiResponse.badRequest({
+					tags: [`Unknown tag identifier(s): ${tagResolution.missingIdentifiers.join(', ')}`]
+				});
+			}
+
+			resolvedTagIds = tagResolution.tagIds;
+		}
+
+		const publishedAt = status === 'published' ? new Date() : null;
+		const userId = locals.user?.id;
+
+		const createdPostId = await db.transaction(async (tx) => {
+			const [createdPost] = await tx
+				.insert(posts)
+				.values({
+					title,
+					slug,
+					excerpt,
+					content,
+					coverImageId,
+					section,
+					type,
+					status,
+					isFeatured,
+					eventDate: eventDate ?? null,
+					externalLink: externalLink ?? null,
+					publishedAt,
+					createdBy: userId,
+					updatedBy: userId
+				})
+				.returning({ id: posts.id });
+
+			if (resolvedTagIds.length > 0) {
+				await tx.insert(postTags).values(
+					resolvedTagIds.map((tagId) => ({
+						postId: createdPost.id,
+						tagId
+					}))
+				);
+			}
+
+			return createdPost.id;
+		});
+
+		const post = await fetchPostDetail(locals, createdPostId);
+		if (!post) {
+			return ApiResponse.internalServerError('Failed to create post');
+		}
+
+		return ApiResponse.created<PostsGetData>(PostsGetData.parse(post), 'Post created successfully');
+	} catch (error) {
+		console.error('Create post error:', error);
+		return ApiResponse.internalServerError('Failed to create post');
 	}
 };

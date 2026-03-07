@@ -163,7 +163,7 @@ describe('Tags API Integration - Write', () => {
 
 			await db.insert(postTags).values({ postId: post.id, tagId: tag.id });
 
-			const { response, data } = await adminClient.DELETE('/tags/{id}', {
+			const { response } = await adminClient.DELETE('/tags/{id}', {
 				params: { path: { id: tag.id }, query: { force: false } }
 			});
 
@@ -197,7 +197,7 @@ describe('Tags API Integration - Write', () => {
 
 			await db.insert(tokenTags).values({ tokenId: token.id, tagId: tag.id });
 
-			const { response, data } = await adminClient.DELETE('/tags/{id}', {
+			const { response } = await adminClient.DELETE('/tags/{id}', {
 				params: { path: { id: tag.id }, query: { force: false } }
 			});
 
