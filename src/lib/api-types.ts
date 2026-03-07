@@ -993,7 +993,81 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /**
+         * Create Post
+         * @description Create a post and optionally set tag relations. Values in `tags` can be tag UUIDs or slugs.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PostsCreateBody"];
+                };
+            };
+            responses: {
+                /** @description Post created successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["PostsGetData"];
+                        };
+                    };
+                };
+                /** @description Invalid request body provided */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Invalid or missing API key */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Missing required permission: posts.manage */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Post with this slug already exists */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to create post due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1065,10 +1139,160 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Post
+         * @description Delete a post by UUID or Slug.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The UUID or Slug of the post */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Post deleted successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["PostsDeleteData"];
+                        };
+                    };
+                };
+                /** @description Invalid or missing API key */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Missing required permission: posts.manage */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Post not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to delete post due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update Post
+         * @description Update an existing post by UUID or Slug. When `tags` is provided, the existing post tags are replaced.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The UUID or Slug of the post */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PostsUpdateBody"];
+                };
+            };
+            responses: {
+                /** @description Post updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["PostsGetData"];
+                        };
+                    };
+                };
+                /** @description Invalid request body provided */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Invalid or missing API key */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Missing required permission: posts.manage */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Post not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Post with this slug already exists */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to update post due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/tokens": {
@@ -1155,7 +1379,81 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /**
+         * Create Token
+         * @description Create a token and optionally set tag relations. Values in `tags` can be tag UUIDs or slugs.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["TokensCreateBody"];
+                };
+            };
+            responses: {
+                /** @description Token created successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["TokensGetData"];
+                        };
+                    };
+                };
+                /** @description Invalid request body provided */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Invalid or missing API key */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Missing required permission: tokens.manage */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Token with this slug or ticker already exists */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to create token due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1227,10 +1525,160 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Token
+         * @description Delete a token by UUID or Slug.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The UUID or Slug of the cryptocurrency token */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Token deleted successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["TokensDeleteData"];
+                        };
+                    };
+                };
+                /** @description Invalid or missing API key */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Missing required permission: tokens.manage */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Token not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to delete token due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update Token
+         * @description Update an existing token by UUID or Slug. When `tags` is provided, existing token tags are replaced.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The UUID or Slug of the cryptocurrency token */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["TokensUpdateBody"];
+                };
+            };
+            responses: {
+                /** @description Token updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"] & {
+                            data: components["schemas"]["TokensGetData"];
+                        };
+                    };
+                };
+                /** @description Invalid request body provided */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Invalid or missing API key */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Missing required permission: tokens.manage */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Token not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Token with this slug or ticker already exists */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Failed to update token due to an internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/tokens/quotes": {
@@ -2296,6 +2744,55 @@ export interface components {
             slug: string;
             description: string | null;
         };
+        PostsCreateBody: {
+            title: string;
+            slug: string;
+            excerpt: string;
+            content: string;
+            /** Format: uuid */
+            coverImageId: string;
+            /** @enum {string} */
+            section: "news" | "education" | "research" | "activity";
+            /** @enum {string} */
+            type: "article" | "webinar" | "video" | "headline";
+            /**
+             * @default draft
+             * @enum {string}
+             */
+            status: "draft" | "published" | "archived";
+            /** @default false */
+            isFeatured: boolean;
+            /** Format: date-time */
+            eventDate?: string | null;
+            /** Format: uri */
+            externalLink?: string | null;
+            /** @description List of tag identifiers (UUID or slug) to attach to this post */
+            tags?: string[];
+        };
+        PostsUpdateBody: {
+            title?: string;
+            slug?: string;
+            excerpt?: string;
+            content?: string;
+            /** Format: uuid */
+            coverImageId?: string;
+            /** @enum {string} */
+            section?: "news" | "education" | "research" | "activity";
+            /** @enum {string} */
+            type?: "article" | "webinar" | "video" | "headline";
+            /** @enum {string} */
+            status?: "draft" | "published" | "archived";
+            isFeatured?: boolean;
+            /** Format: date-time */
+            eventDate?: string | null;
+            /** Format: uri */
+            externalLink?: string | null;
+            /** @description List of tag identifiers (UUID or slug) to attach to this post */
+            tags?: string[];
+        };
+        PostsDeleteData: {
+            message: string;
+        };
         PaginatedTokensGetItem: {
             items: components["schemas"]["TokensGetItem"][];
             pagination: components["schemas"]["Pagination"];
@@ -2363,6 +2860,50 @@ export interface components {
             name: string;
             slug: string;
             description: string | null;
+        };
+        TokensCreateBody: {
+            name: string;
+            ticker: string;
+            slug: string;
+            rank: number;
+            /** @enum {string} */
+            shariaStatus: "halal" | "haram" | "syubhat";
+            /**
+             * @default draft
+             * @enum {string}
+             */
+            status: "draft" | "published" | "archived";
+            excerpt: string;
+            content: string;
+            /** Format: uri */
+            website: string;
+            tradingviewSymbol?: string | null;
+            /** Format: uuid */
+            logoId: string;
+            /** @description List of tag identifiers (UUID or slug) to attach to this token */
+            tags?: string[];
+        };
+        TokensUpdateBody: {
+            name?: string;
+            ticker?: string;
+            slug?: string;
+            rank?: number;
+            /** @enum {string} */
+            shariaStatus?: "halal" | "haram" | "syubhat";
+            /** @enum {string} */
+            status?: "draft" | "published" | "archived";
+            excerpt?: string;
+            content?: string;
+            /** Format: uri */
+            website?: string;
+            tradingviewSymbol?: string | null;
+            /** Format: uuid */
+            logoId?: string;
+            /** @description List of tag identifiers (UUID or slug) to attach to this token */
+            tags?: string[];
+        };
+        TokensDeleteData: {
+            message: string;
         };
         TokensQuotesGetItem: {
             slug: string;

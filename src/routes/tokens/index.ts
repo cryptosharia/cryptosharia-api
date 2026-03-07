@@ -71,6 +71,70 @@ export const TokensGetData = Token.omit({
 	.openapi('TokensGetData');
 export type TokensGetData = z.infer<typeof TokensGetData>;
 
+export const TokensWriteTags = z
+	.array(z.string().trim().min(1))
+	.max(50, 'Tags must contain at most 50 identifiers')
+	.optional()
+	.describe('List of tag identifiers (UUID or slug) to attach to this token');
+
+export const TokensCreateBody = z
+	.object({
+		name: z.string().trim().min(1).max(100),
+		ticker: z.string().trim().min(1).max(20),
+		slug: z.string().trim().min(1).max(100),
+		rank: z.number().int().min(1),
+		shariaStatus: z.enum(shariaStatusEnum.enumValues),
+		status: z.enum(contentStatusEnum.enumValues).optional().default('draft'),
+		excerpt: z.string().trim().min(1),
+		content: z.string().trim().min(1),
+		website: z.url(),
+		tradingviewSymbol: z.string().trim().max(64).optional().nullable(),
+		logoId: z.uuid(),
+		tags: TokensWriteTags
+	})
+	.openapi('TokensCreateBody');
+export type TokensCreateBody = z.infer<typeof TokensCreateBody>;
+
+export const TokensUpdateBody = z
+	.object({
+		name: z.string().trim().min(1).max(100).optional(),
+		ticker: z.string().trim().min(1).max(20).optional(),
+		slug: z.string().trim().min(1).max(100).optional(),
+		rank: z.number().int().min(1).optional(),
+		shariaStatus: z.enum(shariaStatusEnum.enumValues).optional(),
+		status: z.enum(contentStatusEnum.enumValues).optional(),
+		excerpt: z.string().trim().min(1).optional(),
+		content: z.string().trim().min(1).optional(),
+		website: z.url().optional(),
+		tradingviewSymbol: z.string().trim().max(64).optional().nullable(),
+		logoId: z.uuid().optional(),
+		tags: TokensWriteTags
+	})
+	.refine(
+		(body) =>
+			body.name !== undefined ||
+			body.ticker !== undefined ||
+			body.slug !== undefined ||
+			body.rank !== undefined ||
+			body.shariaStatus !== undefined ||
+			body.status !== undefined ||
+			body.excerpt !== undefined ||
+			body.content !== undefined ||
+			body.website !== undefined ||
+			body.tradingviewSymbol !== undefined ||
+			body.logoId !== undefined ||
+			body.tags !== undefined,
+		{ message: 'At least one field must be provided for update' }
+	)
+	.openapi('TokensUpdateBody');
+export type TokensUpdateBody = z.infer<typeof TokensUpdateBody>;
+
+export const TokensDeleteData = z
+	.object({
+		message: z.string()
+	})
+	.openapi('TokensDeleteData');
+
 export const tokensGet: RouteConfig = {
 	path: '/tokens',
 	method: 'get',
@@ -91,6 +155,32 @@ export const tokensGet: RouteConfig = {
 		...OpenApiResponse.internalServerError(
 			'Failed to retrieve tokens due to an internal server error'
 		)
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+export const tokensCreate: RouteConfig = {
+	path: '/tokens',
+	method: 'post',
+	summary: 'Create Token',
+	description:
+		'Create a token and optionally set tag relations. Values in `tags` can be tag UUIDs or slugs.',
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: TokensCreateBody
+				}
+			}
+		}
+	},
+	responses: {
+		...OpenApiResponse.created(TokensGetData, 'Token created successfully'),
+		...OpenApiResponse.badRequest('Invalid request body provided'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.forbidden('Missing required permission: tokens.manage'),
+		...OpenApiResponse.conflict('Token with this slug or ticker already exists'),
+		...OpenApiResponse.internalServerError('Failed to create token due to an internal server error')
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -117,6 +207,52 @@ export const tokensDetailGet: RouteConfig = {
 		...OpenApiResponse.internalServerError(
 			'Failed to retrieve token due to an internal server error'
 		)
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+export const tokensDetailUpdate: RouteConfig = {
+	path: '/tokens/{id}',
+	method: 'patch',
+	summary: 'Update Token',
+	description:
+		'Update an existing token by UUID or Slug. When `tags` is provided, existing token tags are replaced.',
+	request: {
+		params: TokensDetailGetParams,
+		body: {
+			content: {
+				'application/json': {
+					schema: TokensUpdateBody
+				}
+			}
+		}
+	},
+	responses: {
+		...OpenApiResponse.ok(TokensGetData, 'Token updated successfully'),
+		...OpenApiResponse.badRequest('Invalid request body provided'),
+		...OpenApiResponse.notFound('Token not found'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.forbidden('Missing required permission: tokens.manage'),
+		...OpenApiResponse.conflict('Token with this slug or ticker already exists'),
+		...OpenApiResponse.internalServerError('Failed to update token due to an internal server error')
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+export const tokensDetailDelete: RouteConfig = {
+	path: '/tokens/{id}',
+	method: 'delete',
+	summary: 'Delete Token',
+	description: 'Delete a token by UUID or Slug.',
+	request: {
+		params: TokensDetailGetParams
+	},
+	responses: {
+		...OpenApiResponse.ok(TokensDeleteData, 'Token deleted successfully'),
+		...OpenApiResponse.notFound('Token not found'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.forbidden('Missing required permission: tokens.manage'),
+		...OpenApiResponse.internalServerError('Failed to delete token due to an internal server error')
 	},
 	security: [{ ApiKeyAuth: [] }]
 };
@@ -170,4 +306,11 @@ export const tokensQuotesGet: RouteConfig = {
 	security: [{ ApiKeyAuth: [] }]
 };
 
-export const tokensRoutes: RouteConfig[] = [tokensGet, tokensDetailGet, tokensQuotesGet];
+export const tokensRoutes: RouteConfig[] = [
+	tokensGet,
+	tokensCreate,
+	tokensDetailGet,
+	tokensDetailUpdate,
+	tokensDetailDelete,
+	tokensQuotesGet
+];

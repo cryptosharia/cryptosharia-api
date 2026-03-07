@@ -1,14 +1,22 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { TokensGetQuery, TokensGetItem } from '.';
+import { TokensCreateBody, TokensGetData, TokensGetItem, TokensGetQuery } from '.';
 import { ApiResponse, PaginatedData } from '$lib/api';
-import { parseQueryParams } from '$lib/api/request';
+import { parseJsonBody, parseQueryParams } from '$lib/api/request';
 import { toAssetMetadata } from '$lib/services/assets';
-import { tokens, shariaStatusEnum, contentStatusEnum, tokenTags, tags } from '$lib/db/tables';
+import {
+	assets,
+	tokens,
+	shariaStatusEnum,
+	contentStatusEnum,
+	tokenTags,
+	tags
+} from '$lib/db/tables';
 import { and, ilike, inArray, notInArray, or, count, eq } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';
 
-import { hasPermission } from '$lib/auth/permissions';
+import { hasPermission, requirePermission } from '$lib/auth/permissions';
+import { fetchTokenDetail, resolveTokenTagIdentifiers } from '$lib/services/tokens';
 
 /**
  * Handles GET requests to fetch tokens with filtering, searching, and pagination.
@@ -158,5 +166,106 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	} catch (error) {
 		console.error('Fetch tokens error:', error);
 		return ApiResponse.internalServerError('Failed to retrieve tokens');
+	}
+};
+
+export const POST: RequestHandler = async ({ request, locals }) => {
+	const authError = requirePermission(locals, 'tokens.manage');
+	if (authError) return authError;
+
+	const parsedBody = await parseJsonBody(request, TokensCreateBody);
+	if (!parsedBody.ok) {
+		return parsedBody.response;
+	}
+
+	const {
+		name,
+		ticker,
+		slug,
+		rank,
+		shariaStatus,
+		status,
+		excerpt,
+		content,
+		website,
+		tradingviewSymbol,
+		logoId,
+		tags: tagIdentifiers
+	} = parsedBody.data;
+
+	try {
+		const [existingToken, existingAsset] = await Promise.all([
+			db.query.tokens.findFirst({ where: or(eq(tokens.slug, slug), eq(tokens.ticker, ticker)) }),
+			db.query.assets.findFirst({ where: eq(assets.id, logoId) })
+		]);
+
+		if (existingToken) {
+			return ApiResponse.conflict('Token with this slug or ticker already exists');
+		}
+
+		if (!existingAsset) {
+			return ApiResponse.badRequest({ logoId: ['Logo asset not found'] });
+		}
+
+		let resolvedTagIds: string[] = [];
+		if (tagIdentifiers !== undefined) {
+			const tagResolution = await resolveTokenTagIdentifiers(tagIdentifiers);
+			if (!tagResolution.ok) {
+				return ApiResponse.badRequest({
+					tags: [`Unknown tag identifier(s): ${tagResolution.missingIdentifiers.join(', ')}`]
+				});
+			}
+
+			resolvedTagIds = tagResolution.tagIds;
+		}
+
+		const publishedAt = status === 'published' ? new Date() : null;
+		const userId = locals.user?.id;
+
+		const createdTokenId = await db.transaction(async (tx) => {
+			const [createdToken] = await tx
+				.insert(tokens)
+				.values({
+					name,
+					ticker,
+					slug,
+					rank,
+					shariaStatus,
+					status,
+					excerpt,
+					content,
+					website,
+					tradingviewSymbol: tradingviewSymbol ?? null,
+					logoId,
+					publishedAt,
+					createdBy: userId,
+					updatedBy: userId
+				})
+				.returning({ id: tokens.id });
+
+			if (resolvedTagIds.length > 0) {
+				await tx.insert(tokenTags).values(
+					resolvedTagIds.map((tagId) => ({
+						tokenId: createdToken.id,
+						tagId
+					}))
+				);
+			}
+
+			return createdToken.id;
+		});
+
+		const token = await fetchTokenDetail(locals, createdTokenId);
+		if (!token) {
+			return ApiResponse.internalServerError('Failed to create token');
+		}
+
+		return ApiResponse.created<TokensGetData>(
+			TokensGetData.parse(token),
+			'Token created successfully'
+		);
+	} catch (error) {
+		console.error('Create token error:', error);
+		return ApiResponse.internalServerError('Failed to create token');
 	}
 };
