@@ -28,7 +28,7 @@ export const POST: RequestHandler = async () => {
 
 		// 1. Clear existing content data (order matters for FK constraints)
 		await db.delete(schema.refreshTokens);
-		await db.delete(schema.emailVerifications);
+		await db.delete(schema.authTokens);
 		await db.delete(schema.postTags);
 		await db.delete(schema.tokenTags);
 		await db.delete(schema.posts);
@@ -43,14 +43,14 @@ export const POST: RequestHandler = async () => {
 		// 2. Seed Users
 		const seededUsers: Record<string, string> = {};
 		for (const userData of USERS) {
-			const hashedPassword = await hashPassword(userData.password);
+			const passwordHash = await hashPassword(userData.password);
 
 			const [user] = await db
 				.insert(schema.users)
 				.values({
 					name: userData.name,
 					email: userData.email,
-					hashedPassword,
+					passwordHash,
 					role: userData.role as Role,
 					status: userData.status || 'active',
 					isEmailVerified: userData.isEmailVerified

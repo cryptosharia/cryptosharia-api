@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { createApiTestClient } from '$lib/test-utils';
 import { db } from '$lib/db';
-import { users, emailVerifications } from '$lib/db/tables';
+import { users, authTokens } from '$lib/db/tables';
 import { eq, and, isNull } from 'drizzle-orm';
 import { hashPassword } from '$lib/auth/password';
+import { hashOpaqueToken } from '$lib/auth/tokens';
 
 describe('POST /auth/verify', () => {
 	const client = createApiTestClient();
@@ -18,9 +19,10 @@ describe('POST /auth/verify', () => {
 		const expiresAt = new Date();
 		expiresAt.setHours(expiresAt.getHours() + hourOffset);
 
-		await db.insert(emailVerifications).values({
+		await db.insert(authTokens).values({
 			userId,
-			token,
+			type: 'email_verification',
+			tokenHash: hashOpaqueToken(token),
 			expiresAt
 		});
 	}
@@ -34,7 +36,7 @@ describe('POST /auth/verify', () => {
 			.values({
 				name: 'Verify Me',
 				email,
-				hashedPassword: await hashPassword(password),
+				passwordHash: await hashPassword(password),
 				isEmailVerified: false
 			})
 			.returning();
@@ -57,8 +59,8 @@ describe('POST /auth/verify', () => {
 		expect(updatedUser?.isEmailVerified).toBe(true);
 
 		// 4. Token should be revoked (not deleted)
-		const storedToken = await db.query.emailVerifications.findFirst({
-			where: eq(emailVerifications.token, token)
+		const storedToken = await db.query.authTokens.findFirst({
+			where: and(eq(authTokens.userId, user.id), eq(authTokens.type, 'email_verification'))
 		});
 		expect(storedToken).toBeDefined();
 		expect(storedToken?.revokedAt).not.toBeNull();
@@ -79,7 +81,7 @@ describe('POST /auth/verify', () => {
 			.values({
 				name: 'Expired Test',
 				email: 'expired@example.com',
-				hashedPassword: 'hash',
+				passwordHash: 'hash',
 				isEmailVerified: false
 			})
 			.returning();
@@ -107,13 +109,16 @@ describe('POST /auth/verify', () => {
 		});
 		expect(signinRes.response.status).toBe(401);
 
-		// 3. Get token from DB
-		const ver = await db.query.emailVerifications.findFirst();
-		expect(ver).toBeDefined();
+		// 3. Create known token for verification
+		const user = await db.query.users.findFirst({ where: eq(users.email, email) });
+		expect(user).toBeDefined();
+
+		const token = 'known-verify-token';
+		await createVerificationToken(user!.id, token, 6);
 
 		// 4. Verify
 		await client.POST('/auth/verify', {
-			body: { token: ver!.token }
+			body: { token }
 		});
 
 		const signinRes2 = await client.POST('/auth/signin', {
@@ -131,8 +136,8 @@ describe('POST /auth/verify', () => {
 		await signup({ name: 'Multi', email, password });
 
 		const user = await db.query.users.findFirst({ where: eq(users.email, email) });
-		const token1 = await db.query.emailVerifications.findFirst({
-			where: eq(emailVerifications.userId, user!.id)
+		const token1 = await db.query.authTokens.findFirst({
+			where: and(eq(authTokens.userId, user!.id), eq(authTokens.type, 'email_verification'))
 		});
 		expect(token1).toBeDefined();
 		expect(token1?.revokedAt).toBeNull();
@@ -141,17 +146,18 @@ describe('POST /auth/verify', () => {
 		await signup({ name: 'Multi Updated', email, password });
 
 		// 3. Verify Token 1 is now revoked
-		const token1Refetched = await db.query.emailVerifications.findFirst({
-			where: eq(emailVerifications.id, token1!.id)
+		const token1Refetched = await db.query.authTokens.findFirst({
+			where: eq(authTokens.id, token1!.id)
 		});
 		expect(token1Refetched?.revokedAt).not.toBeNull();
 
 		// 4. Verify a new Token 2 exists and is active
 		// Since we insert a new one, we search by userId and isNull(revokedAt)
-		const activeToken = await db.query.emailVerifications.findFirst({
+		const activeToken = await db.query.authTokens.findFirst({
 			where: and(
-				eq(emailVerifications.userId, token1!.userId),
-				isNull(emailVerifications.revokedAt)
+				eq(authTokens.userId, token1!.userId),
+				eq(authTokens.type, 'email_verification'),
+				isNull(authTokens.revokedAt)
 			)
 		});
 		expect(activeToken).toBeDefined();

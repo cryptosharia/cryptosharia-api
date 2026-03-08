@@ -32,7 +32,7 @@ describe('POST /auth/signin', () => {
 		expect(loginData.refreshToken).toBeDefined();
 
 		// Sensitive fields should be stripped
-		expect(loginData.user).not.toHaveProperty('hashedPassword');
+		expect(loginData.user).not.toHaveProperty('passwordHash');
 		expect(loginData.user).not.toHaveProperty('role');
 		expect(loginData).not.toHaveProperty('role');
 	});

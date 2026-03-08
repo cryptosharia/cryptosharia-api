@@ -122,6 +122,14 @@ export const userRoleEnum = pgEnum('user_role', [
 	'member'
 ]);
 
+/**
+ * Auth token purpose categories.
+ */
+export const authTokenTypeEnum = pgEnum('auth_token_type', [
+	'email_verification',
+	'password_reset'
+]);
+
 // --- Tables ---
 
 /**
@@ -131,7 +139,7 @@ export const users = pgTable('users', {
 	...PK_UUID,
 	name: varchar('name', { length: 120 }).notNull(), // Full name
 	email: varchar('email', { length: 255 }).notNull().unique(),
-	hashedPassword: text('hashed_password').notNull(),
+	passwordHash: text('hashed_password').notNull(),
 	passwordHashingAlgorithm: hashingAlgorithmEnum('password_hashing_algorithm')
 		.notNull()
 		.default('argon2id'),
@@ -193,22 +201,23 @@ export const refreshTokens = pgTable('refresh_tokens', {
 });
 
 /**
- * Stores temporary tokens for email verification workflows.
+ * Stores temporary auth tokens for verification and password reset workflows.
  */
-export const emailVerifications = pgTable('email_verifications', {
+export const authTokens = pgTable('auth_tokens', {
 	...PK_UUID,
-	/** ID of the user to be verified */
+	/** ID of the user that token belongs to */
 	userId: uuid('user_id')
 		.references(() => users.id, { onDelete: 'cascade' })
 		.notNull(),
-	/** Secure random verification token */
-	token: varchar('token', { length: 255 }).notNull().unique(),
-	/** When this token expires (e.g. 24h from creation) */
+	/** Token purpose */
+	type: authTokenTypeEnum('type').notNull(),
+	/** Hashed opaque token (sha256 hex) */
+	tokenHash: varchar('token_hash', { length: 255 }).notNull().unique(),
+	/** When this token expires */
 	expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 	/** When this token was used or invalidated */
 	revokedAt: timestamp('revoked_at', { withTimezone: true }),
-	...CREATED_AT,
-	...UPDATED_AT
+	...CREATED_AT
 });
 
 /**

@@ -3,7 +3,7 @@ import {
 	users,
 	activityLogs,
 	refreshTokens,
-	emailVerifications,
+	authTokens,
 	tokens,
 	assets,
 	imgbbImages,
@@ -27,7 +27,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 		relationName: 'user_updated_by'
 	}),
 	activityLogs: many(activityLogs),
-	refreshTokens: many(refreshTokens)
+	refreshTokens: many(refreshTokens),
+	authTokens: many(authTokens)
 }));
 
 /**
@@ -51,11 +52,11 @@ export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
 }));
 
 /**
- * Relations for the Email Verifications table.
+ * Relations for the Auth Tokens table.
  */
-export const emailVerificationsRelations = relations(emailVerifications, ({ one }) => ({
+export const authTokensRelations = relations(authTokens, ({ one }) => ({
 	user: one(users, {
-		fields: [emailVerifications.userId],
+		fields: [authTokens.userId],
 		references: [users.id]
 	})
 }));

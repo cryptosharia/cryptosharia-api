@@ -33,7 +33,7 @@ describe('GET /auth/me', () => {
 		expect(Array.isArray(data.data.permissions)).toBe(true);
 
 		// Sensitive fields should be stripped
-		expect(data.data).not.toHaveProperty('hashedPassword');
+		expect(data.data).not.toHaveProperty('passwordHash');
 	});
 
 	it('should return user info with expanded role metadata', async () => {

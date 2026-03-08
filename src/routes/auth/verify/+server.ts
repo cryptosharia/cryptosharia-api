@@ -1,10 +1,11 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { emailVerifications, users } from '$lib/db/tables';
+import { authTokens, users } from '$lib/db/tables';
 import { eq, and, gt, isNull } from 'drizzle-orm';
 import { ApiResponse } from '$lib/api';
 import { parseJsonBody } from '$lib/api/request';
 import { AuthVerifyPostBody } from '..';
+import { hashOpaqueToken } from '$lib/auth/tokens';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const parsedBody = await parseJsonBody(request, AuthVerifyPostBody);
@@ -13,13 +14,15 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const { token } = parsedBody.data;
+	const tokenHash = hashOpaqueToken(token);
 
 	try {
-		const verification = await db.query.emailVerifications.findFirst({
+		const verification = await db.query.authTokens.findFirst({
 			where: and(
-				eq(emailVerifications.token, token),
-				gt(emailVerifications.expiresAt, new Date()),
-				isNull(emailVerifications.revokedAt)
+				eq(authTokens.type, 'email_verification'),
+				eq(authTokens.tokenHash, tokenHash),
+				gt(authTokens.expiresAt, new Date()),
+				isNull(authTokens.revokedAt)
 			)
 		});
 
@@ -36,9 +39,9 @@ export const POST: RequestHandler = async ({ request }) => {
 				.where(eq(users.id, verification.userId));
 
 			await tx
-				.update(emailVerifications)
+				.update(authTokens)
 				.set({ revokedAt: new Date() })
-				.where(eq(emailVerifications.id, verification.id));
+				.where(eq(authTokens.id, verification.id));
 		});
 
 		return ApiResponse.ok(undefined, 'Email verified successfully. You can now sign in.');

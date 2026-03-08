@@ -1,17 +1,16 @@
 import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
-import { users, emailVerifications } from '$lib/db/tables';
+import { users, authTokens } from '$lib/db/tables';
 import { eq, and, isNull } from 'drizzle-orm';
 import { hashPassword } from '$lib/auth/password';
 import { ApiResponse } from '$lib/api';
 import { parseJsonBody, parseQueryParams } from '$lib/api/request';
 import { AuthSignupPostBody, AuthSignupPostResponse, AuthSignupPostQuery } from '..';
-import { generateRandomToken } from '$lib/auth/tokens';
+import { generateRandomToken, hashOpaqueToken } from '$lib/auth/tokens';
 import { sendEmail } from '$lib/services/email';
 import { logActivity } from '$lib/services/activity-logger';
 import { escapeHtml } from '$lib/utils';
-import { dev } from '$app/environment';
-import { DEV_BASE_URL, BASE_DOMAIN } from '$lib/constants';
+import { BASE_DOMAIN } from '$lib/constants';
 
 export const POST: RequestHandler = async ({ request, url }) => {
 	const parsedBody = await parseJsonBody(request, AuthSignupPostBody);
@@ -33,7 +32,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 	}
 
 	try {
-		const hashedPassword = await hashPassword(password);
+		const passwordHash = await hashPassword(password);
 
 		let newUser;
 
@@ -42,7 +41,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 				.update(users)
 				.set({
 					name,
-					hashedPassword,
+					passwordHash,
 					status: 'active'
 				})
 				.where(eq(users.id, existingUser.id))
@@ -53,7 +52,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 				.values({
 					name,
 					email,
-					hashedPassword,
+					passwordHash,
 					status: 'active',
 					isEmailVerified: false
 				})
@@ -61,29 +60,33 @@ export const POST: RequestHandler = async ({ request, url }) => {
 		}
 
 		const verificationToken = generateRandomToken(32);
+		const verificationTokenHash = hashOpaqueToken(verificationToken);
 		const expiresAt = new Date();
 		expiresAt.setHours(expiresAt.getHours() + 6);
 
 		await db.transaction(async (tx) => {
 			await tx
-				.update(emailVerifications)
+				.update(authTokens)
 				.set({ revokedAt: new Date() })
 				.where(
-					and(eq(emailVerifications.userId, newUser.id), isNull(emailVerifications.revokedAt))
+					and(
+						eq(authTokens.userId, newUser.id),
+						eq(authTokens.type, 'email_verification'),
+						isNull(authTokens.revokedAt)
+					)
 				);
 
-			await tx.insert(emailVerifications).values({
+			await tx.insert(authTokens).values({
 				userId: newUser.id,
-				token: verificationToken,
+				type: 'email_verification',
+				tokenHash: verificationTokenHash,
 				expiresAt
 			});
 		});
 
 		if (notify) {
 			const safeName = escapeHtml(name);
-			const baseUrl = dev
-				? DEV_BASE_URL.replace('${PORT}', '3000')
-				: `https://accounts.${BASE_DOMAIN}`;
+			const baseUrl = `https://admin.${BASE_DOMAIN}`;
 			const verificationLink = `${baseUrl}/verify/${verificationToken}`;
 
 			await sendEmail({

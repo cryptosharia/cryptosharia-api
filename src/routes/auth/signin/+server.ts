@@ -35,14 +35,14 @@ export const POST: RequestHandler = async (event) => {
 			return ApiResponse.forbidden('Your account is not active. Please contact support.');
 		}
 
-		const isValid = await verifyPassword(password, user.hashedPassword);
+		const isValid = await verifyPassword(password, user.passwordHash);
 		if (!isValid) {
 			return ApiResponse.unauthorized('Invalid email or password');
 		}
 
-		if (needsRehash(user.hashedPassword)) {
+		if (needsRehash(user.passwordHash)) {
 			const newHash = await hashPassword(password);
-			await db.update(users).set({ hashedPassword: newHash }).where(eq(users.id, user.id));
+			await db.update(users).set({ passwordHash: newHash }).where(eq(users.id, user.id));
 		}
 
 		await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));

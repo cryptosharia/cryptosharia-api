@@ -1,7 +1,8 @@
 export {
 	users,
 	refreshTokens,
-	emailVerifications,
+	authTokens,
+	authTokenTypeEnum,
 	userRoleEnum,
 	userStatusEnum,
 	hashingAlgorithmEnum

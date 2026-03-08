@@ -86,7 +86,7 @@ export async function createVerifiedTestUserWithPassword(
 	overrides?: Partial<typeof users.$inferInsert>
 ) {
 	return createTestUser({
-		hashedPassword: await hashPassword(password),
+		passwordHash: await hashPassword(password),
 		isEmailVerified: true,
 		...overrides
 	});
@@ -129,7 +129,7 @@ export async function createTestUser(overrides?: Partial<typeof users.$inferInse
 			.values({
 				name: `Test User ${random}`,
 				email: `test-${random}@example.com`,
-				hashedPassword: await hashPassword(TEST_USER_PASSWORD),
+				passwordHash: await hashPassword(TEST_USER_PASSWORD),
 				passwordHashingAlgorithm: 'argon2id',
 				status: 'active',
 				role: 'member',

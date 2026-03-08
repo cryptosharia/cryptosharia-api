@@ -4,6 +4,7 @@
  */
 
 import * as jose from 'jose';
+import { createHash } from 'node:crypto';
 import { ACCESS_TOKEN_SECRET } from '$env/static/private';
 import { JWT_ISSUER } from '$lib/constants';
 
@@ -54,6 +55,10 @@ export function generateRandomToken(length: number = 32): string {
 	const array = new Uint8Array(length);
 	crypto.getRandomValues(array);
 	return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export function hashOpaqueToken(token: string): string {
+	return createHash('sha256').update(token).digest('hex');
 }
 
 export function createRefreshToken(userId: string) {

@@ -240,9 +240,73 @@ export const authVerifyPost: RouteConfig = {
 	security: [{ ApiKeyAuth: [] }]
 };
 
+// --- Auth: Password Forgot ---
+
+export const AuthPasswordForgotPostBody = z
+	.object({
+		email: z.email()
+	})
+	.openapi('AuthPasswordForgotPostBody');
+
+export const authPasswordForgotPost: RouteConfig = {
+	path: '/auth/password/forgot',
+	method: 'post',
+	summary: 'Forgot Password',
+	description: 'Request a password reset email. Always returns a generic success response.',
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: AuthPasswordForgotPostBody
+				}
+			}
+		}
+	},
+	responses: {
+		...OpenApiResponse.ok(undefined, 'If your email is registered, a reset link has been sent'),
+		...OpenApiResponse.badRequest('Invalid email format'),
+		...OpenApiResponse.internalServerError('Failed to process password reset request')
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+// --- Auth: Password Reset ---
+
+export const AuthPasswordResetPostBody = z
+	.object({
+		token: z.string().min(1),
+		password: z.string().min(12)
+	})
+	.openapi('AuthPasswordResetPostBody');
+
+export const authPasswordResetPost: RouteConfig = {
+	path: '/auth/password/reset',
+	method: 'post',
+	summary: 'Reset Password',
+	description: 'Reset password using a valid one-time reset token.',
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: AuthPasswordResetPostBody
+				}
+			}
+		}
+	},
+	responses: {
+		...OpenApiResponse.ok(undefined, 'Password reset successful'),
+		...OpenApiResponse.badRequest('Invalid request payload'),
+		...OpenApiResponse.notFound('Invalid or expired reset token'),
+		...OpenApiResponse.internalServerError('Failed to reset password')
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
 export const authRoutes: RouteConfig[] = [
 	authSignupPost,
 	authVerifyPost,
+	authPasswordForgotPost,
+	authPasswordResetPost,
 	authSigninPost,
 	authSignoutPost,
 	authRefreshPost,
