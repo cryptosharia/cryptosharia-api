@@ -143,4 +143,67 @@ describe('Messages API Integration', () => {
 			expect(data?.data?.pagination?.page).toBe(1);
 		});
 	});
+
+	// -----------------------------------------------------------------------
+	// GET /messages/{id} (admin-only)
+	// -----------------------------------------------------------------------
+
+	describe('GET /messages/{id}', () => {
+		it('should return 401 without API key', async () => {
+			const { response } = await client.GET('/messages/{id}', {
+				params: { path: { id: '00000000-0000-0000-0000-000000000001' } }
+			});
+			expect(response.status).toBe(401);
+		});
+
+		it('should return 400 for invalid UUID format', async () => {
+			const { client: adminClient } = await createAuthenticatedClient('admin');
+
+			const { response } = await adminClient.GET('/messages/{id}', {
+				params: { path: { id: '123' } }
+			});
+
+			expect(response.status).toBe(400);
+		});
+
+		it('should return 404 for non-existent message', async () => {
+			const { client: adminClient } = await createAuthenticatedClient('admin');
+
+			const { response } = await adminClient.GET('/messages/{id}', {
+				params: { path: { id: '550e8400-e29b-41d4-a716-446655440000' } }
+			});
+
+			expect(response.status).toBe(404);
+		});
+
+		it('should return message details for valid id', async () => {
+			const { client: adminClient } = await createAuthenticatedClient('admin');
+
+			// Create a message first
+			const { data: created } = await client.POST('/messages', {
+				params: { query: { notify: false } },
+				body: {
+					name: 'Detail Test',
+					email: 'detail@example.com',
+					message: 'Testing detail endpoint'
+				}
+			});
+
+			const messageId = created?.data?.id;
+			if (!messageId) {
+				throw new Error('Failed to create message for detail test');
+			}
+
+			const { response, data } = await adminClient.GET('/messages/{id}', {
+				params: { path: { id: messageId } }
+			});
+
+			expect(response.status).toBe(200);
+			expect(data?.success).toBe(true);
+			expect(data?.data?.id).toBe(messageId);
+			expect(data?.data?.name).toBe('Detail Test');
+			expect(data?.data?.email).toBe('detail@example.com');
+			expect(data?.data?.message).toBe('Testing detail endpoint');
+		});
+	});
 });

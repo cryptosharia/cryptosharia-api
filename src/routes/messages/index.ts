@@ -95,4 +95,34 @@ export const messagesPost: RouteConfig = {
 	security: [{ ApiKeyAuth: [] }]
 };
 
-export const messagesRoutes: RouteConfig[] = [messagesGet, messagesPost];
+export const MessagesIdGetParams = z
+	.object({
+		id: z.uuid()
+	})
+	.openapi('MessagesIdGetParams');
+export type MessagesIdGetParams = z.infer<typeof MessagesIdGetParams>;
+
+export const MessagesIdGetResponse = MessagesGetItem.openapi('MessagesIdGetResponse');
+export type MessagesIdGetResponse = z.infer<typeof MessagesIdGetResponse>;
+
+export const messagesIdGet: RouteConfig = {
+	path: '/messages/{id}',
+	method: 'get',
+	summary: 'Get Message Detail',
+	description:
+		'Retrieve detailed information for a specific message. Requires permission: `messages.read`.',
+	request: {
+		params: MessagesIdGetParams
+	},
+	responses: {
+		...OpenApiResponse.ok(MessagesIdGetResponse, 'Message details retrieved successfully'),
+		...OpenApiResponse.unauthorized('Invalid or missing API key'),
+		...OpenApiResponse.notFound('Message not found'),
+		...OpenApiResponse.internalServerError(
+			'Failed to retrieve message details due to an internal server error'
+		)
+	},
+	security: [{ ApiKeyAuth: [] }]
+};
+
+export const messagesRoutes: RouteConfig[] = [messagesGet, messagesPost, messagesIdGet];
