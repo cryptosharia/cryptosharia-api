@@ -96,7 +96,7 @@ export const POST: RequestHandler = async (event) => {
 		const result = ImgbbImage.parse({ ...asset });
 
 		await logUserActivity(event, {
-			action: 'image.upload',
+			action: 'imgbb.upload',
 			subjectType: 'imgbb_image',
 			subjectId: asset.id,
 			description: `Uploaded image: ${data.image.filename}`

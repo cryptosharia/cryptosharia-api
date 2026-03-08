@@ -11,6 +11,7 @@ import {
 	findPostByIdentifier,
 	resolvePostTagIdentifiers
 } from '$lib/services/posts';
+import { logActivity } from '$lib/services/activity-logger';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	try {
@@ -134,6 +135,17 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 			return ApiResponse.internalServerError('Failed to update post');
 		}
 
+		if (userId) {
+			await logActivity({
+				userId,
+				action: 'post.update',
+				subjectType: 'posts',
+				subjectId: existingPost.id,
+				description: `Updated post ${existingPost.slug}`,
+				ipAddress: locals.clientIp
+			});
+		}
+
 		return ApiResponse.ok<PostsGetData>(PostsGetData.parse(post), 'Post updated successfully');
 	} catch (error) {
 		console.error('PATCH /posts/[id] error:', error);
@@ -154,6 +166,17 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		}
 
 		await db.delete(posts).where(eq(posts.id, existingPost.id));
+
+		if (locals.user?.id) {
+			await logActivity({
+				userId: locals.user.id,
+				action: 'post.delete',
+				subjectType: 'posts',
+				subjectId: existingPost.id,
+				description: `Deleted post ${existingPost.slug}`,
+				ipAddress: locals.clientIp
+			});
+		}
 
 		return ApiResponse.ok({ message: 'Post deleted successfully' }, 'Post deleted successfully');
 	} catch (error) {

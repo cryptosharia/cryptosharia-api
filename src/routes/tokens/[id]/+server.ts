@@ -11,6 +11,7 @@ import {
 	findTokenByIdentifier,
 	resolveTokenTagIdentifiers
 } from '$lib/services/tokens';
+import { logActivity } from '$lib/services/activity-logger';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	try {
@@ -150,6 +151,17 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 			return ApiResponse.internalServerError('Failed to update token');
 		}
 
+		if (userId) {
+			await logActivity({
+				userId,
+				action: 'token.update',
+				subjectType: 'tokens',
+				subjectId: existingToken.id,
+				description: `Updated token ${existingToken.slug}`,
+				ipAddress: locals.clientIp
+			});
+		}
+
 		return ApiResponse.ok<TokensGetData>(TokensGetData.parse(token), 'Token updated successfully');
 	} catch (error) {
 		console.error('PATCH /tokens/[id] error:', error);
@@ -170,6 +182,17 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		}
 
 		await db.delete(tokens).where(eq(tokens.id, existingToken.id));
+
+		if (locals.user?.id) {
+			await logActivity({
+				userId: locals.user.id,
+				action: 'token.delete',
+				subjectType: 'tokens',
+				subjectId: existingToken.id,
+				description: `Deleted token ${existingToken.slug}`,
+				ipAddress: locals.clientIp
+			});
+		}
 
 		return ApiResponse.ok({ message: 'Token deleted successfully' }, 'Token deleted successfully');
 	} catch (error) {

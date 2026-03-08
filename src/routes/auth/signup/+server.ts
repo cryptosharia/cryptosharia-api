@@ -117,7 +117,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
 		await logActivity({
 			userId: newUser.id,
-			action: 'signup',
+			action: 'auth.signup',
 			subjectType: 'auth',
 			description: `New user registered: ${newUser.email}`
 		});

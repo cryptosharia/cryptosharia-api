@@ -8,6 +8,7 @@ import { tags, postTags, tokenTags } from '$lib/db/tables';
 import { eq, or, and, ne } from 'drizzle-orm';
 import { count } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
+import { logActivity } from '$lib/services/activity-logger';
 
 async function findTagByIdOrSlug(idOrSlug: string) {
 	const where = isUuid(idOrSlug) ? eq(tags.id, idOrSlug) : eq(tags.slug, idOrSlug);
@@ -85,6 +86,17 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 			.where(eq(tags.id, existingTag.id))
 			.returning();
 
+		if (userId) {
+			await logActivity({
+				userId,
+				action: 'tag.update',
+				subjectType: 'tags',
+				subjectId: existingTag.id,
+				description: `Updated tag ${existingTag.slug}`,
+				ipAddress: locals.clientIp
+			});
+		}
+
 		return ApiResponse.ok<TagsGetData>(
 			{ ...updatedTag, createdBy: null, updatedBy: null } as TagsGetData,
 			'Tag updated successfully'
@@ -129,6 +141,17 @@ export const DELETE: RequestHandler = async ({ params, url, locals }) => {
 		}
 
 		await db.delete(tags).where(eq(tags.id, tag.id));
+
+		if (locals.user?.id) {
+			await logActivity({
+				userId: locals.user.id,
+				action: 'tag.delete',
+				subjectType: 'tags',
+				subjectId: tag.id,
+				description: `Deleted tag ${tag.slug}`,
+				ipAddress: locals.clientIp
+			});
+		}
 
 		return ApiResponse.ok({ message: 'Tag deleted successfully' }, 'Tag deleted successfully');
 	} catch (error) {

@@ -6,8 +6,9 @@ import { ApiResponse } from '$lib/api';
 import { parseJsonBody } from '$lib/api/request';
 import { AuthVerifyPostBody } from '..';
 import { hashOpaqueToken } from '$lib/auth/tokens';
+import { logActivity } from '$lib/services/activity-logger';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const parsedBody = await parseJsonBody(request, AuthVerifyPostBody);
 	if (!parsedBody.ok) {
 		return parsedBody.response;
@@ -42,6 +43,14 @@ export const POST: RequestHandler = async ({ request }) => {
 				.update(authTokens)
 				.set({ revokedAt: new Date() })
 				.where(eq(authTokens.id, verification.id));
+		});
+
+		await logActivity({
+			userId: verification.userId,
+			action: 'auth.verify',
+			subjectType: 'auth',
+			description: 'Email verification completed',
+			ipAddress: locals.clientIp
 		});
 
 		return ApiResponse.ok(undefined, 'Email verified successfully. You can now sign in.');

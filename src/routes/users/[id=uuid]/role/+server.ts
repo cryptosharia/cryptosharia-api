@@ -45,7 +45,7 @@ export const PUT: RequestHandler = async (event) => {
 		});
 
 		await logUserActivity(event, {
-			action: 'role.update',
+			action: 'user.role.update',
 			subjectType: 'user',
 			subjectId: id,
 			description: `Role changed to ${role ?? 'null (regular user)'}`

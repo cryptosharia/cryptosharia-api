@@ -7,9 +7,10 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { AuthPasswordForgotPostBody } from '../..';
 import { generateRandomToken, hashOpaqueToken } from '$lib/auth/tokens';
 import { sendEmail } from '$lib/services/email';
+import { logActivity } from '$lib/services/activity-logger';
 import { BASE_DOMAIN } from '$lib/constants';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const parsedBody = await parseJsonBody(request, AuthPasswordForgotPostBody);
 	if (!parsedBody.ok) {
 		return parsedBody.response;
@@ -46,6 +47,14 @@ export const POST: RequestHandler = async ({ request }) => {
 					tokenHash,
 					expiresAt
 				});
+			});
+
+			await logActivity({
+				userId: user.id,
+				action: 'auth.password-reset.request',
+				subjectType: 'auth',
+				description: 'Password reset requested',
+				ipAddress: locals.clientIp
 			});
 
 			const baseUrl = `https://admin.${BASE_DOMAIN}`;

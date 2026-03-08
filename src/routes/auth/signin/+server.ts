@@ -58,7 +58,7 @@ export const POST: RequestHandler = async (event) => {
 		const ipAddress = event.locals.clientIp;
 		await logActivity({
 			userId: user.id,
-			action: 'signin',
+			action: 'auth.signin',
 			subjectType: 'auth',
 			ipAddress
 		});

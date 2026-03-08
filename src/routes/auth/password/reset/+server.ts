@@ -7,8 +7,9 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { hashPassword } from '$lib/auth/password';
 import { AuthPasswordResetPostBody } from '../..';
 import { hashOpaqueToken } from '$lib/auth/tokens';
+import { logActivity } from '$lib/services/activity-logger';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const parsedBody = await parseJsonBody(request, AuthPasswordResetPostBody);
 	if (!parsedBody.ok) {
 		return parsedBody.response;
@@ -52,6 +53,14 @@ export const POST: RequestHandler = async ({ request }) => {
 				.update(refreshTokens)
 				.set({ revokedAt: now })
 				.where(and(eq(refreshTokens.userId, resetToken.userId), isNull(refreshTokens.revokedAt)));
+		});
+
+		await logActivity({
+			userId: resetToken.userId,
+			action: 'auth.password-reset.complete',
+			subjectType: 'auth',
+			description: 'Password reset completed successfully',
+			ipAddress: locals.clientIp
 		});
 
 		return ApiResponse.ok(undefined, 'Password reset successful');

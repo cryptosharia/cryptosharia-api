@@ -17,6 +17,7 @@ import { escapeLikePattern } from '$lib/utils';
 import { requirePermission, hasPermission } from '$lib/auth/permissions';
 import { fetchPostDetail, resolvePostTagIdentifiers } from '$lib/services/posts';
 import { toAssetMetadata } from '$lib/services/assets';
+import { logActivity } from '$lib/services/activity-logger';
 
 /**
  * Handles GET requests to fetch posts with filtering, searching, and pagination.
@@ -267,6 +268,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const post = await fetchPostDetail(locals, createdPostId);
 		if (!post) {
 			return ApiResponse.internalServerError('Failed to create post');
+		}
+
+		if (userId) {
+			await logActivity({
+				userId,
+				action: 'post.create',
+				subjectType: 'posts',
+				subjectId: createdPostId,
+				description: `Created post ${slug}`,
+				ipAddress: locals.clientIp
+			});
 		}
 
 		return ApiResponse.created<PostsGetData>(PostsGetData.parse(post), 'Post created successfully');

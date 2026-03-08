@@ -6,6 +6,7 @@ import { TagsGetQuery, TagsGetItem, TagsCreateBody, TagsGetData } from '.';
 import { tags } from '$lib/db/tables';
 import { and, count, eq, ilike, inArray, or } from 'drizzle-orm';
 import { requirePermission } from '$lib/auth/permissions';
+import { logActivity } from '$lib/services/activity-logger';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const parsedQuery = parseQueryParams(url, TagsGetQuery);
@@ -110,6 +111,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				updatedBy: userId
 			})
 			.returning();
+
+		if (userId) {
+			await logActivity({
+				userId,
+				action: 'tag.create',
+				subjectType: 'tags',
+				subjectId: createdTag.id,
+				description: `Created tag ${createdTag.slug}`,
+				ipAddress: locals.clientIp
+			});
+		}
 
 		return ApiResponse.created<TagsGetData>(
 			{ ...createdTag, createdBy: null, updatedBy: null } as TagsGetData,

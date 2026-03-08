@@ -17,6 +17,7 @@ import { escapeLikePattern } from '$lib/utils';
 
 import { hasPermission, requirePermission } from '$lib/auth/permissions';
 import { fetchTokenDetail, resolveTokenTagIdentifiers } from '$lib/services/tokens';
+import { logActivity } from '$lib/services/activity-logger';
 
 /**
  * Handles GET requests to fetch tokens with filtering, searching, and pagination.
@@ -258,6 +259,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const token = await fetchTokenDetail(locals, createdTokenId);
 		if (!token) {
 			return ApiResponse.internalServerError('Failed to create token');
+		}
+
+		if (userId) {
+			await logActivity({
+				userId,
+				action: 'token.create',
+				subjectType: 'tokens',
+				subjectId: createdTokenId,
+				description: `Created token ${slug}`,
+				ipAddress: locals.clientIp
+			});
 		}
 
 		return ApiResponse.created<TokensGetData>(

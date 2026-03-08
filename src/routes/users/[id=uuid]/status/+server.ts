@@ -43,7 +43,7 @@ export const PUT: RequestHandler = async (event) => {
 		});
 
 		await logUserActivity(event, {
-			action: 'status.update',
+			action: 'user.status.update',
 			subjectType: 'user',
 			subjectId: id,
 			description: `Status changed to ${status}`
