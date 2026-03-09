@@ -1,20 +1,23 @@
 import type { RequestHandler } from './$types';
 import { ApiResponse } from '$lib/api';
-import { parseJsonBody } from '$lib/api/request';
+import { parseJsonBody, parseQueryParams } from '$lib/api/request';
 import { db } from '$lib/db';
 import { authTokens, users } from '$lib/db/tables';
 import { and, eq, isNull } from 'drizzle-orm';
-import { AuthPasswordForgotPostBody } from '../..';
+import { AuthPasswordForgotPostBody, AuthPasswordForgotPostQuery } from '../..';
 import { generateRandomToken, hashOpaqueToken } from '$lib/auth/tokens';
 import { sendEmail } from '$lib/services/email';
 import { logActivity } from '$lib/services/activity-logger';
 import { BASE_DOMAIN } from '$lib/constants';
 
-export const POST: RequestHandler = async ({ request, locals }) => {
+export const POST: RequestHandler = async ({ request, locals, url }) => {
 	const parsedBody = await parseJsonBody(request, AuthPasswordForgotPostBody);
 	if (!parsedBody.ok) {
 		return parsedBody.response;
 	}
+
+	const parsedQuery = parseQueryParams(url, AuthPasswordForgotPostQuery);
+	const notify = parsedQuery.ok ? parsedQuery.data.notify : true;
 
 	const { email } = parsedBody.data;
 
@@ -60,11 +63,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			const baseUrl = `https://admin.${BASE_DOMAIN}`;
 			const resetLink = `${baseUrl}/reset-password/${resetToken}`;
 
-			try {
-				await sendEmail({
-					to: email,
-					subject: 'Reset your CryptoSharia password',
-					html: `
+			if (notify) {
+				try {
+					await sendEmail({
+						to: email,
+						subject: 'Reset your CryptoSharia password',
+						html: `
 						<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
 							<h2 style="color: #f97316;">Password Reset Request</h2>
 							<p>We received a request to reset your password.</p>
@@ -84,9 +88,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 							</p>
 						</div>
 					`
-				});
-			} catch (error) {
-				console.error('Password forgot email send error:', error);
+					});
+				} catch (error) {
+					console.error('Password forgot email send error:', error);
+				}
 			}
 		}
 

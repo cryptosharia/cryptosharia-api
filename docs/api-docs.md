@@ -60,14 +60,15 @@ This document serves as the **Single Source of Truth** for all endpoints, archit
 
 ### 🔐 Authentication (`/auth`)
 
-| Method | Path            | Summary       | Rules                                                                         |
-| :----- | :-------------- | :------------ | :---------------------------------------------------------------------------- |
-| `POST` | `/auth/signup`  | Sign Up       | Sets role to `member`; requires email verification. Supports `?notify=false`. |
-| `POST` | `/auth/verify`  | Verify Email  | Uses secret token to activate account.                                        |
-| `POST` | `/auth/signin`  | Sign In       | Returns Access/Refresh tokens. Unverified accounts return 401.                |
-| `POST` | `/auth/refresh` | Refresh Token | Rotates tokens; sliding session management.                                   |
-| `POST` | `/auth/signout` | Sign Out      | Revokes the current refresh token.                                            |
-| `GET`  | `/auth/me`      | Get Profile   | Returns current user info + roles + permissions.                              |
+| Method | Path                    | Summary         | Rules                                                                         |
+| :----- | :---------------------- | :-------------- | :---------------------------------------------------------------------------- |
+| `POST` | `/auth/signup`          | Sign Up         | Sets role to `member`; requires email verification. Supports `?notify=false`. |
+| `POST` | `/auth/password/forgot` | Forgot Password | Always returns generic success. Supports `?notify=false`.                     |
+| `POST` | `/auth/verify`          | Verify Email    | Uses secret token to activate account.                                        |
+| `POST` | `/auth/signin`          | Sign In         | Returns Access/Refresh tokens. Unverified accounts return 401.                |
+| `POST` | `/auth/refresh`         | Refresh Token   | Rotates tokens; sliding session management.                                   |
+| `POST` | `/auth/signout`         | Sign Out        | Revokes the current refresh token.                                            |
+| `GET`  | `/auth/me`              | Get Profile     | Returns current user info + roles + permissions.                              |
 
 ### 👤 Users (`/users`)
 
@@ -109,10 +110,10 @@ This document serves as the **Single Source of Truth** for all endpoints, archit
 
 ### Email Service Configuration
 
-The API uses a Google Apps Script (GAS) Web App as a simplified, generic proxy for sending emails.
+The API uses Resend for transactional email delivery.
 
-- **`GAS_URL`**: The URL of your deployed GAS Web App.
-- **`SKIP_EMAIL`**: Set to `true` in development/testing to skip real delivery.
+- **Provider**: Resend (`resend` Node SDK)
+- **From**: `RESEND_FROM` (display-name format supported, e.g. `CryptoSharia <system@mail.cryptosharia.id>`)
 - **Safety**: The API handles strict HTML escaping (`escapeHtml`) before sending.
 - **Manual Control**: Endpoints like `/auth/signup` and `/messages` accept an optional `notify=false` query parameter to skip emails (useful for automated tests).
   All email sending operations are handled via `@vercel/functions` `waitUntil` to ensure zero impact on API response latency.
@@ -121,15 +122,18 @@ The API uses a Google Apps Script (GAS) Web App as a simplified, generic proxy f
 
 ## ⚙️ Configuration (.env)
 
-| Key                    | Description                                        |
-| :--------------------- | :------------------------------------------------- |
-| `DATABASE_URL`         | PostgreSQL connection string.                      |
-| `ACCESS_TOKEN_SECRET`  | 64-character hex secret for JWT Access Tokens.     |
-| `REFRESH_TOKEN_SECRET` | 64-character hex secret for JWT Refresh Tokens.    |
-| `GAS_URL`              | The Web App URL of your Google Apps Script proxy.  |
-| `CMC_API_KEY`          | CoinMarketCap API Key for price quotes.            |
-| `IMGBB_API_KEY`        | ImgBB API Key for asset storage proxy.             |
-| `CS_API_KEY_*`         | Platform-specific API keys for BFF identification. |
+| Key                     | Description                                        |
+| :---------------------- | :------------------------------------------------- |
+| `DATABASE_URL`          | PostgreSQL connection string.                      |
+| `ACCESS_TOKEN_SECRET`   | 64-character hex secret for JWT Access Tokens.     |
+| `REFRESH_TOKEN_SECRET`  | 64-character hex secret for JWT Refresh Tokens.    |
+| `RESEND_API_KEY`        | Resend API key for sending emails.                 |
+| `RESEND_FROM`           | From identity for transactional emails.            |
+| `RESEND_REPLY_TO`       | Default reply-to address (optional).               |
+| `CONTACT_FORM_TO_EMAIL` | Recipient for `/messages` notifications.           |
+| `CMC_API_KEY`           | CoinMarketCap API Key for price quotes.            |
+| `IMGBB_API_KEY`         | ImgBB API Key for asset storage proxy.             |
+| `CS_API_KEY_*`          | Platform-specific API keys for BFF identification. |
 
 ### 🖼️ Assets & Storage
 
@@ -154,4 +158,4 @@ The API uses a Google Apps Script (GAS) Web App as a simplified, generic proxy f
 
 ---
 
-_Updated: 2026-02-13_
+_Updated: 2026-03-09_

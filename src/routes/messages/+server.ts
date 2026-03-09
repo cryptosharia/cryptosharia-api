@@ -11,6 +11,7 @@ import { escapeLikePattern } from '$lib/utils';
 import { waitUntil } from '@vercel/functions';
 import { requirePermission } from '$lib/auth/permissions';
 import { escapeHtml } from '$lib/utils';
+import { CONTACT_FORM_TO_EMAIL } from '$env/static/private';
 
 /**
  * GET /messages
@@ -102,13 +103,37 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
 			waitUntil(
 				sendEmail({
-					to: 'cryptoshariaforum@gmail.com',
+					to: CONTACT_FORM_TO_EMAIL,
+					replyTo: insertData.email,
 					subject: `New Contact Message from ${safeName}`,
 					html: `
-						<p><strong>Name:</strong> ${safeName}</p>
-						<p><strong>Email:</strong> <i>${safeEmail}</i></p>
-						<p><strong>Message:</strong></p>
-						<p>${safeMessage}</p>
+						<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 640px; margin: 0 auto;">
+							<div style="padding: 18px 20px; background: #f97316; border-radius: 14px 14px 0 0;">
+								<div style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.9);">CryptoSharia</div>
+								<div style="font-size: 18px; font-weight: 700; color: #ffffff; margin-top: 2px;">New contact form message</div>
+							</div>
+							<div style="padding: 18px 20px; border: 1px solid #eee; border-top: 0; border-radius: 0 0 14px 14px; background: #ffffff;">
+								<div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;">
+									<div style="flex: 1 1 220px; padding: 12px 14px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px;">
+										<div style="font-size: 12px; color: #9a3412;">From</div>
+										<div style="font-size: 14px; font-weight: 700; color: #431407;">${safeName}</div>
+									</div>
+									<div style="flex: 1 1 260px; padding: 12px 14px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px;">
+										<div style="font-size: 12px; color: #9a3412;">Email</div>
+										<div style="font-size: 14px; font-weight: 600; color: #431407;">${safeEmail}</div>
+									</div>
+								</div>
+
+								<div style="padding: 14px 16px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px;">
+									<div style="font-size: 12px; color: #9a3412;">Message</div>
+									<div style="font-size: 14px; color: #431407; margin-top: 6px;">${safeMessage}</div>
+								</div>
+
+								<div style="margin-top: 14px; font-size: 12px; color: #666;">
+									Tip: you can reply directly to this email to respond to ${safeEmail}.
+								</div>
+							</div>
+						</div>
 					`
 				})
 			);

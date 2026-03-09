@@ -52,6 +52,7 @@
 		"lru-cache": "^11.2.6",
 		"openapi-fetch": "^0.15.0",
 		"postgres": "^3.4.8",
+		"resend": "^6.9.3",
 		"zod": "^4.3.5"
 	}
 }

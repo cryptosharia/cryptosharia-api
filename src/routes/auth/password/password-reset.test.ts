@@ -19,6 +19,38 @@ describe('Auth Password Reset', () => {
 		expect(data?.message).toBe('If your email is registered, a reset link has been sent');
 	});
 
+	it('should allow notify=false query and still issue reset token for existing email', async () => {
+		const email = 'notify-false@example.com';
+
+		const [user] = await db
+			.insert(users)
+			.values({
+				name: 'Notify False',
+				email,
+				passwordHash: await hashPassword('password-length-12'),
+				isEmailVerified: true
+			})
+			.returning();
+
+		const { response, data } = await client.POST('/auth/password/forgot', {
+			params: { query: { notify: false } as never },
+			body: { email }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.success).toBe(true);
+
+		const resetToken = await db.query.authTokens.findFirst({
+			where: and(
+				eq(authTokens.userId, user.id),
+				eq(authTokens.type, 'password_reset'),
+				isNull(authTokens.revokedAt)
+			)
+		});
+
+		expect(resetToken).toBeDefined();
+	});
+
 	it('should return 404 for invalid reset token', async () => {
 		const { response } = await client.POST('/auth/password/reset', {
 			body: {

@@ -248,12 +248,28 @@ export const AuthPasswordForgotPostBody = z
 	})
 	.openapi('AuthPasswordForgotPostBody');
 
+export const AuthPasswordForgotPostQuery = z
+	.object({
+		notify: z
+			.preprocess((val) => {
+				if (val === 'true') return true;
+				if (val === 'false') return false;
+				return val;
+			}, z.boolean())
+			.default(true)
+			.describe('Whether to trigger a password reset email')
+	})
+	.openapi('AuthPasswordForgotPostQuery');
+
+export type AuthPasswordForgotPostQuery = z.infer<typeof AuthPasswordForgotPostQuery>;
+
 export const authPasswordForgotPost: RouteConfig = {
 	path: '/auth/password/forgot',
 	method: 'post',
 	summary: 'Forgot Password',
 	description: 'Request a password reset email. Always returns a generic success response.',
 	request: {
+		query: AuthPasswordForgotPostQuery,
 		body: {
 			content: {
 				'application/json': {
