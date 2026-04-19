@@ -83,17 +83,17 @@ export const POSTS: SeedPost[] = [
 		excerpt:
 			'A comprehensive guide to understanding cryptocurrency from an Islamic perspective, covering fundamental concepts and sharia compliance.',
 		content: `# Understanding Halal Cryptocurrency
-		
-		Cryptocurrency has emerged as a revolutionary financial technology, but for Muslims, the question of its permissibility under Islamic law is paramount.
-		
-		## What Makes Cryptocurrency Halal?
-		
-		For a cryptocurrency to be considered halal, it must meet several criteria:
-		
-		1. **No Riba (Interest)**: The system must not involve interest-based transactions
-		2. **No Gharar (Uncertainty)**: Excessive uncertainty and speculation should be avoided
-		3. **Real Value**: The asset should have intrinsic value or utility
-		4. **Transparency**: The technology and operations must be transparent`,
+
+Cryptocurrency has emerged as a revolutionary financial technology, but for Muslims, the question of its permissibility under Islamic law is paramount.
+
+## What Makes Cryptocurrency Halal?
+
+For a cryptocurrency to be considered halal, it must meet several criteria:
+
+1. **No Riba (Interest)**: The system must not involve interest-based transactions
+2. **No Gharar (Uncertainty)**: Excessive uncertainty and speculation should be avoided
+3. **Real Value**: The asset should have intrinsic value or utility
+4. **Transparency**: The technology and operations must be transparent`,
 		type: 'article',
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:00:00Z'),
@@ -118,12 +118,12 @@ export const POSTS: SeedPost[] = [
 		excerpt:
 			'An in-depth research paper examining Bitcoin through the lens of Islamic jurisprudence and modern financial principles.',
 		content: `# Bitcoin Halal Analysis
-		
-		This research examines Bitcoin's compliance with Islamic financial principles.
-		
-		## Methodology
-		
-		Our analysis is based on classical Islamic jurisprudence combined with modern financial understanding.`,
+
+This research examines Bitcoin's compliance with Islamic financial principles.
+
+## Methodology
+
+Our analysis is based on classical Islamic jurisprudence combined with modern financial understanding.`,
 		type: 'article',
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:00:00Z'),
@@ -148,16 +148,16 @@ export const POSTS: SeedPost[] = [
 		excerpt:
 			'Join us for an exclusive webinar discussing the intersection of Islamic finance and blockchain technology.',
 		content: `# Upcoming Webinar
-		
-		**Date**: March 15, 2024  
-		**Time**: 7:00 PM GMT+8
-		
-		## Topics Covered
-		
-		- Introduction to Islamic Finance Principles
-		- Blockchain Technology Overview
-		- Halal Cryptocurrency Projects
-		- Q&A Session with Scholars`,
+
+**Date**: March 15, 2024  
+**Time**: 7:00 PM GMT+8
+
+## Topics Covered
+
+- Introduction to Islamic Finance Principles
+- Blockchain Technology Overview
+- Halal Cryptocurrency Projects
+- Q&A Session with Scholars`,
 		type: 'webinar',
 		status: 'published',
 		publishedAt: new Date('2024-03-15T00:00:00Z'),
@@ -176,14 +176,159 @@ export const POSTS: SeedPost[] = [
 		}
 	},
 	{
+		slug: 'community-ama-token-screening-april-2024',
+		section: 'activity',
+		title: 'Community AMA: How We Screen Tokens for Sharia Compliance',
+		excerpt:
+			'A live Q&A session with the research team on methodology, sources, and how to interpret halal/haram/syubhat ratings responsibly.',
+		content: `# Community AMA: Token Screening
+
+Join our research team for a live AMA on how we evaluate crypto assets through a practical Sharia lens.
+
+## What we will cover
+
+- Screening checklist and common red flags
+- What "syubhat" means in practice
+- How we handle uncertain or incomplete disclosures
+- How to use our ratings for learning (not financial advice)
+
+## Bring your questions
+
+Send your questions in advance so we can prepare references and keep the discussion focused.`,
+		type: 'webinar',
+		status: 'published',
+		publishedAt: new Date('2024-04-05T00:00:00Z'),
+		isFeatured: false,
+		eventDate: new Date('2024-04-10T12:30:00Z'),
+		externalLink: null,
+		tags: ['AMA', 'Community', 'Research', 'Sharia', 'Methodology'],
+		coverImage: {
+			pathname: 'seed/activity-ama/800/600',
+			filename: 'activity-ama.jpg',
+			size: 155000,
+			mimeType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
+	},
+	{
+		slug: 'jakarta-learning-circle-crypto-101-meetup',
+		section: 'activity',
+		title: 'Jakarta Learning Circle: Crypto 101 for Beginners',
+		excerpt:
+			'An offline meet-up for beginners covering wallets, risk basics, and a Sharia-first approach to learning without hype.',
+		content: `# Jakarta Learning Circle: Crypto 101
+
+A small, guided learning circle for beginners. We focus on fundamentals and safety.
+
+## Agenda
+
+- Wallet basics (seed phrases, backups)
+- Common scams and how to avoid them
+- How to read token info responsibly
+- Open discussion and next learning steps
+
+## Notes
+
+Limited seats to keep the session interactive.`,
+		type: 'headline',
+		status: 'published',
+		publishedAt: new Date('2024-04-12T00:00:00Z'),
+		isFeatured: false,
+		eventDate: new Date('2024-04-20T03:00:00Z'),
+		externalLink: 'https://example.com/jakarta-learning-circle',
+		tags: ['Meetup', 'Education', 'Community', 'Safety'],
+		coverImage: {
+			pathname: 'seed/activity-jakarta-meetup/800/600',
+			filename: 'activity-jakarta-meetup.jpg',
+			size: 150000,
+			mimeType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
+	},
+	{
+		slug: 'video-recap-islamic-finance-meets-blockchain',
+		section: 'activity',
+		title: 'Video Recap: Islamic Finance Meets Blockchain',
+		excerpt:
+			'A quick recap video highlighting the key takeaways, recommended resources, and what to learn next from our March webinar.',
+		content: `# Video Recap
+
+If you missed the live session, this recap summarizes:
+
+- Core Islamic finance principles discussed
+- Common misconceptions about crypto and riba
+- Practical learning roadmap for beginners
+
+## Resources
+
+We include a short reading list and suggested next steps at the end of the video.`,
+		type: 'video',
+		status: 'published',
+		publishedAt: new Date('2024-03-20T00:00:00Z'),
+		isFeatured: true,
+		eventDate: null,
+		externalLink: 'https://example.com/video-recap',
+		tags: ['Video', 'Webinar', 'Education', 'Community'],
+		coverImage: {
+			pathname: 'seed/activity-video-recap/800/600',
+			filename: 'activity-video-recap.jpg',
+			size: 165000,
+			mimeType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
+	},
+	{
+		slug: 'workshop-wallet-safety-ramadan-edition',
+		section: 'activity',
+		title: 'Workshop: Wallet Safety and Avoiding Scams (Ramadan Edition)',
+		excerpt:
+			'A hands-on workshop to practice wallet hygiene, learn safe transaction habits, and recognize common phishing patterns.',
+		content: `# Wallet Safety Workshop
+
+This workshop is designed for beginners who want practical safety habits.
+
+## What you will practice
+
+- Creating a wallet safely (demo only)
+- Backups and recovery checks
+- Spotting fake links and impersonation scams
+- Transaction checklist before sending funds
+
+## Requirements
+
+Bring a laptop or phone. Do not share seed phrases with anyone.`,
+		type: 'webinar',
+		status: 'draft',
+		publishedAt: null,
+		isFeatured: false,
+		eventDate: new Date('2024-05-02T12:30:00Z'),
+		externalLink: 'https://example.com/wallet-safety-workshop',
+		tags: ['Workshop', 'Safety', 'Education', 'Community'],
+		coverImage: {
+			pathname: 'seed/activity-wallet-safety/800/600',
+			filename: 'activity-wallet-safety.jpg',
+			size: 158000,
+			mimeType: 'image/jpeg',
+			provider: 'picsum',
+			width: 800,
+			height: 600
+		}
+	},
+	{
 		slug: 'ethereum-pos-sharia-compliance',
 		section: 'news',
 		title: 'Ethereum Proof-of-Stake: Sharia Compliance Update',
 		excerpt:
 			"Breaking news on how Ethereum's transition to Proof-of-Stake affects its status under Islamic law.",
 		content: `# Ethereum PoS Update
-		
-		Ethereum's successful transition to Proof-of-Stake has significant implications for its sharia compliance status.`,
+
+Ethereum's successful transition to Proof-of-Stake has significant implications for its sharia compliance status.`,
 		type: 'headline',
 		status: 'published',
 		publishedAt: new Date('2024-03-01T00:00:00Z'),
@@ -258,12 +403,12 @@ export const TOKENS: SeedToken[] = [
 		tradingviewSymbol: 'INDEX:BTCUSD',
 		website: 'https://bitcoin.org',
 		content: `# Bitcoin (BTC)
-		
-		Bitcoin is the first and most well-known cryptocurrency, created by Satoshi Nakamoto in 2009.
-		
-		## Sharia Analysis
-		
-		Bitcoin is generally considered halal by many Islamic scholars due to its decentralized nature and absence of interest-bearing mechanisms.`,
+
+Bitcoin is the first and most well-known cryptocurrency, created by Satoshi Nakamoto in 2009.
+
+## Sharia Analysis
+
+Bitcoin is generally considered halal by many Islamic scholars due to its decentralized nature and absence of interest-bearing mechanisms.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:00:00Z'),
 		tags: ['Currency', 'Proof of Work', 'Store of Value', 'Decentralized'],
@@ -288,8 +433,8 @@ export const TOKENS: SeedToken[] = [
 		tradingviewSymbol: 'INDEX:ETHUSD',
 		website: 'https://ethereum.org',
 		content: `# Ethereum (ETH)
-		
-		Ethereum is a decentralized platform that enables smart contracts and decentralized applications.`,
+
+Ethereum is a decentralized platform that enables smart contracts and decentralized applications.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:02:00Z'),
 		tags: ['Platform', 'Smart Contracts', 'Proof of Stake', 'DeFi'],
@@ -313,8 +458,8 @@ export const TOKENS: SeedToken[] = [
 		tradingviewSymbol: 'CRYPTO:USDCUSD',
 		website: 'https://www.circle.com/en/usdc',
 		content: `# USD Coin (USDC)
-		
-		USDC is a fully-backed stablecoin pegged to the US Dollar.`,
+
+USDC is a fully-backed stablecoin pegged to the US Dollar.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:03:00Z'),
 		tags: ['Stablecoin', 'Fiat-Backed', 'USD', 'Payments'],
@@ -338,8 +483,8 @@ export const TOKENS: SeedToken[] = [
 		tradingviewSymbol: 'BINANCE:BNBUSDT',
 		website: 'https://www.bnbchain.org',
 		content: `# BNB
-		
-		BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
+
+BNB is the native cryptocurrency of the BNB Chain ecosystem.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:04:00Z'),
 		tags: ['Exchange Token', 'BNB Chain', 'Utility Token'],
@@ -363,8 +508,8 @@ export const TOKENS: SeedToken[] = [
 		tradingviewSymbol: 'BINANCE:SOLUSDT',
 		website: 'https://solana.com',
 		content: `# Solana (SOL)
-		
-		Solana is a high-performance blockchain designed for decentralized applications.`,
+
+Solana is a high-performance blockchain designed for decentralized applications.`,
 		status: 'published',
 		publishedAt: new Date('2024-01-01T00:05:00Z'),
 		tags: ['Platform', 'Proof of Stake', 'High Performance', 'DeFi'],
