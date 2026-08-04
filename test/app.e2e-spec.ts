@@ -1,29 +1,44 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import { Test } from '@nestjs/testing';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import createClient from 'openapi-fetch';
+import type { AddressInfo } from 'node:net';
+import { AppModule } from '#src/app.module';
+import type { paths } from '#test/schema';
+import type { Context } from './helpers/context.type';
+import { resetTestDatabase } from './helpers/reset-test-database';
+import { SuitesService } from './suites/index';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+describe('App', () => {
+  const ctx = {} as Context;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    ctx.app = moduleRef.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter(),
+    );
+
+    await ctx.app.init();
+    await ctx.app.listen(0);
+
+    const { port } = ctx.app.getHttpServer().address() as AddressInfo;
+    ctx.baseUrl = `http://127.0.0.1:${port}`;
+    ctx.client = createClient<paths>({ baseUrl: ctx.baseUrl });
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  beforeEach(async () => {
+    await resetTestDatabase();
   });
 
-  afterEach(async () => {
-    await app.close();
+  afterAll(async () => {
+    await ctx.app.close();
   });
+
+  const suitesService = new SuitesService(ctx);
+  suitesService.register();
 });

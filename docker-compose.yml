@@ -1,0 +1,34 @@
+services:
+  db-dev:
+    image: postgres:18-alpine
+    container_name: cryptosharia-api-db-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cryptosharia_api_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_dev:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d cryptosharia_api_dev']
+
+  app-dev:
+    image: oven/bun:1
+    container_name: cryptosharia-api-app-dev
+    command: bash -c "bun install && bun run start:dev"
+    ports:
+      - '3000:3000'
+    working_dir: /app
+    volumes:
+      - .:/app
+      - node_modules_dev:/app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      db-dev:
+        condition: service_healthy
+
+volumes:
+  db_dev:
+  node_modules_dev:
