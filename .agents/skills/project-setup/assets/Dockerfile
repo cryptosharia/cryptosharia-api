@@ -16,7 +16,8 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 
 # Copy source + tsconfig (required for path alias resolution)
-COPY tsconfig.json src ./
+COPY tsconfig.json ./
+COPY src ./src
 
 # Create a dedicated non-root user for running the app.
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser

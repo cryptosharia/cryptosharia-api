@@ -1,21 +1,21 @@
 services:
   db-dev:
     image: postgres:18-alpine
-    container_name: <app>-db-dev
+    container_name: <app-name>-db-dev
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: <app>_dev
+      POSTGRES_DB: <app_name>_dev
     ports:
       - '5432:5432'
     volumes:
       - db_dev:/var/lib/postgresql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d <app_name>_dev']
 
   app-dev:
     image: oven/bun:1
-    container_name: <app>-app-dev
+    container_name: <app-name>-app-dev
     command: bash -c "bun install && bun run start:dev"
     ports:
       - '3000:3000'

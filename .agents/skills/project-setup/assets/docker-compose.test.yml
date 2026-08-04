@@ -1,15 +1,15 @@
 services:
   db-test:
     image: postgres:18-alpine
-    container_name: <app>-db-test
+    container_name: <app-name>-db-test
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: <app>_test
+      POSTGRES_DB: <app_name>_test
     ports:
       - '5433:5432'
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d <app>_test']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d <app_name>_test']
       interval: 1s
       timeout: 5s
       retries: 30

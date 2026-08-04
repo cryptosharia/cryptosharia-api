@@ -17,7 +17,7 @@ Fastify, Drizzle ORM, Zod, OpenAPI/Scalar, Vitest**.
 
 Work through in order:
 
-### 1. Dependencies, scripts, and TypeScript aliases
+### 1. Dependencies, scripts, ESLint, and TypeScript aliases
 
 #### Uninstall the default tooling and adapter
 
@@ -59,6 +59,10 @@ Delete `start:prod`, `start:debug`, `test`, `test:e2e`. Keep `format` and `lint`
 "db:migrate": "drizzle-kit migrate"
 ```
 
+#### ESLint
+
+Replace `...globals.jest` with `...globals.vitest`
+
 #### TypeScript path aliases
 
 In `tsconfig.json`, add `baseUrl` and `paths`; remove build-only flags
@@ -81,7 +85,7 @@ In `tsconfig.json`, add `baseUrl` and `paths`; remove build-only flags
    ```
 
 2. Copy `assets/.env.example` to `<project>/.env.example`.
-3. Copy `assets/.env.test` to `<project>/.env.test`, replacing `<app>` with the project name.
+3. Copy `assets/.env.test` to `<project>/.env.test`, replacing `<app_name>` (snake_case) with the project name.
 4. Copy `assets/src/env.validation.ts` to `<project>/src/env.validation.ts`.
 
 ### 3. Drizzle module
@@ -161,7 +165,7 @@ Copy these nine files to `<project>/src/modules/users/`:
 Copy these static templates to the `<project>/` root: `assets/Dockerfile`,
 `assets/docker-compose.yml`, `assets/docker-compose.test.yml`,
 `assets/docker-compose.prod.yml`, and `assets/.dockerignore`. Replace the
-`<app>` placeholder in the compose files with the project name.
+`<app-name>` and `<app_name>` (use kebab-case for `<app-name>` and snake_case for `<app_name>`) placeholder in the compose files with the project name.
 
 ---
 
@@ -169,4 +173,3 @@ Copy these static templates to the `<project>/` root: `assets/Dockerfile`,
 
 1. Run `bun install`.
 2. Run `bun run lint` & `bun run format`.
-3. Run `bun run test:gen-schema`, `bun run test:unit`, & `bun run test:e2e`.
