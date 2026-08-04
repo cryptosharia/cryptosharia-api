@@ -1,3 +1,0 @@
-# block all crawlers from indexing the API
-User-agent: *
-Disallow: /

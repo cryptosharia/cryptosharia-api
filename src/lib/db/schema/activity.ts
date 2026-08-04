@@ -1,1 +1,0 @@
-export { activityLogs } from '../tables';

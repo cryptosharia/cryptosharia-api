@@ -1,58 +1,71 @@
 {
-	"name": "cryptosharia-api",
-	"private": true,
-	"version": "1.0.0",
-	"type": "module",
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && tsc --noEmit",
-		"check:watch": "svelte-kit sync && tsc --noEmit --watch",
-		"test": "bash scripts/test-e2e.sh",
-		"lint": "eslint . && prettier --check .",
-		"format": "prettier --write .",
-		"db:push": "drizzle-kit push",
-		"db:generate": "drizzle-kit generate",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio",
-		"gen:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
-		"gen:api-types": "openapi-typescript http://localhost:5173/openapi.json -o src/lib/api-types.ts",
-		"gen:api-types:preview": "openapi-typescript https://preview.api.cryptosharia.id/openapi.json -o src/lib/api-types.ts"
-	},
-	"devDependencies": {
-		"@eslint/compat": "^2.0.3",
-		"@eslint/js": "^9.39.4",
-		"@sveltejs/adapter-vercel": "^6.3.3",
-		"@sveltejs/kit": "^2.53.4",
-		"@types/node": "^25",
-		"drizzle-kit": "^0.31.9",
-		"drizzle-orm": "^0.45.1",
-		"eslint": "^9.39.4",
-		"eslint-config-prettier": "^10.1.8",
-		"globals": "^17.4.0",
-		"openapi-typescript": "^7.13.0",
-		"prettier": "^3.8.1",
-		"svelte": "^5.53.7",
-		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.56.1",
-		"vite": "^7.3.1",
-		"vitest": "^4.0.18"
-	},
-	"dependencies": {
-		"@asteasolutions/zod-to-openapi": "^8.4.3",
-		"@scalar/sveltekit": "^0.2.0",
-		"@vercel/blob": "^2.3.1",
-		"@vercel/functions": "^3.4.3",
-		"argon2": "^0.44.0",
-		"drizzle-zod": "^0.8.3",
-		"image-size": "^2.0.2",
-		"jose": "^6.2.1",
-		"lru-cache": "^11.2.6",
-		"openapi-fetch": "^0.17.0",
-		"postgres": "^3.4.8",
-		"resend": "^6.9.3",
-		"zod": "^4.3.6"
-	}
+  "name": "cryptosharia-api",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@nestjs/testing": "^11.0.1",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.0",
+    "@types/supertest": "^7.0.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "globals": "^17.0.0",
+    "jest": "^30.0.0",
+    "prettier": "^3.4.2",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
 }

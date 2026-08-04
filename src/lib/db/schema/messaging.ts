@@ -1,1 +1,0 @@
-export { messages } from '../tables';
