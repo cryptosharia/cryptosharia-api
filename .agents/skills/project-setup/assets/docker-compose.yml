@@ -1,7 +1,7 @@
 services:
-  db-dev:
+  postgres-dev:
     image: postgres:18-alpine
-    container_name: <app-name>-db-dev
+    container_name: <app-name>-postgres-dev
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -9,13 +9,27 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - db_dev:/var/lib/postgresql
+      - postgres_dev:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d <app_name>_dev']
+      interval: 1s
+      timeout: 5s
+      retries: 30
 
-  app-dev:
+  redis-dev:
+    image: redis:8-alpine
+    container_name: <app-name>-redis-dev
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  <app-name>-dev:
     image: oven/bun:1
-    container_name: <app-name>-app-dev
+    container_name: <app-name>-dev
     command: bash -c "bun install && bun run start:dev"
     ports:
       - '3000:3000'
@@ -26,9 +40,11 @@ services:
     env_file:
       - .env
     depends_on:
-      db-dev:
+      postgres-dev:
+        condition: service_healthy
+      redis-dev:
         condition: service_healthy
 
 volumes:
-  db_dev:
+  postgres_dev:
   node_modules_dev:

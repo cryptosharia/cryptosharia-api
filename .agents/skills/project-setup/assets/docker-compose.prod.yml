@@ -1,7 +1,7 @@
 services:
-  db:
+  postgres:
     image: postgres:18-alpine
-    container_name: <app-name>-db
+    container_name: <app-name>-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -9,26 +9,39 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - db:/var/lib/postgresql
+      - postgres:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d <app_name>']
       interval: 5s
       timeout: 5s
       retries: 5
 
-  app:
+  redis:
+    image: redis:8-alpine
+    container_name: <app-name>-redis
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  <app-name>:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: <app-name>-app
+    container_name: <app-name>
     ports:
       - '3000:3000'
     env_file:
       - .env.production
     depends_on:
-      db:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  db:
+  postgres:

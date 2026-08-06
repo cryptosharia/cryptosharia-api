@@ -1,7 +1,7 @@
 services:
-  db:
+  postgres:
     image: postgres:18-alpine
-    container_name: cryptosharia-api-db
+    container_name: cryptosharia-api-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -16,17 +16,30 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
+  redis:
+    image: redis:8-alpine
+    container_name: cryptosharia-api-redis
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  cryptosharia-api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: cryptosharia-api-app
+    container_name: cryptosharia-api
     ports:
       - '3000:3000'
     env_file:
       - .env.production
     depends_on:
-      db:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
 
