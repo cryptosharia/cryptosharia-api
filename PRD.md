@@ -154,13 +154,19 @@ Lihat file DBML terpisah (`cryptosharia-2.0-schema.dbml`) untuk definisi lengkap
 
 - **`published_at`**: kolom di-set ke `now()` saat status pertama kali berubah ke `published` (yaitu saat `status = 'published'` DAN `published_at IS NULL`). Setelah terisi, tidak pernah diubah lagi — ini adalah tanggal original publication. Public visibility untuk semua content item (posts, cryptoassets, courses): `status = 'published' AND published_at <= now()`.
 
-- **Course gratis** (`price = 0`): `POST /courses/:id/acquire` — langsung buat row `enrollments` (`grant_type = 'free'`, `order_id = null`). Akses permanen. Response `201 Created`.
+- **Konvensi status code `POST /courses/:id/acquire`**: akses langsung didapat (enrollment dibuat atau di-upgrade) → `200 OK`. Order dibuat menunggu approval → `202 Accepted`.
 
-- **Course berbayar** (`price > 0`) + user punya subscription aktif (`is_cancelled=false AND expires_at > now()`): `POST /courses/:id/acquire` — langsung buat row `enrollments` (`grant_type = 'subscription'`, `order_id = null`). Akses temporer — validasi live apakah user masih punya subscription aktif. Saat subscription berakhir (expired/`is_cancelled=true`), akses ke enrollment ini mati; `completed_lesson_ids` dan certificate tetap tersimpan. Response `201 Created`.
+- **Course gratis** (`price = 0`): `POST /courses/:id/acquire` — langsung buat row `enrollments` (`grant_type = 'free'`, `order_id = null`). Akses permanen. Response `200 OK`.
+
+- **Course berbayar** (`price > 0`) + user punya subscription aktif (`is_cancelled=false AND expires_at > now()`): `POST /courses/:id/acquire` — langsung buat row `enrollments` (`grant_type = 'subscription'`, `order_id = null`). Akses temporer — validasi live apakah user masih punya subscription aktif. Saat subscription berakhir (expired/`is_cancelled=true`), akses ke enrollment ini mati; `completed_lesson_ids` dan certificate tetap tersimpan. Response `200 OK`.
 
 - **Course berbayar** (`price > 0`) + user tidak punya subscription aktif: `POST /courses/:id/acquire` WAJIB kirim `proofImageId` → buat row `orders` (`course_id`, `amount = courses.price` pada saat itu, `status = pending`). Response `202 Accepted` (menunggu approval, belum ada `enrollments`). Saat admin approve → buat `enrollments` (`grant_type = 'order'`, `order_id = order ini`), akses permanen.
 
-- **Upgrade enrollment dari temp ke permanen**: user dengan enrollment `grant_type = 'subscription'` yang subscription sudah lapsed → boleh `POST /courses/:id/acquire` ulang. Jika saat ini user punya subscription aktif lagi → enrollment ditingkatkan (grant_type tetap 'subscription', valid lagi). Jika user ingin beli via order → buat order; saat approve → `grant_type` enrollment diubah ke `'order'`, `order_id` di-set. Response mengikuti flow standar. Gak kena `409 ALREADY_ENROLLED` karena akses saat ini tidak valid.
+- **Upgrade enrollment `grant_type = 'subscription'`**: validitas akses enrollment ini live-check ke `subscriptions`. Subscription lapse → akses mati (row `enrollments` dan progress tetap tersimpan). Subscription aktif lagi → akses **otomatis valid kembali tanpa perlu acquire** — jika `POST /courses/:id/acquire` tetap dipanggil saat akses sudah valid → `409 ALREADY_ENROLLED`. Re-acquire hanya boleh saat akses **invalid** (subscription lapsed), dan hasilnya tergantung kondisi saat itu:
+  - **Course sekarang gratis** (`price = 0`) → update `grant_type` enrollment yang ada menjadi `'free'`, akses permanen. Response `200 OK`.
+  - **Course berbayar** (`price > 0`) → buat order (`proofImageId` WAJIB); saat admin approve → update `grant_type` enrollment yang ada menjadi `'order'`, `order_id` di-set, akses permanen. Response `202 Accepted`.
+
+- **Catatan `grant_type` untuk subscriber acquire course gratis**: course gratis selalu menghasilkan `grant_type = 'free'` (akses permanen), terlepas user subscriber atau bukan. Benefit subscription (grant `'subscription'`) hanya berlaku untuk course berbayar.
 
 - Jika `proofImageId` tidak dikirim padahal `price > 0` dan user tidak punya subscription aktif → `400 Bad Request`, error code `PROOF_REQUIRED`.
 
@@ -175,7 +181,9 @@ Lihat file DBML terpisah (`cryptosharia-2.0-schema.dbml`) untuk definisi lengkap
 - `POST /subscriptions/acquire` — Body: `{ tierId: string, proofImageId?: string }`.
   - Harga diambil dari row `subscription_tiers` berdasarkan `tierId`, dihitung server-side, TIDAK dari body request. `tierId` tidak ada → `404`, error code `TIER_NOT_FOUND`.
   - Snapshot `price` → `orders.amount` dan `duration_days` → `orders.subscription_duration_days` saat acquire. Ganti harga/durasi tier setelah acquire tidak mengubah order yang sudah masuk — keduanya ke-snapshot.
-  - Karena semua tier harga > 0 (tidak ada tier gratis saat ini), `proofImageId` WAJIB. Jika di masa depan ada promo gratis, logic yang sama seperti 4.1 berlaku (tanpa proof, langsung approved).
+  - **`proofImageId` wajib atau tidak ditentukan oleh `subscription_tiers.price` saat acquire (runtime), bukan oleh data seed:**
+    - `price > 0` → `proofImageId` WAJIB, dan `proofImageId` tidak dikirim → `400 Bad Request`, error code `PROOF_REQUIRED`.
+    - `price = 0` → `proofImageId` tidak wajib; subscription **langsung aktif tanpa order** (mirip course gratis di 4.1). Mekanisme: jika user punya subscription aktif → **extend** `expires_at` (`expires_at lama + duration_days`); jika tidak → buat row `subscriptions` baru. Response `200 OK` (bukan 202, karena tidak menunggu approval).
   - Jika user sudah punya `subscriptions` aktif (`is_cancelled=false AND expires_at > now()`):
     - Buat `orders` (`subscription_tier_id`, `status=pending`) seperti biasa.
     - **Saat admin approve** (bukan saat submit): jika masih ada subscription aktif milik user tersebut, **extend** `expires_at` yang ada (`expires_at lama + durasi_baru`), bukan membuat row `subscriptions` baru. `durasi_baru` diambil dari **`orders.subscription_duration_days` milik order renewal yang sedang di-approve**. Jika tidak ada yang aktif, buat row `subscriptions` baru.
@@ -196,7 +204,7 @@ Lihat file DBML terpisah (`cryptosharia-2.0-schema.dbml`) untuk definisi lengkap
 
 ### 4.4 Business Rules — Progress & Certificate
 
-- `POST /lessons/:id/complete` — resolve course dari lesson (`lesson → module → course`), lalu resolve `enrollments` dari `(user_id dari JWT, course_id hasil resolve)`. Jika tidak ada `enrollments` → `403 Forbidden`, error code `ENROLLMENT_REQUIRED`. Tidak ada bypass role untuk completion — **semua role termasuk editor/admin wajib memiliki enrollment**.
+- `POST /lessons/:id/complete` — resolve course dari lesson (`lesson → module → course`), lalu resolve `enrollments` dari `(user_id dari JWT, course_id hasil resolve)`. Jika tidak ada `enrollments` **valid** (sesuai definisi 4.5) → `403 Forbidden`, error code `ENROLLMENT_REQUIRED`. Tidak ada bypass role untuk completion — **semua role termasuk editor/admin wajib memiliki enrollment valid**.
   - Jika `lessonId` sudah ada di `completed_lesson_ids` → no-op, response `200 OK` (idempotent).
   - Jika belum → append `lessonId` ke array → cek: apakah semua `lessons.id` yang `module.course_id = courseId` sekarang ada di `completed_lesson_ids`?
     - Ya → generate `certificate_code` (format: `CS-{4 digit tahun}-{5 digit sequential/random}`, contoh `CS-2026-00042`) → coba `INSERT` ke `certificates`. Jika `(user_id, course_id)` sudah ada (unique constraint) → skip insert, tidak error (idempotent, course yang completed ulang setelah lesson baru ditambahkan tidak membuat certificate kedua).
@@ -374,10 +382,10 @@ Response course menyertakan `coverImageUrl` (URL ter-derive, lihat 4.8). Request
 | POST   | `/courses/:id/acquire`    | Full             | Body: `{ proofImageId?: string }`. Lihat 4.1                           |
 | POST   | `/subscriptions/acquire`  | Full             | Body: `{ tierId, proofImageId? }`. Lihat 4.2                           |
 | GET    | `/orders`                 | Full             | admin: semua; member/editor: milik sendiri. Filter: `?status=`         |
+| PUT    | `/orders/:id/approve`     | admin            | Lihat 4.3                                                              |
+| PUT    | `/orders/:id/reject`      | admin            | Body: `{ reason?: string }`. Lihat 4.3                                 |
 
 Response order menyertakan `proofImageUrl` (URL ter-derive, lihat 4.8) — wajib agar admin bisa melihat bukti pembayaran saat approve/reject. Request `POST` menerima `proofImageId`.
-| PUT | `/orders/:id/approve` | admin | Lihat 4.3 |
-| PUT | `/orders/:id/reject` | admin | Body: `{ reason?: string }`. Lihat 4.3 |
 
 ### 5.8 Academy — Learning Progress & Certificates
 
