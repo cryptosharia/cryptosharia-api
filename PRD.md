@@ -239,7 +239,17 @@ Tanpa akses, `GET /lessons/:id` return `403 Forbidden`, error code `COURSE_ACCES
 - `orders.proof_image_id` tidak dihapus otomatis selama order masih ada karena menjadi bukti pembayaran/audit record.
 - Tidak ada endpoint delete order di v2.0; order hanya bisa berpindah status dari `pending` ke `approved` atau `rejected`.
 
-### 4.8 Transaction Requirements
+### 4.8 Asset URL Derivation
+
+- Tabel `assets` hanya menyimpan `pathname` + `provider`. Tidak ada kolom `url`.
+- Backend men-derive URL dari `(provider, pathname)` saat menyusun response, via satu helper (misal `AssetUrlResolver`).
+  - `provider = 'vercel_blob'` → `https://<VERCEL_BLOB_BASE_URL>/<pathname>`.
+- Semua response resource menampilkan URL ter-derive, bukan id:
+  - `posts.coverImageUrl`, `cryptoassets.logoUrl`, `courses.coverImageUrl`, `users.avatarUrl`, `orders.proofImageUrl`.
+- Request (write) tetap menerima id: `coverImageId`, `logoId`, `avatarId`, `proofImageId`.
+- Resource yang tidak punya asset reference (null) → field URL diisi `null`.
+
+### 4.9 Transaction Requirements
 
 Operasi berikut wajib dijalankan dalam DB transaction:
 
@@ -255,13 +265,13 @@ Operasi berikut wajib dijalankan dalam DB transaction:
 - Update/delete resource yang mengganti atau menghapus asset reference.
 - Delete course/module/lesson setelah precondition check.
 
-### 4.9 Email Delivery
+### 4.10 Email Delivery
 
 - Semua email dikirim via Resend.
 - OTP signin email dikirim ke user saat `POST /auth/otp/request` sukses.
 - Order approved/rejected email dikirim ke user setelah admin approve/reject order.
 
-### 4.10 Content Management Ownership
+### 4.11 Content Management Ownership
 
 - Tidak ada ownership per content item di v2.0 untuk `posts`, `cryptoassets`, dan `courses`.
 - Semua `editor` dan `admin` bisa melihat dan mengelola semua content, termasuk `unpublished`.
@@ -304,6 +314,8 @@ Operasi berikut wajib dijalankan dalam DB transaction:
 | PUT    | `/users/:id/status` | admin           | Ubah `status`                                                                                         |
 | PUT    | `/users/:id/role`   | admin           | Ubah `role`                                                                                           |
 
+Response user (`GET /users`, `GET /users/:id`, `GET /auth/me`) menyertakan `avatarUrl` (URL ter-derive, lihat 4.8).
+
 ### 5.3 Posts
 
 | Method | Path         | Auth    | Deskripsi                                                                                              |
@@ -314,6 +326,8 @@ Operasi berikut wajib dijalankan dalam DB transaction:
 | PATCH  | `/posts/:id` | editor+ | Update post                                                                                            |
 | DELETE | `/posts/:id` | editor+ | Delete post                                                                                            |
 
+Response post menyertakan `coverImageUrl` (URL ter-derive, lihat 4.8). Request `POST`/`PATCH` menerima `coverImageId`.
+
 ### 5.4 Crypto Assets
 
 | Method | Path                | Auth    | Deskripsi                                                                                                    |
@@ -323,6 +337,8 @@ Operasi berikut wajib dijalankan dalam DB transaction:
 | GET    | `/cryptoassets/:id` | public* | Public hanya bisa membaca crypto asset `published`. Editor/admin bisa membaca semua status                   |
 | PATCH  | `/cryptoassets/:id` | editor+ | Update crypto asset                                                                                          |
 | DELETE | `/cryptoassets/:id` | editor+ | Delete crypto asset                                                                                          |
+
+Response cryptoasset menyertakan `logoUrl` (URL ter-derive, lihat 4.8). Request `POST`/`PATCH` menerima `logoId`.
 
 ### 5.5 Assets
 
@@ -347,6 +363,8 @@ Operasi berikut wajib dijalankan dalam DB transaction:
 | PATCH  | `/lessons/:id`               | editor+     |                                                                                                                              |
 | DELETE | `/lessons/:id`               | editor+     | Ditolak (`409`) jika course terkait sudah pernah punya `orders`/`enrollments`/`certificates`. Lihat 4.6                      |
 
+Response course menyertakan `coverImageUrl` (URL ter-derive, lihat 4.8). Request `POST`/`PATCH` menerima `coverImageId`.
+
 ### 5.7 Academy — Acquisition (Course & Subscription)
 
 | Method | Path                      | Auth             | Deskripsi                                                              |
@@ -356,8 +374,10 @@ Operasi berikut wajib dijalankan dalam DB transaction:
 | POST   | `/courses/:id/acquire`    | Full             | Body: `{ proofImageId?: string }`. Lihat 4.1                           |
 | POST   | `/subscriptions/acquire`  | Full             | Body: `{ tierId, proofImageId? }`. Lihat 4.2                           |
 | GET    | `/orders`                 | Full             | admin: semua; member/editor: milik sendiri. Filter: `?status=`         |
-| PUT    | `/orders/:id/approve`     | admin            | Lihat 4.3                                                              |
-| PUT    | `/orders/:id/reject`      | admin            | Body: `{ reason?: string }`. Lihat 4.3                                 |
+
+Response order menyertakan `proofImageUrl` (URL ter-derive, lihat 4.8) — wajib agar admin bisa melihat bukti pembayaran saat approve/reject. Request `POST` menerima `proofImageId`.
+| PUT | `/orders/:id/approve` | admin | Lihat 4.3 |
+| PUT | `/orders/:id/reject` | admin | Body: `{ reason?: string }`. Lihat 4.3 |
 
 ### 5.8 Academy — Learning Progress & Certificates
 
