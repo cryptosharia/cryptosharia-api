@@ -7,15 +7,15 @@ import { AppExceptionFilter } from './app.exception-filter';
 import { DrizzleModule } from './modules/drizzle/drizzle.module';
 import { UsersModule } from './modules/users/users.module';
 import { OpenApiModule } from './modules/openapi/openapi.module';
-import { HealthModule } from './modules/health/health.module';
+import { SystemModule } from './modules/system/system.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate }),
+    SystemModule,
     DrizzleModule,
     UsersModule,
     OpenApiModule,
-    HealthModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AppExceptionFilter },
