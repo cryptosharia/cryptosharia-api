@@ -18,7 +18,7 @@ export class UsersRepository {
       .select()
       .from(users)
       .where(eq(users.id, id));
-    if (!user) throw new UsersError('NOT_FOUND');
+    if (!user) throw new UsersError('USER_NOT_FOUND');
     return user;
   }
 
