@@ -295,7 +295,7 @@ Operasi berikut wajib dijalankan dalam DB transaction:
 - Search: `?q=<keyword>` — dicocokkan terhadap kolom `title`/`name` (case-insensitive partial match) pada resource yang relevan.
 - Filter tersedia per resource (didetailkan di masing-masing endpoint jika relevan).
 - Query params memakai `snake_case`. Body dan response JSON memakai `camelCase`. Database columns memakai `snake_case`.
-- Error response format konsisten: `{ statusCode: number, errorCode: string, message: string }`.
+- Error response format konsisten: `{ error: string, message: string }`. HTTP status code melekat pada response itu sendiri, tidak diduplikasi di body. `error` adalah kode stabil yang machine-readable dan dipakai client/BFF untuk membedakan perilaku; `message` human-readable dan dapat di-localize. Validation failure memakai `error: 'VALIDATION_FAILED'` dengan `message` berisi field-level errors. Gunakan kode spesifik jika client perlu membedakan kasus, misalnya `USER_NOT_FOUND`, `COURSE_ACCESS_REQUIRED`, `ORDER_ALREADY_PENDING`, atau `PROOF_REQUIRED`; gunakan kode HTTP-level generik seperti `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, dan `INTERNAL_SERVER_ERROR` hanya untuk failure yang tidak spesifik ke domain tertentu.
 - `Auth = public` berarti tidak membutuhkan `Authorization`, tetapi tetap membutuhkan `Api-Key` kecuali endpoint dokumentasi publik di 2.5.
 - Default sort pada endpoint `GET` list: kolom `order` (modules, lessons) → `order ASC`; kolom `published_at` (posts, cryptoassets, courses) → `published_at DESC`; lainnya (users, orders, certificates, subscription-tiers) → `created_at DESC`.
 
