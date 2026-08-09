@@ -1,0 +1,5 @@
+# If you find any security vulnerability, please report it to us.
+
+Contact: mailto:security@example.com
+Expires: 2028-01-01T00:00:00.000Z
+Preferred-Languages: en

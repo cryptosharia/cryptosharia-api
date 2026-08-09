@@ -34,7 +34,7 @@ Keep the shipped `@nestjs/common`, `@nestjs/core`, `reflect-metadata`, `rxjs`.
 Add:
 
 ```bash
-bun add @nestjs/platform-fastify @nestjs/config @nestjs/jwt
+bun add @nestjs/platform-fastify @nestjs/config @nestjs/jwt @fastify/static
 bun add zod drizzle-orm drizzle-zod pg @asteasolutions/zod-to-openapi yaml dotenv
 ```
 
@@ -106,6 +106,8 @@ Copy these files to their mirrored locations:
 - `assets/src/app.module.ts` → `<project>/src/app.module.ts`
 - `assets/src/app.exception-filter.ts` → `<project>/src/app.exception-filter.ts`
 - `assets/src/zod.exception-filter.ts` → `<project>/src/zod.exception-filter.ts`
+- `assets/static/robots.txt` → `<project>/static/robots.txt`
+- `assets/static/.well-known/security.txt` → `<project>/static/.well-known/security.txt`
 - `assets/src/types/fastify.d.ts` → `<project>/src/types/fastify.d.ts`
 - `assets/src/types/vitest.d.ts` → `<project>/src/types/vitest.d.ts`
 - `assets/src/common/parse-zod.pipe.ts` → `<project>/src/common/parse-zod.pipe.ts`
@@ -114,12 +116,12 @@ Copy these files to their mirrored locations:
 - `assets/src/common/error-response.schemas.ts` → `<project>/src/common/error-response.schemas.ts`
 - `assets/src/common/current-user-id.decorator.ts` → `<project>/src/common/current-user-id.decorator.ts`
 
-### 5. Health module
+### 5. System module
 
-Copy these two files to `<project>/src/modules/health/`:
+Copy these two files to `<project>/src/modules/system/`:
 
-- `assets/src/modules/health/health.controller.ts`
-- `assets/src/modules/health/health.module.ts`
+- `assets/src/modules/system/system.controller.ts`
+- `assets/src/modules/system/system.module.ts`
 
 ### 6. OpenAPI module (Scalar)
 

@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { join } from 'node:path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
@@ -9,6 +10,11 @@ async function bootstrap() {
   app.use((req: FastifyRequest, _res: FastifyReply, next: () => void) => {
     console.log(`[${req.method}] ${req.url}`);
     next();
+  });
+
+  app.useStaticAssets({
+    root: join(process.cwd(), 'static'),
+    prefix: '/',
   });
 
   app.enableShutdownHooks();
