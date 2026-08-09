@@ -1,11 +1,14 @@
-// Use union string enum for error codes (e.g. 'A' | 'B' | 'C')
-export type TasksErrorCode = 'NOT_FOUND' | 'SLUG_UNIQUE_VIOLATION';
+export const TASKS_ERRORS = {
+  TASK_NOT_FOUND: 'Task not found',
+  SLUG_UNIQUE_VIOLATION: 'Task slug already exists',
+} as const;
+
+export type TasksErrorCode = keyof typeof TASKS_ERRORS;
 
 export class TasksError extends Error {
-  // Override the error name from 'Error' to 'TasksError'
   name = 'TasksError';
 
-  constructor(public message: TasksErrorCode) {
-    super(message);
+  constructor(public code: TasksErrorCode) {
+    super(TASKS_ERRORS[code]);
   }
 }

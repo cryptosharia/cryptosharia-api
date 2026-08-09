@@ -1,13 +1,19 @@
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
-import { HttpError, HttpValidationError } from '#src/common/http-error.schema';
-import { JsonResponsesConfig } from '#src/common/json-responses-config';
+import { createErrorResponse } from '#src/common/create-error-response';
+import { createResponsesConfig } from '#src/common/create-responses-config';
+import {
+  APP_ERRORS,
+  UnauthorizedResponse,
+  ValidationFailedResponse,
+} from '#src/common/error-response.schemas';
 import {
   TaskResponse,
   InsertBody,
   UpdateBody,
   TaskParam,
 } from './tasks.schemas';
+import { TASKS_ERRORS } from './tasks.error';
 
 export const tasksRouteConfig: RouteConfig[] = [
   {
@@ -16,9 +22,12 @@ export const tasksRouteConfig: RouteConfig[] = [
     summary: 'List tasks',
     description: 'Retrieve all tasks belonging to the authenticated user.',
     security: [{ BearerAuth: [] }],
-    responses: new JsonResponsesConfig({
-      200: z.array(TaskResponse),
-      401: HttpError,
+    responses: createResponsesConfig({
+      200: { description: 'List of tasks', schema: z.array(TaskResponse) },
+      401: {
+        description: APP_ERRORS.UNAUTHORIZED,
+        schema: UnauthorizedResponse,
+      },
     }),
   },
   {
@@ -32,11 +41,20 @@ export const tasksRouteConfig: RouteConfig[] = [
         content: { 'application/json': { schema: InsertBody } },
       },
     },
-    responses: new JsonResponsesConfig({
-      201: TaskResponse,
-      400: HttpValidationError,
-      401: HttpError,
-      409: HttpError,
+    responses: createResponsesConfig({
+      201: { description: 'Task created', schema: TaskResponse },
+      400: {
+        description: APP_ERRORS.VALIDATION_FAILED,
+        schema: ValidationFailedResponse,
+      },
+      401: {
+        description: APP_ERRORS.UNAUTHORIZED,
+        schema: UnauthorizedResponse,
+      },
+      409: {
+        description: TASKS_ERRORS.SLUG_UNIQUE_VIOLATION,
+        schema: createErrorResponse(TASKS_ERRORS, ['SLUG_UNIQUE_VIOLATION']),
+      },
     }),
   },
   {
@@ -48,10 +66,16 @@ export const tasksRouteConfig: RouteConfig[] = [
     request: {
       params: TaskParam,
     },
-    responses: new JsonResponsesConfig({
-      200: TaskResponse,
-      401: HttpError,
-      404: HttpError,
+    responses: createResponsesConfig({
+      200: { description: 'Task found', schema: TaskResponse },
+      401: {
+        description: APP_ERRORS.UNAUTHORIZED,
+        schema: UnauthorizedResponse,
+      },
+      404: {
+        description: TASKS_ERRORS.TASK_NOT_FOUND,
+        schema: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
+      },
     }),
   },
   {
@@ -66,12 +90,24 @@ export const tasksRouteConfig: RouteConfig[] = [
         content: { 'application/json': { schema: UpdateBody } },
       },
     },
-    responses: new JsonResponsesConfig({
-      200: TaskResponse,
-      400: HttpValidationError,
-      401: HttpError,
-      409: HttpError,
-      404: HttpError,
+    responses: createResponsesConfig({
+      200: { description: 'Task updated', schema: TaskResponse },
+      400: {
+        description: APP_ERRORS.VALIDATION_FAILED,
+        schema: ValidationFailedResponse,
+      },
+      401: {
+        description: APP_ERRORS.UNAUTHORIZED,
+        schema: UnauthorizedResponse,
+      },
+      404: {
+        description: TASKS_ERRORS.TASK_NOT_FOUND,
+        schema: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
+      },
+      409: {
+        description: TASKS_ERRORS.SLUG_UNIQUE_VIOLATION,
+        schema: createErrorResponse(TASKS_ERRORS, ['SLUG_UNIQUE_VIOLATION']),
+      },
     }),
   },
   {
@@ -83,10 +119,16 @@ export const tasksRouteConfig: RouteConfig[] = [
     request: {
       params: TaskParam,
     },
-    responses: new JsonResponsesConfig({
-      204: null,
-      401: HttpError,
-      404: HttpError,
+    responses: createResponsesConfig({
+      204: { description: 'Task deleted' },
+      401: {
+        description: APP_ERRORS.UNAUTHORIZED,
+        schema: UnauthorizedResponse,
+      },
+      404: {
+        description: TASKS_ERRORS.TASK_NOT_FOUND,
+        schema: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
+      },
     }),
   },
 ];

@@ -1,13 +1,22 @@
-import { BadRequestException, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpStatus,
+} from '@nestjs/common';
 import { z, ZodError } from 'zod';
-import { HttpValidationError } from './common/http-error.schema';
+import { ValidationFailedResponse } from './common/error-response.schemas';
+import { FastifyReply } from 'fastify';
 
 @Catch(ZodError)
 export class ZodExceptionFilter implements ExceptionFilter {
-  catch(error: ZodError) {
-    throw new BadRequestException({
-      statusCode: HttpStatus.BAD_REQUEST, error: 'Bad Request',
-      message: z.flattenError(error).fieldErrors,
-    } satisfies HttpValidationError);
+  catch(exception: ZodError, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const res = ctx.getResponse<FastifyReply>();
+
+    return res.status(HttpStatus.BAD_REQUEST).send({
+      error: 'VALIDATION_FAILED',
+      message: z.flattenError(exception).fieldErrors,
+    } satisfies ValidationFailedResponse);
   }
 }

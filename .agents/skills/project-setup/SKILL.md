@@ -104,12 +104,14 @@ Copy these files to their mirrored locations:
 
 - `assets/src/main.ts` → `<project>/src/main.ts`
 - `assets/src/app.module.ts` → `<project>/src/app.module.ts`
+- `assets/src/app.exception-filter.ts` → `<project>/src/app.exception-filter.ts`
 - `assets/src/zod.exception-filter.ts` → `<project>/src/zod.exception-filter.ts`
 - `assets/src/types/fastify.d.ts` → `<project>/src/types/fastify.d.ts`
 - `assets/src/types/vitest.d.ts` → `<project>/src/types/vitest.d.ts`
 - `assets/src/common/parse-zod.pipe.ts` → `<project>/src/common/parse-zod.pipe.ts`
-- `assets/src/common/http-error.schema.ts` → `<project>/src/common/http-error.schema.ts`
-- `assets/src/common/json-responses-config.ts` → `<project>/src/common/json-responses-config.ts`
+- `assets/src/common/create-error-response.ts` → `<project>/src/common/create-error-response.ts`
+- `assets/src/common/create-responses-config.ts` → `<project>/src/common/create-responses-config.ts`
+- `assets/src/common/error-response.schemas.ts` → `<project>/src/common/error-response.schemas.ts`
 - `assets/src/common/current-user-id.decorator.ts` → `<project>/src/common/current-user-id.decorator.ts`
 
 ### 5. Health module
@@ -130,7 +132,7 @@ Copy these three files to `<project>/src/modules/openapi/`:
 Replace the `<App Name>` placeholder in `openapi.registry.ts` with the
 project name.
 
-### 7. Base `users` feature module (read-only baseline)
+### 7. Base `users` feature module
 
 Copy these nine files to `<project>/src/modules/users/`:
 

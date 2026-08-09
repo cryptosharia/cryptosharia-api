@@ -23,7 +23,7 @@ export class TasksRepository {
       .from(tasks)
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 
-    if (!task) throw new TasksError('NOT_FOUND');
+    if (!task) throw new TasksError('TASK_NOT_FOUND');
 
     return task;
   }
@@ -62,7 +62,7 @@ export class TasksRepository {
         .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
         .returning();
 
-      if (!task) throw new TasksError('NOT_FOUND');
+      if (!task) throw new TasksError('TASK_NOT_FOUND');
 
       return task;
     } catch (error) {
@@ -83,6 +83,6 @@ export class TasksRepository {
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
       .returning();
 
-    if (!task) throw new TasksError('NOT_FOUND');
+    if (!task) throw new TasksError('TASK_NOT_FOUND');
   }
 }

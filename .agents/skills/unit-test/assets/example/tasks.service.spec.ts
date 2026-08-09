@@ -71,7 +71,7 @@ describe('TasksService', () => {
     });
 
     it('propagates error from repository', async () => {
-      const error = new TasksError('NOT_FOUND');
+      const error = new TasksError('TASK_NOT_FOUND');
       tasksRepository.selectById.mockRejectedValue(error);
 
       await expect(

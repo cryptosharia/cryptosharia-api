@@ -1,6 +1,6 @@
 ---
 name: feature-module
-description: Applies the standard architecture, naming, validation, domain error, repository/service/controller layering, and OpenAPI conventions for NestJS feature resource modules under src/modules/<name>.
+description: Applies the standard architecture, naming, validation, domain error, repository/service/controller layering, and OpenAPI conventions for NestJS feature resource modules under src/modules resource directories.
 ---
 
 # Feature Module
@@ -70,10 +70,15 @@ does not use.
 
 **Domain Errors and Filters**
 
-- Domain errors live in `<name>.error.ts` as an error-code union plus
-  `<Name>Error` class.
+- Domain errors live in `<name>.error.ts` as a `<NAME>_ERRORS` code-to-message
+  map, an error-code union derived from its keys, and a `<Name>Error` class.
+- Use entity-prefixed domain codes for resource failures, such as
+  `<ENTITY>_NOT_FOUND`, rather than generic codes like `NOT_FOUND`.
+- `<Name>Error` stores the selected code on `code` and passes the mapped message
+  to `super(...)`.
 - Exception filters live in `<name>.exception-filter.ts` and map domain errors
   to HTTP exceptions.
+- Exception filters send `{ error: exception.code, message: exception.message }`.
 - Controllers apply the filter with `@UseFilters(<Name>ExceptionFilter)`.
 
 **OpenAPI**
@@ -82,6 +87,18 @@ does not use.
 - Export a prefixed lower-camel `<name>RouteConfig: RouteConfig[]` constant.
 - Document every controller handler: method, path, params, body, success status,
   validation errors, auth errors, and domain errors.
+- Build route responses with `createResponsesConfig` from
+  `#src/common/create-responses-config`.
+- Build domain error response schemas with `createErrorResponse(ERRORS, codes)`
+  from `#src/common/create-error-response`, using the module's error map as the
+  source of truth for both `error` and `message`.
+- Build authenticated route `401` response docs with `APP_ERRORS.UNAUTHORIZED`
+  and `UnauthorizedResponse` from `#src/common/error-response.schemas`.
+- Use `APP_ERRORS.VALIDATION_FAILED` and `ValidationFailedResponse` from
+  `#src/common/error-response.schemas` for Zod validation responses.
+- Use `APP_ERRORS.FORBIDDEN` and `ForbiddenResponse` from
+  `#src/common/error-response.schemas` only for generic 403 failures. Use module
+  error maps for business authorization failures such as access-required cases.
 - Register the route config in `src/modules/openapi/openapi.registry.ts` by
   importing it and adding it to the `routes` array.
 
