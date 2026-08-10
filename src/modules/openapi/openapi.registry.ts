@@ -12,7 +12,15 @@ export function generateOpenApiDocument() {
     scheme: 'bearer',
     bearerFormat: 'JWT',
     description:
-      'JWT access token obtained after authentication. Include as: Authorization: Bearer <token>',
+      'JWT access token obtained after authentication. Include as: authorization: Bearer <token>',
+  });
+
+  registry.registerComponent('securitySchemes', 'ApiKeyAuth', {
+    type: 'apiKey',
+    in: 'header',
+    name: 'api-key',
+    description:
+      'API key required by protected routes. Include as: api-key: <key>',
   });
 
   const routes = [...usersRouteConfig];

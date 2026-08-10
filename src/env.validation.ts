@@ -7,7 +7,7 @@ const envSchema = z
       .default('development'),
     PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.url(),
-    ACCESS_TOKEN_SECRET: z.string().min(32),
+    ACCESS_TOKEN_SECRET: z.string().min(1),
     API_KEY: z.string().min(1),
     CMC_API_KEY: z.string().min(1).optional(),
     BLOB_READ_WRITE_TOKEN: z.string().min(1).optional(),

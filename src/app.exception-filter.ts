@@ -14,7 +14,9 @@ import {
   InternalServerErrorResponse,
   NotFoundResponse,
   UnauthorizedResponse,
+  TooManyRequestsResponse,
 } from './common/error-response.schemas';
+import { TooManyRequestsException } from './common/too-many-requests.exception';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
@@ -41,6 +43,13 @@ export class AppExceptionFilter implements ExceptionFilter {
         error: 'NOT_FOUND',
         message: APP_ERRORS.NOT_FOUND,
       } satisfies NotFoundResponse);
+    }
+
+    if (exception instanceof TooManyRequestsException) {
+      return res.status(HttpStatus.TOO_MANY_REQUESTS).send({
+        error: 'TOO_MANY_REQUESTS',
+        message: APP_ERRORS.TOO_MANY_REQUESTS,
+      } satisfies TooManyRequestsResponse);
     }
 
     console.error('[Unhandled Exception]', exception);
