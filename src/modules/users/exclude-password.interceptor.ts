@@ -13,9 +13,9 @@ export class ExcludePasswordInterceptor implements NestInterceptor {
     return z.array(User).safeParse(data).success;
   }
 
-  private stripPassword(user: User): Omit<User, 'password'> {
-    const { password, ...rest } = user;
-    void password;
+  private stripPassword(user: User): Omit<User, 'passwordHash'> {
+    const { passwordHash, ...rest } = user;
+    void passwordHash;
     return rest;
   }
 

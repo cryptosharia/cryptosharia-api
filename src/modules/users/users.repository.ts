@@ -22,7 +22,9 @@ export class UsersRepository {
     return user;
   }
 
-  async insert(data: Pick<User, 'name' | 'email' | 'password'>): Promise<User> {
+  async insert(
+    data: Pick<User, 'name' | 'email' | 'passwordHash'>,
+  ): Promise<User> {
     try {
       const [user] = await this.drizzleService.db
         .insert(users)

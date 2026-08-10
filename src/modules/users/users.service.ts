@@ -12,7 +12,9 @@ export class UsersService {
     return this.usersRepository.selectById(id);
   }
 
-  async insert(data: Pick<User, 'name' | 'email' | 'password'>): Promise<User> {
+  async insert(
+    data: Pick<User, 'name' | 'email' | 'passwordHash'>,
+  ): Promise<User> {
     return this.usersRepository.insert(data);
   }
 }
