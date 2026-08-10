@@ -14,13 +14,13 @@ services:
       timeout: 5s
       retries: 30
 
-  redis-test:
-    image: redis:8-alpine
-    container_name: cryptosharia-api-redis-test
-    ports:
-      - '6380:6379'
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 1s
-      timeout: 5s
-      retries: 30
+  # redis-test:
+  #   image: redis:8-alpine
+  #   container_name: cryptosharia-api-redis-test
+  #   ports:
+  #     - '6380:6379'
+  #   healthcheck:
+  #     test: ['CMD', 'redis-cli', 'ping']
+  #     interval: 1s
+  #     timeout: 5s
+  #     retries: 30

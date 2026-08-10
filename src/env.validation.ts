@@ -1,18 +1,66 @@
 import { z } from 'zod';
 
-const envSchema = z.object({
-  DATABASE_URL: z.string(),
-  REDIS_URL: z.string(),
-  JWT_SECRET: z.string(),
-  OTP_SECRET: z.string(),
-  REFRESH_TOKEN_SECRET: z.string(),
-  API_KEY: z.string(),
-  BLOB_READ_WRITE_TOKEN: z.string(),
-  VERCEL_BLOB_BASE_URL: z.string(),
-  RESEND_API_KEY: z.string(),
-  GOOGLE_CLIENT_ID: z.string(),
-  GOOGLE_CLIENT_SECRET: z.string(),
-});
+const envSchema = z
+  .object({
+    NODE_ENV: z
+      .enum(['development', 'test', 'production'])
+      .default('development'),
+    PORT: z.coerce.number().int().positive().default(3000),
+    DATABASE_URL: z.url(),
+    ACCESS_TOKEN_SECRET: z.string().min(32),
+    API_KEY: z.string().min(1),
+    CMC_API_KEY: z.string().min(1).optional(),
+    BLOB_READ_WRITE_TOKEN: z.string().min(1).optional(),
+    VERCEL_BLOB_BASE_URL: z.url().optional(),
+    IMGBB_API_KEY: z.string().min(1).optional(),
+    RESEND_API_KEY: z.string().min(1).optional(),
+    RESEND_FROM: z.string().min(1).optional(),
+    RESEND_REPLY_TO: z.email().optional(),
+    CONTACT_FORM_TO_EMAIL: z.email().optional(),
+    KV_REST_API_URL: z.url().optional(),
+    KV_REST_API_TOKEN: z.string().min(1).optional(),
+  })
+  .superRefine((env, context) => {
+    if (env.NODE_ENV !== 'test') {
+      const requiredOutsideTest = [
+        ['CMC_API_KEY', env.CMC_API_KEY],
+        ['BLOB_READ_WRITE_TOKEN', env.BLOB_READ_WRITE_TOKEN],
+        ['VERCEL_BLOB_BASE_URL', env.VERCEL_BLOB_BASE_URL],
+        ['IMGBB_API_KEY', env.IMGBB_API_KEY],
+        ['RESEND_API_KEY', env.RESEND_API_KEY],
+        ['RESEND_FROM', env.RESEND_FROM],
+        ['CONTACT_FORM_TO_EMAIL', env.CONTACT_FORM_TO_EMAIL],
+      ] as const;
+
+      for (const [name, value] of requiredOutsideTest) {
+        if (!value) {
+          context.addIssue({
+            code: 'custom',
+            path: [name],
+            message: 'Required outside test environment',
+          });
+        }
+      }
+    }
+
+    if (env.NODE_ENV !== 'production') return;
+
+    if (!env.KV_REST_API_URL) {
+      context.addIssue({
+        code: 'custom',
+        path: ['KV_REST_API_URL'],
+        message: 'Required in production',
+      });
+    }
+
+    if (!env.KV_REST_API_TOKEN) {
+      context.addIssue({
+        code: 'custom',
+        path: ['KV_REST_API_TOKEN'],
+        message: 'Required in production',
+      });
+    }
+  });
 
 export function validate(config: Record<string, unknown>) {
   try {
