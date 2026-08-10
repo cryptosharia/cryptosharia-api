@@ -28,7 +28,13 @@ describe('App', () => {
 
     const { port } = ctx.app.getHttpServer().address() as AddressInfo;
     ctx.baseUrl = `http://127.0.0.1:${port}`;
-    ctx.client = createClient<paths>({ baseUrl: ctx.baseUrl });
+    ctx.client = createClient<paths>({
+      baseUrl: ctx.baseUrl,
+      headers: { 'api-key': process.env.API_KEY ?? '' },
+    });
+    ctx.clientWithoutApiKey = createClient<paths>({
+      baseUrl: ctx.baseUrl,
+    });
   });
 
   beforeEach(async () => {
@@ -36,7 +42,7 @@ describe('App', () => {
   });
 
   afterAll(async () => {
-    await ctx.app.close();
+    if (ctx.app) await ctx.app.close();
   });
 
   const suitesService = new SuitesService(ctx);

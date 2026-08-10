@@ -7,4 +7,5 @@ export type Context = {
   app: NestFastifyApplication;
   baseUrl: string;
   client: TestClient;
+  clientWithoutApiKey: TestClient;
 };

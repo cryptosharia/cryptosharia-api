@@ -9,6 +9,12 @@ export class UsersSuite extends Suite {
   register() {
     describe('Users', () => {
       describe('selectAll', () => {
+        it('should reject requests without an API key', async () => {
+          const { response } = await this.ctx.clientWithoutApiKey.GET('/users');
+
+          expect(response.status).toBe(401);
+        });
+
         it('should return an empty array when no users exist', async () => {
           const { data, response } = await this.ctx.client.GET('/users');
 
@@ -18,6 +24,17 @@ export class UsersSuite extends Suite {
       });
 
       describe('selectById', () => {
+        it('should reject requests without an API key', async () => {
+          const { response } = await this.ctx.clientWithoutApiKey.GET(
+            '/users/{id}',
+            {
+              params: { path: { id: crypto.randomUUID() } },
+            },
+          );
+
+          expect(response.status).toBe(401);
+        });
+
         it('should return 404 when user does not exist', async () => {
           const { response } = await this.ctx.client.GET('/users/{id}', {
             params: { path: { id: crypto.randomUUID() } },

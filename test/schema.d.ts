@@ -29,7 +29,7 @@ export interface paths {
                             /** Format: uuid */
                             id: string;
                             /**
-                             * @description Display name
+                             * @description User display name
                              * @example John Doe
                              */
                             name: string;
@@ -39,10 +39,32 @@ export interface paths {
                              * @example john@example.com
                              */
                             email: string;
+                            /** @enum {string} */
+                            passwordHashingAlgorithm: "argon2id";
+                            /** Format: uuid */
+                            avatarId: string | null;
+                            /**
+                             * @description System role assigned to the user
+                             * @example member
+                             * @enum {string}
+                             */
+                            role: "super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member";
+                            /**
+                             * @description Administrative account status
+                             * @example active
+                             * @enum {string}
+                             */
+                            status: "active" | "inactive" | "suspended" | "banned";
+                            twoFactorSecret: string | null;
+                            /** Format: date-time */
+                            lastLoginAt: string | null;
+                            isEmailVerified: boolean;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
-                            updatedAt: string;
+                            updatedAt: string | null;
+                            /** Format: uuid */
+                            updatedBy: string | null;
                         }[];
                     };
                 };
@@ -88,7 +110,7 @@ export interface paths {
                             /** Format: uuid */
                             id: string;
                             /**
-                             * @description Display name
+                             * @description User display name
                              * @example John Doe
                              */
                             name: string;
@@ -98,10 +120,32 @@ export interface paths {
                              * @example john@example.com
                              */
                             email: string;
+                            /** @enum {string} */
+                            passwordHashingAlgorithm: "argon2id";
+                            /** Format: uuid */
+                            avatarId: string | null;
+                            /**
+                             * @description System role assigned to the user
+                             * @example member
+                             * @enum {string}
+                             */
+                            role: "super_admin" | "admin" | "posts_manager" | "tokens_manager" | "member";
+                            /**
+                             * @description Administrative account status
+                             * @example active
+                             * @enum {string}
+                             */
+                            status: "active" | "inactive" | "suspended" | "banned";
+                            twoFactorSecret: string | null;
+                            /** Format: date-time */
+                            lastLoginAt: string | null;
+                            isEmailVerified: boolean;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
-                            updatedAt: string;
+                            updatedAt: string | null;
+                            /** Format: uuid */
+                            updatedBy: string | null;
                         };
                     };
                 };
