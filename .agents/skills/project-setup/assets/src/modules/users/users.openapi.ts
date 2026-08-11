@@ -12,7 +12,7 @@ export const usersRouteConfig: RouteConfig[] = [
     summary: 'List users',
     description: 'Retrieve all registered users.',
     responses: createResponsesConfig({
-      200: { description: 'List of users', schema: z.array(UserResponse) },
+      200: { description: 'List of users', body: z.array(UserResponse) },
     }),
   },
   {
@@ -22,10 +22,10 @@ export const usersRouteConfig: RouteConfig[] = [
     description: 'Retrieve a single registered user.',
     request: { params: UserParam },
     responses: createResponsesConfig({
-      200: { description: 'User found', schema: UserResponse },
+      200: { description: 'User found', body: UserResponse },
       404: {
         description: USERS_ERRORS.USER_NOT_FOUND,
-        schema: createErrorResponse(USERS_ERRORS, ['USER_NOT_FOUND']),
+        body: createErrorResponse(USERS_ERRORS, ['USER_NOT_FOUND']),
       },
     }),
   },

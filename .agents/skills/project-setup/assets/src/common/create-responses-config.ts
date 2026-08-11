@@ -1,9 +1,10 @@
-import type { ZodType } from 'zod';
+import { z, type ZodType } from 'zod';
 import type { ResponseConfig } from '@asteasolutions/zod-to-openapi';
 
 export type ResponseEntry = {
   description: string;
-  schema?: ZodType;
+  body?: ZodType;
+  headers?: Record<string, ZodType>;
 };
 
 export function createResponsesConfig(
@@ -14,9 +15,10 @@ export function createResponsesConfig(
       status,
       {
         description: entry.description,
-        ...(entry.schema
-          ? { content: { 'application/json': { schema: entry.schema } } }
+        ...(entry.body
+          ? { content: { 'application/json': { schema: entry.body } } }
           : {}),
+        ...(entry.headers ? { headers: z.object(entry.headers) } : {}),
       },
     ]),
   );

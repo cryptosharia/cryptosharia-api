@@ -23,10 +23,10 @@ export const tasksRouteConfig: RouteConfig[] = [
     description: 'Retrieve all tasks belonging to the authenticated user.',
     security: [{ BearerAuth: [] }],
     responses: createResponsesConfig({
-      200: { description: 'List of tasks', schema: z.array(TaskResponse) },
+      200: { description: 'List of tasks', body: z.array(TaskResponse) },
       401: {
         description: APP_ERRORS.UNAUTHORIZED,
-        schema: UnauthorizedResponse,
+        body: UnauthorizedResponse,
       },
     }),
   },
@@ -42,18 +42,18 @@ export const tasksRouteConfig: RouteConfig[] = [
       },
     },
     responses: createResponsesConfig({
-      201: { description: 'Task created', schema: TaskResponse },
+      201: { description: 'Task created', body: TaskResponse },
       400: {
         description: APP_ERRORS.VALIDATION_FAILED,
-        schema: ValidationFailedResponse,
+        body: ValidationFailedResponse,
       },
       401: {
         description: APP_ERRORS.UNAUTHORIZED,
-        schema: UnauthorizedResponse,
+        body: UnauthorizedResponse,
       },
       409: {
         description: TASKS_ERRORS.SLUG_UNIQUE_VIOLATION,
-        schema: createErrorResponse(TASKS_ERRORS, ['SLUG_UNIQUE_VIOLATION']),
+        body: createErrorResponse(TASKS_ERRORS, ['SLUG_UNIQUE_VIOLATION']),
       },
     }),
   },
@@ -67,14 +67,14 @@ export const tasksRouteConfig: RouteConfig[] = [
       params: TaskParam,
     },
     responses: createResponsesConfig({
-      200: { description: 'Task found', schema: TaskResponse },
+      200: { description: 'Task found', body: TaskResponse },
       401: {
         description: APP_ERRORS.UNAUTHORIZED,
-        schema: UnauthorizedResponse,
+        body: UnauthorizedResponse,
       },
       404: {
         description: TASKS_ERRORS.TASK_NOT_FOUND,
-        schema: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
+        body: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
       },
     }),
   },
@@ -91,22 +91,22 @@ export const tasksRouteConfig: RouteConfig[] = [
       },
     },
     responses: createResponsesConfig({
-      200: { description: 'Task updated', schema: TaskResponse },
+      200: { description: 'Task updated', body: TaskResponse },
       400: {
         description: APP_ERRORS.VALIDATION_FAILED,
-        schema: ValidationFailedResponse,
+        body: ValidationFailedResponse,
       },
       401: {
         description: APP_ERRORS.UNAUTHORIZED,
-        schema: UnauthorizedResponse,
+        body: UnauthorizedResponse,
       },
       404: {
         description: TASKS_ERRORS.TASK_NOT_FOUND,
-        schema: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
+        body: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
       },
       409: {
         description: TASKS_ERRORS.SLUG_UNIQUE_VIOLATION,
-        schema: createErrorResponse(TASKS_ERRORS, ['SLUG_UNIQUE_VIOLATION']),
+        body: createErrorResponse(TASKS_ERRORS, ['SLUG_UNIQUE_VIOLATION']),
       },
     }),
   },
@@ -123,11 +123,11 @@ export const tasksRouteConfig: RouteConfig[] = [
       204: { description: 'Task deleted' },
       401: {
         description: APP_ERRORS.UNAUTHORIZED,
-        schema: UnauthorizedResponse,
+        body: UnauthorizedResponse,
       },
       404: {
         description: TASKS_ERRORS.TASK_NOT_FOUND,
-        schema: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
+        body: createErrorResponse(TASKS_ERRORS, ['TASK_NOT_FOUND']),
       },
     }),
   },
