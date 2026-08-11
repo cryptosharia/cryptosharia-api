@@ -4,7 +4,7 @@ import { Observable, map } from 'rxjs';
 import { z } from 'zod';
 
 @Injectable()
-export class ExcludePasswordInterceptor implements NestInterceptor {
+export class ExcludeSensitiveFieldsInterceptor implements NestInterceptor {
   private checkIsUser(data: unknown): data is User {
     return User.safeParse(data).success;
   }
@@ -13,9 +13,21 @@ export class ExcludePasswordInterceptor implements NestInterceptor {
     return z.array(User).safeParse(data).success;
   }
 
-  private stripPassword(user: User): Omit<User, 'passwordHash'> {
-    const { passwordHash, ...rest } = user;
-    void passwordHash;
+  private stripPassword(
+    user: User,
+  ): Omit<
+    User,
+    'hashedPassword' | 'twoFactorSecret' | 'passwordHashingAlgorithm'
+  > {
+    const {
+      hashedPassword,
+      twoFactorSecret,
+      passwordHashingAlgorithm,
+      ...rest
+    } = user;
+    void hashedPassword;
+    void twoFactorSecret;
+    void passwordHashingAlgorithm;
     return rest;
   }
 

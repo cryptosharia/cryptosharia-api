@@ -1,16 +1,47 @@
 import { Injectable } from '@nestjs/common';
-import { DrizzleQueryError, eq } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  DrizzleQueryError,
+  eq,
+  ilike,
+  inArray,
+  or,
+  sql,
+  SQL,
+} from 'drizzle-orm';
 import { users } from '#src/modules/drizzle/drizzle.schema';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
 import { User } from '#src/modules/drizzle/drizzle.types';
+import { escapeLikePattern } from '#src/common/escape-like-pattern';
 import { UsersError } from './users.error';
 import { DatabaseError } from 'pg';
 
 @Injectable()
 export class UsersRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
-  async selectAll(): Promise<User[]> {
-    return this.drizzleService.db.select().from(users);
+
+  private buildListWhere(options: {
+    search?: string;
+    roles?: User['role'][];
+    statuses?: User['status'][];
+  }): SQL | undefined {
+    const filters: SQL[] = [];
+    if (options.search) {
+      const search = `%${escapeLikePattern(options.search)}%`;
+      const searchCondition = or(
+        ilike(users.name, search),
+        ilike(users.email, search),
+      );
+      if (searchCondition) filters.push(searchCondition);
+    }
+
+    if (options.roles?.length) filters.push(inArray(users.role, options.roles));
+
+    if (options.statuses?.length)
+      filters.push(inArray(users.status, options.statuses));
+
+    return filters.length ? and(...filters) : undefined;
   }
 
   async selectById(id: User['id']): Promise<User> {
@@ -22,13 +53,59 @@ export class UsersRepository {
     return user;
   }
 
+  /** Looks up a required user identity by its unique email address. */
+  async selectByEmail(email: User['email']): Promise<User> {
+    const [user] = await this.drizzleService.db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
+    if (!user) throw new UsersError('USER_NOT_FOUND');
+    return user;
+  }
+
+  /** Lists users newest-first with the requested filters and pagination. */
+  async selectAll(options: {
+    search?: string;
+    roles?: User['role'][];
+    statuses?: User['status'][];
+    page: number;
+    limit: number;
+  }): Promise<User[]> {
+    return this.drizzleService.db
+      .select()
+      .from(users)
+      .where(this.buildListWhere(options))
+      .orderBy(desc(users.createdAt))
+      .limit(options.limit)
+      .offset((options.page - 1) * options.limit);
+  }
+
+  /** Counts users matching the requested filters without pagination. */
+  async count(options: {
+    search?: string;
+    roles?: User['role'][];
+    statuses?: User['status'][];
+  }): Promise<number> {
+    const [result] = await this.drizzleService.db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(this.buildListWhere(options));
+    return Number(result?.count ?? 0);
+  }
+
+  /** Creates a member account with the Users table's non-privileged defaults. */
   async insert(
-    data: Pick<User, 'name' | 'email' | 'passwordHash'>,
+    data: Pick<User, 'name' | 'email' | 'hashedPassword'>,
   ): Promise<User> {
     try {
       const [user] = await this.drizzleService.db
         .insert(users)
-        .values(data)
+        .values({
+          ...data,
+          role: 'member',
+          status: 'active',
+          isEmailVerified: false,
+        })
         .returning();
 
       return user;
@@ -42,5 +119,22 @@ export class UsersRepository {
       }
       throw error;
     }
+  }
+
+  /** Persists changes to user data and returns the updated record. */
+  async update(
+    id: User['id'],
+    data: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>,
+    updatedBy?: User['id'],
+  ): Promise<User> {
+    if (!Object.keys(data).length) throw new UsersError('USER_UPDATE_EMPTY');
+
+    const [user] = await this.drizzleService.db
+      .update(users)
+      .set({ ...data, ...(updatedBy ? { updatedBy } : {}) })
+      .where(eq(users.id, id))
+      .returning();
+    if (!user) throw new UsersError('USER_NOT_FOUND');
+    return user;
   }
 }
