@@ -78,7 +78,7 @@ export const users = pgTable('users', {
   id: primaryKeyUuid(),
   name: varchar('name', { length: 120 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  passwordHash: text('hashed_password').notNull(),
+  hashedPassword: text('hashed_password').notNull(),
   passwordHashingAlgorithm: hashingAlgorithmEnum('password_hashing_algorithm')
     .notNull()
     .default('argon2id'),

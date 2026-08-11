@@ -94,16 +94,8 @@ API ini digunakan oleh:
 - Metadata pagination dikirim melalui lowercase response headers:
 
 ```text
-pagination-total: <number>
-pagination-page: <number>
-pagination-limit: <number>
+total-items: <number>
 ```
-
-### 6.5 Security Headers
-
-- API harus mengirim security headers yang relevan untuk mengurangi risiko clickjacking, MIME sniffing, referrer leakage, dan exposure lain.
-- Header standar seperti `X-Frame-Options` dan `X-Content-Type-Options` boleh digunakan karena memang merupakan nama header keamanan yang masih umum dipakai.
-- Custom application headers tidak menggunakan prefix `X-`.
 
 ## 7. OpenAPI Documentation Requirements
 
@@ -119,16 +111,16 @@ pagination-limit: <number>
 
 ### 8.1 Endpoints
 
-| Method | Endpoint | Requirement |
-| --- | --- | --- |
-| POST | `/auth/signup` | Register user account |
-| POST | `/auth/verify` | Verify email using verification token |
-| POST | `/auth/signin` | Authenticate email/password and issue access + refresh tokens |
-| POST | `/auth/refresh` | Rotate refresh token and issue a new token pair |
-| POST | `/auth/signout` | Revoke refresh token |
-| GET | `/auth/me` | Return current authenticated user profile and permissions |
-| POST | `/auth/password/forgot` | Request password reset |
-| POST | `/auth/password/reset` | Reset password using reset token |
+| Method | Endpoint                | Requirement                                                   |
+| ------ | ----------------------- | ------------------------------------------------------------- |
+| POST   | `/auth/signup`          | Register user account                                         |
+| POST   | `/auth/verify`          | Verify email using verification token                         |
+| POST   | `/auth/signin`          | Authenticate email/password and issue access + refresh tokens |
+| POST   | `/auth/refresh`         | Rotate refresh token and issue a new token pair               |
+| POST   | `/auth/signout`         | Revoke refresh token                                          |
+| GET    | `/auth/me`              | Return current authenticated user profile and permissions     |
+| POST   | `/auth/password/forgot` | Request password reset                                        |
+| POST   | `/auth/password/reset`  | Reset password using reset token                              |
 
 ### 8.2 Signup & Verification
 
@@ -195,23 +187,23 @@ pagination-limit: <number>
 
 ### 9.3 Role Mapping
 
-| Role | Permissions |
-| --- | --- |
-| `super_admin` | All permissions |
-| `admin` | All permissions except `users.manage_role` and `users.manage_status` |
-| `posts_manager` | `posts.manage`, `tags.manage` |
-| `tokens_manager` | `tokens.manage`, `tags.manage` |
-| `member` | No admin permissions |
+| Role             | Permissions                                                          |
+| ---------------- | -------------------------------------------------------------------- |
+| `super_admin`    | All permissions                                                      |
+| `admin`          | All permissions except `users.manage_role` and `users.manage_status` |
+| `posts_manager`  | `posts.manage`, `tags.manage`                                        |
+| `tokens_manager` | `tokens.manage`, `tags.manage`                                       |
+| `member`         | No admin permissions                                                 |
 
 ## 10. Users Requirements
 
-| Method | Endpoint | Requirement |
-| --- | --- | --- |
-| GET | `/users` | List users with pagination and filters |
-| GET | `/users/{id}` | Get user detail |
-| PATCH | `/users/{id}` | Update user profile |
-| PUT | `/users/{id}/status` | Update user status |
-| PUT | `/users/{id}/role` | Update user role |
+| Method | Endpoint             | Requirement                            |
+| ------ | -------------------- | -------------------------------------- |
+| GET    | `/users`             | List users with pagination and filters |
+| GET    | `/users/{id}`        | Get user detail                        |
+| PATCH  | `/users/{id}`        | Update user profile                    |
+| PUT    | `/users/{id}/status` | Update user status                     |
+| PUT    | `/users/{id}/role`   | Update user role                       |
 
 - User list supports pagination, search by name/email, role filter, and status filter.
 - User detail can be accessed by the owner or user with `users.read`.
@@ -222,12 +214,12 @@ pagination-limit: <number>
 
 ## 11. Posts Requirements
 
-| Method | Endpoint | Requirement |
-| --- | --- | --- |
-| GET | `/posts` | List posts |
-| POST | `/posts` | Create post |
-| GET | `/posts/{id}` | Get post by UUID or slug |
-| PATCH | `/posts/{id}` | Update post by UUID or slug |
+| Method | Endpoint      | Requirement                 |
+| ------ | ------------- | --------------------------- |
+| GET    | `/posts`      | List posts                  |
+| POST   | `/posts`      | Create post                 |
+| GET    | `/posts/{id}` | Get post by UUID or slug    |
+| PATCH  | `/posts/{id}` | Update post by UUID or slug |
 | DELETE | `/posts/{id}` | Delete post by UUID or slug |
 
 - Post list supports filters for statuses, sections, types, slugs, exclude, tags, search, page, and limit.
@@ -243,14 +235,14 @@ pagination-limit: <number>
 
 ## 12. Tokens Requirements
 
-| Method | Endpoint | Requirement |
-| --- | --- | --- |
-| GET | `/tokens` | List crypto tokens |
-| POST | `/tokens` | Create token |
-| GET | `/tokens/{id}` | Get token by UUID or slug |
-| PATCH | `/tokens/{id}` | Update token by UUID or slug |
-| DELETE | `/tokens/{id}` | Delete token by UUID or slug |
-| GET | `/tokens/quotes` | Return quote/market data for requested token slugs |
+| Method | Endpoint         | Requirement                                        |
+| ------ | ---------------- | -------------------------------------------------- |
+| GET    | `/tokens`        | List crypto tokens                                 |
+| POST   | `/tokens`        | Create token                                       |
+| GET    | `/tokens/{id}`   | Get token by UUID or slug                          |
+| PATCH  | `/tokens/{id}`   | Update token by UUID or slug                       |
+| DELETE | `/tokens/{id}`   | Delete token by UUID or slug                       |
+| GET    | `/tokens/quotes` | Return quote/market data for requested token slugs |
 
 - Token list supports filters for statuses, sharia statuses, slugs, exclude, tags, search, page, and limit.
 - Guest/member default visibility excludes restricted/non-public statuses.
@@ -266,12 +258,12 @@ pagination-limit: <number>
 
 ## 13. Tags Requirements
 
-| Method | Endpoint | Requirement |
-| --- | --- | --- |
-| GET | `/tags` | List tags |
-| POST | `/tags` | Create tag |
-| GET | `/tags/{id}` | Get tag by UUID or slug |
-| PATCH | `/tags/{id}` | Update tag by UUID or slug |
+| Method | Endpoint     | Requirement                |
+| ------ | ------------ | -------------------------- |
+| GET    | `/tags`      | List tags                  |
+| POST   | `/tags`      | Create tag                 |
+| GET    | `/tags/{id}` | Get tag by UUID or slug    |
+| PATCH  | `/tags/{id}` | Update tag by UUID or slug |
 | DELETE | `/tags/{id}` | Delete tag by UUID or slug |
 
 - Tag list supports search, slug filter, page, and limit.
@@ -283,11 +275,11 @@ pagination-limit: <number>
 
 ## 14. Messages Requirements
 
-| Method | Endpoint | Requirement |
-| --- | --- | --- |
-| POST | `/messages` | Create contact message |
-| GET | `/messages` | List messages |
-| GET | `/messages/{id}` | Get message detail |
+| Method | Endpoint         | Requirement            |
+| ------ | ---------------- | ---------------------- |
+| POST   | `/messages`      | Create contact message |
+| GET    | `/messages`      | List messages          |
+| GET    | `/messages/{id}` | Get message detail     |
 
 - Message create accepts name, email, and message.
 - Invalid email, empty message, invalid length, or invalid payload returns validation error.
@@ -296,10 +288,10 @@ pagination-limit: <number>
 
 ## 15. Assets Requirements
 
-| Method | Endpoint | Requirement |
-| --- | --- | --- |
-| POST | `/assets` | Upload asset to Vercel Blob and persist metadata |
-| POST | `/imgbb` | Upload image through ImgBB and preserve its metadata flow |
+| Method | Endpoint  | Requirement                                               |
+| ------ | --------- | --------------------------------------------------------- |
+| POST   | `/assets` | Upload asset to Vercel Blob and persist metadata          |
+| POST   | `/imgbb`  | Upload image through ImgBB and preserve its metadata flow |
 
 - `/assets` uses Vercel Blob in development and production.
 - `/imgbb` uses ImgBB in development and production.

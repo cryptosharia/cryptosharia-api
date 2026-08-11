@@ -26,11 +26,11 @@ export const User = createSelectSchema(users, {
     description: 'Email address used for signin',
     example: 'john@example.com',
   }),
-  passwordHash: (f) =>
+  hashedPassword: (f) =>
     f.meta({ description: 'Argon2id password hash stored for the account' }),
   role: (f) =>
     f.meta({
-      description: 'System role assigned to the user',
+      description: 'Role assigned to the user',
       example: 'member',
     }),
   status: (f) =>
