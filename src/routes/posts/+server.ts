@@ -12,7 +12,7 @@ import {
 	postTags,
 	tags
 } from '$lib/db/tables';
-import { and, count, eq, ilike, inArray, notInArray, or } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, notInArray, or, sql } from 'drizzle-orm';
 import { escapeLikePattern } from '$lib/utils';
 import { requirePermission, hasPermission } from '$lib/auth/permissions';
 import { fetchPostDetail, resolvePostTagIdentifiers } from '$lib/services/posts';
@@ -37,7 +37,9 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		limit,
 		page,
 		exclude,
-		statuses
+		statuses,
+		sortBy,
+		sortDirection
 	} = parsedQuery.data;
 	const offset = (page - 1) * limit;
 
@@ -148,7 +150,25 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 						}
 					}
 				},
-				orderBy: (table, { desc }) => [desc(table.createdAt)]
+				orderBy: (table) => {
+					if (sortBy === 'publishedAt') {
+						return [
+							sortDirection === 'asc'
+								? sql`${table.publishedAt} ASC NULLS LAST`
+								: sql`${table.publishedAt} DESC NULLS LAST`,
+							desc(table.createdAt)
+						];
+					}
+
+					const columns = {
+						createdAt: table.createdAt,
+						title: table.title,
+						status: table.status,
+						section: table.section
+					};
+					const column = columns[sortBy];
+					return [sortDirection === 'asc' ? sql`${column} ASC` : sql`${column} DESC`, desc(table.createdAt)];
+				}
 			}),
 			db.select({ value: count() }).from(posts).where(getFilters(posts))
 		]);

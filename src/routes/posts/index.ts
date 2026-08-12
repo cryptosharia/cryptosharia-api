@@ -27,6 +27,11 @@ export const PostsGetQuery = z
 			description: 'List of tag slugs to filter by.<br>Example: education,halal'
 		}),
 		search: z.string().optional(),
+		sortBy: z
+			.enum(['createdAt', 'title', 'status', 'section', 'publishedAt'])
+			.optional()
+			.default('createdAt'),
+		sortDirection: z.enum(['asc', 'desc']).optional().default('desc'),
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1)
 	})
