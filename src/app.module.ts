@@ -10,6 +10,9 @@ import { OpenApiModule } from './modules/openapi/openapi.module';
 import { SystemModule } from './modules/system/system.module';
 import { SecurityModule } from './modules/security/security.module';
 import { ApiKeyGuard } from './modules/security/api-key.guard';
+import { ImageProviderModule } from './modules/image-provider/image-provider.module';
+import { MailerModule } from './modules/mailer/mailer.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
@@ -19,6 +22,9 @@ import { ApiKeyGuard } from './modules/security/api-key.guard';
     UsersModule,
     OpenApiModule,
     SecurityModule,
+    MailerModule,
+    StorageModule,
+    ImageProviderModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },
