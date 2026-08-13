@@ -15,7 +15,7 @@ function createContext(headers: Record<string, string | undefined>) {
 describe('BearerAuthGuard', () => {
   it('rejects a request without a bearer token', async () => {
     const { context } = createContext({});
-    const guard = new BearerAuthGuard({ verifyAsync: vi.fn() } as never);
+    const guard = new BearerAuthGuard({ verifyJwt: vi.fn() } as never);
 
     await expect(guard.canActivate(context as never)).rejects.toBeInstanceOf(
       UnauthorizedException,
@@ -26,16 +26,16 @@ describe('BearerAuthGuard', () => {
     const { context, request } = createContext({
       authorization: 'Bearer token',
     });
-    const jwtService = {
-      verifyAsync: vi.fn().mockResolvedValue({
+    const cryptoService = {
+      verifyJwt: vi.fn().mockResolvedValue({
         userId: '33e0c558-8e44-48e9-a4ef-d7f0fd072f32',
         role: 'posts_manager',
       }),
     };
-    const guard = new BearerAuthGuard(jwtService as never);
+    const guard = new BearerAuthGuard(cryptoService as never);
 
     await expect(guard.canActivate(context as never)).resolves.toBe(true);
-    expect(jwtService.verifyAsync).toHaveBeenCalledWith('token', {
+    expect(cryptoService.verifyJwt).toHaveBeenCalledWith('token', {
       issuer: 'api.cryptosharia.id',
     });
     expect(request).toMatchObject({
@@ -50,7 +50,7 @@ describe('BearerAuthGuard', () => {
   it('rejects an invalid token', async () => {
     const { context } = createContext({ authorization: 'Bearer token' });
     const guard = new BearerAuthGuard({
-      verifyAsync: vi.fn().mockRejectedValue(new Error('Invalid token')),
+      verifyJwt: vi.fn().mockRejectedValue(new Error('Invalid token')),
     } as never);
 
     await expect(guard.canActivate(context as never)).rejects.toBeInstanceOf(

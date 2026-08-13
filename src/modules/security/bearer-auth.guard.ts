@@ -4,8 +4,8 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import type { FastifyRequest } from 'fastify';
+import { CryptoService } from '#src/modules/crypto/crypto.service';
 import { ROLE_PERMISSIONS } from './permissions';
 import type { User } from '#src/modules/drizzle/drizzle.types';
 
@@ -13,7 +13,7 @@ type AccessTokenPayload = { userId: User['id']; role: User['role'] };
 
 @Injectable()
 export class BearerAuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly cryptoService: CryptoService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
@@ -22,7 +22,7 @@ export class BearerAuthGuard implements CanActivate {
       throw new UnauthorizedException();
 
     try {
-      const payload = await this.jwtService.verifyAsync<AccessTokenPayload>(
+      const payload = await this.cryptoService.verifyJwt<AccessTokenPayload>(
         authorization.slice('Bearer '.length),
         { issuer: 'api.cryptosharia.id' },
       );
