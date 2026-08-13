@@ -40,8 +40,8 @@ does not use.
   validation.
 - Validates untrusted input once at the HTTP entry with `ParseZodPipe` in
   handler parameters.
-- Resolves authenticated user context with `@CurrentUserId()` from
-  `#src/common/current-user-id.decorator`.
+- Resolves authenticated user context with `@CurrentUser()` from the project's
+  security module contract.
 - Does not contain business rules or Drizzle queries.
 
 **Service**

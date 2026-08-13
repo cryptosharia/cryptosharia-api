@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   HttpStatus,
   NotFoundException,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
@@ -15,6 +16,7 @@ import {
   NotFoundResponse,
   UnauthorizedResponse,
   TooManyRequestsResponse,
+  ServiceUnavailableResponse,
 } from './common/error-response.schemas';
 import { TooManyRequestsException } from './common/too-many-requests.exception';
 
@@ -50,6 +52,13 @@ export class AppExceptionFilter implements ExceptionFilter {
         error: 'TOO_MANY_REQUESTS',
         message: APP_ERRORS.TOO_MANY_REQUESTS,
       } satisfies TooManyRequestsResponse);
+    }
+
+    if (exception instanceof ServiceUnavailableException) {
+      return res.status(HttpStatus.SERVICE_UNAVAILABLE).send({
+        error: 'SERVICE_UNAVAILABLE',
+        message: APP_ERRORS.SERVICE_UNAVAILABLE,
+      } satisfies ServiceUnavailableResponse);
     }
 
     console.error('[Unhandled Exception]', exception);

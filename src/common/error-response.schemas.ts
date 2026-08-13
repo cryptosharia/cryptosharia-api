@@ -7,6 +7,7 @@ export const APP_ERRORS = {
   INTERNAL_SERVER_ERROR: 'Internal server error',
   VALIDATION_FAILED: 'Validation failed',
   TOO_MANY_REQUESTS: 'Too many requests',
+  SERVICE_UNAVAILABLE: 'Service unavailable',
 } as const;
 
 export const UnauthorizedResponse = z.object({
@@ -40,6 +41,14 @@ export const TooManyRequestsResponse = z.object({
   message: z.literal(APP_ERRORS.TOO_MANY_REQUESTS),
 });
 export type TooManyRequestsResponse = z.infer<typeof TooManyRequestsResponse>;
+
+export const ServiceUnavailableResponse = z.object({
+  error: z.literal('SERVICE_UNAVAILABLE'),
+  message: z.literal(APP_ERRORS.SERVICE_UNAVAILABLE),
+});
+export type ServiceUnavailableResponse = z.infer<
+  typeof ServiceUnavailableResponse
+>;
 
 export const ValidationFailedResponse = z.object({
   error: z.literal('VALIDATION_FAILED'),

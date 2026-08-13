@@ -27,6 +27,13 @@ export class OpenApiSuite extends Suite {
         expect(response.status).toBe(200);
         expect(response.headers.get('content-type')).toContain('text/html');
       });
+
+      it('allows the health endpoint without an API key', async () => {
+        const response = await fetch(`${this.ctx.baseUrl}/health`);
+
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toEqual({ status: 'UP' });
+      });
     });
   }
 }

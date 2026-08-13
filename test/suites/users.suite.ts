@@ -15,11 +15,11 @@ export class UsersSuite extends Suite {
           expect(response.status).toBe(401);
         });
 
-        it('should return an empty array when no users exist', async () => {
+        it('should reject requests without a bearer token', async () => {
           const { data, response } = await this.ctx.client.GET('/users');
 
-          expect(response.status).toBe(200);
-          expect(data).toEqual([]);
+          expect(response.status).toBe(401);
+          expect(data).toBeUndefined();
         });
       });
 
@@ -35,12 +35,12 @@ export class UsersSuite extends Suite {
           expect(response.status).toBe(401);
         });
 
-        it('should return 404 when user does not exist', async () => {
+        it('should reject requests without a bearer token', async () => {
           const { response } = await this.ctx.client.GET('/users/{id}', {
             params: { path: { id: crypto.randomUUID() } },
           });
 
-          expect(response.status).toBe(404);
+          expect(response.status).toBe(401);
         });
       });
     });

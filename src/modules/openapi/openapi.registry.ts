@@ -3,6 +3,7 @@ import {
   OpenApiGeneratorV31,
 } from '@asteasolutions/zod-to-openapi';
 import { usersRouteConfig } from '#src/modules/users/users.openapi';
+import { systemRouteConfig } from '#src/modules/system/system.openapi';
 
 export function generateOpenApiDocument() {
   const registry = new OpenAPIRegistry();
@@ -23,7 +24,7 @@ export function generateOpenApiDocument() {
       'API key required by protected routes. Include as: api-key: <key>',
   });
 
-  const routes = [...usersRouteConfig];
+  const routes = [...systemRouteConfig, ...usersRouteConfig];
   for (const route of routes) registry.registerPath(route);
 
   return new OpenApiGeneratorV31(registry.definitions).generateDocument({

@@ -108,13 +108,11 @@ Copy these files to their mirrored locations:
 - `assets/src/zod.exception-filter.ts` → `<project>/src/zod.exception-filter.ts`
 - `assets/static/robots.txt` → `<project>/static/robots.txt`
 - `assets/static/.well-known/security.txt` → `<project>/static/.well-known/security.txt`
-- `assets/src/types/fastify.d.ts` → `<project>/src/types/fastify.d.ts`
 - `assets/src/types/vitest.d.ts` → `<project>/src/types/vitest.d.ts`
 - `assets/src/common/parse-zod.pipe.ts` → `<project>/src/common/parse-zod.pipe.ts`
 - `assets/src/common/create-error-response.ts` → `<project>/src/common/create-error-response.ts`
 - `assets/src/common/create-responses-config.ts` → `<project>/src/common/create-responses-config.ts`
 - `assets/src/common/error-response.schemas.ts` → `<project>/src/common/error-response.schemas.ts`
-- `assets/src/common/current-user-id.decorator.ts` → `<project>/src/common/current-user-id.decorator.ts`
 
 ### 5. System module
 

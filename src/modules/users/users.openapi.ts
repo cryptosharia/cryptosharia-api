@@ -19,8 +19,7 @@ import {
 } from './users.schemas';
 
 const protectedSecurity: { [key: string]: string[] }[] = [
-  { ApiKeyAuth: [] },
-  { BearerAuth: [] },
+  { ApiKeyAuth: [], BearerAuth: [] },
 ];
 const commonErrors = {
   401: { description: APP_ERRORS.UNAUTHORIZED, body: UnauthorizedResponse },

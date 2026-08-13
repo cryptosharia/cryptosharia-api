@@ -22,12 +22,7 @@ Keberhasilan project diukur dari tersedianya seluruh endpoint v1.1.0, konsistens
 
 - Tidak membangun fitur Academy.
 - Tidak menambahkan Google OAuth.
-- Tidak menambahkan OTP login atau OTP verification flow.
-- Tidak membuat frontend/dashboard baru.
 - Tidak mendesain ulang business logic utama di luar kebutuhan penyesuaian API contract dan standar project baru.
-- Tidak mengubah role dan permission model kecuali diperlukan untuk menjaga compatibility behavior.
-- Tidak memindahkan refresh token atau auth token ke Redis; keduanya tetap disimpan di PostgreSQL.
-- Tidak menjadikan maintenance operation sebagai public API endpoint bila bisa dijalankan sebagai internal command/script.
 
 ## 4. Product Scope
 
@@ -43,6 +38,131 @@ CryptoSharia API v1.1.0 mencakup module berikut:
 - API documentation melalui OpenAPI JSON, OpenAPI YAML, dan Scalar docs.
 - Cross-cutting API security, authorization, rate limiting, response contract, pagination, validation, dan testing.
 
+### 4.1 Module Architecture
+
+Project menggunakan pemisahan antara feature modules, infrastructure/provider
+modules, dan cross-cutting modules. Feature modules tidak boleh mengakses
+external provider secara langsung; dependency provider harus melalui
+contract/module yang sesuai.
+
+#### Feature Modules
+
+- `UsersModule` — user identity dan operasi data user.
+- `AuthModule` — signup, verification, signin, password reset, access token,
+  refresh token, signout, dan current user flow.
+- `PostsModule` — post/content dan relasi post-tag.
+- `TokensModule` — crypto token, screening data, quote flow, dan relasi token-tag.
+- `TagsModule` — shared tags dan pemeriksaan penggunaan tag.
+- `MessagesModule` — contact messages.
+- `AssetsModule` — asset metadata, upload orchestration, dan cleanup references.
+
+#### Infrastructure and Provider Modules
+
+- `DrizzleModule` — PostgreSQL connection, schema, dan database service.
+- Drizzle queries menggunakan query builder biasa; Drizzle relation API tidak
+  diperlukan.
+- `CryptoModule` — password hashing, token generation/hashing, dan JWT
+  primitives.
+- `MailerModule` — email delivery contract dan adapter Resend.
+- `StorageModule` — object upload/delete contract dan adapter Vercel Blob.
+- `ImageProviderModule` — image upload contract dan adapter ImgBB.
+- `MarketDataModule` — market data contract dan adapter CoinMarketCap untuk
+  quote/market data.
+- `RateLimitModule` — production-only rate limiting menggunakan Upstash Redis.
+  Rate limiting disabled sepenuhnya pada development/testing; generic Redis
+  client tidak diekspos ke feature modules dan refresh token tetap di PostgreSQL.
+- `ActivityLogsModule` — audit log internal yang dipakai lintas feature module.
+
+#### Cross-Cutting Modules
+
+- `SecurityModule` — API key boundary, bearer authentication, permission
+  metadata/guard, ownership helpers, client IP resolution, dan bearer token
+  verification melalui contract dari `CryptoModule`.
+- `OpenApiModule` — OpenAPI JSON/YAML dan Scalar documentation.
+- `SystemModule` — health/system endpoints dan static metadata.
+
+#### Dependency Direction
+
+```text
+AuthModule -> UsersModule
+AuthModule -> CryptoModule
+AuthModule -> MailerModule
+AuthModule -> ActivityLogsModule
+
+ActivityLogsModule -> DrizzleModule
+RateLimitModule -> Upstash Redis adapter (production only)
+
+SecurityModule -> CryptoModule
+SecurityModule -> RateLimitModule
+
+AssetsModule -> StorageModule
+AssetsModule -> ImageProviderModule
+AssetsModule -> DrizzleModule
+
+PostsModule -> AssetsModule
+PostsModule -> TagsModule
+PostsModule -> ActivityLogsModule
+TokensModule -> AssetsModule
+TokensModule -> TagsModule
+TokensModule -> MarketDataModule
+TokensModule -> ActivityLogsModule
+
+Feature modules -> SecurityModule
+Feature modules -> DrizzleModule
+Application modules -> infrastructure/provider modules
+Infrastructure/provider modules -X-> feature modules
+
+ActivityLogsModule -X-> AuthModule
+SecurityModule -X-> feature modules
+```
+
+Provider modules must expose application-level contracts so feature modules and
+Auth do not depend directly on Resend, Vercel Blob, ImgBB, or provider-specific
+SDK types. Production adapters use the configured providers; test adapters use
+mock, in-memory, or no-op implementations and never perform real external
+network calls.
+
+#### Persistence Ownership
+
+- `users` belongs to `UsersModule`.
+- `auth_tokens` and `refresh_tokens` are Auth persistence owned by `AuthModule`.
+- `activity_logs` is internal persistence owned by `ActivityLogsModule`.
+- `assets` and `imgbb_images` are asset/provider persistence owned by
+  `AssetsModule`.
+- `posts` belongs to `PostsModule`.
+- `tokens` belongs to `TokensModule`.
+- `tags`, `post_tags`, and `token_tags` belong to `TagsModule`.
+- `messages` belongs to `MessagesModule`.
+
+Database tetap menjadi shared infrastructure dan foreign key dapat merujuk user
+dari fitur lain, tetapi feature business logic harus melalui service contract
+module yang memiliki data tersebut.
+
+`OpenApiModule` boleh mengimpor route config dari feature modules untuk
+registrasi dokumentasi. Import tersebut hanya untuk dokumentasi dan tidak boleh
+menjadi dependency business logic.
+
+### 4.2 Recommended Implementation Order
+
+1. `DrizzleModule`, `OpenApiModule`, `SystemModule`, `SecurityModule`, dan
+   `RateLimitModule` (production runtime only)
+2. `UsersModule`
+3. `CryptoModule`
+4. `MailerModule`
+5. `ActivityLogsModule`
+6. `AuthModule`
+7. `StorageModule`
+8. `ImageProviderModule`
+9. `AssetsModule`
+10. `TagsModule`
+11. `PostsModule`
+12. `TokensModule`
+13. `MessagesModule`
+
+Cross-cutting modules seperti Security, OpenAPI, Drizzle, dan System adalah
+fondasi aplikasi. Permission enforcement di SecurityModule dikembangkan
+bersamaan dengan feature modules yang menggunakannya.
+
 ## 5. Consumers
 
 API ini digunakan oleh:
@@ -57,13 +177,28 @@ API ini digunakan oleh:
 ### 6.1 Access Boundary
 
 - Public endpoint hanya endpoint yang secara eksplisit didefinisikan public.
-- API documentation endpoints public meliputi `/`, `/openapi.json`, dan `/openapi.yaml`.
+- Public endpoints meliputi `/`, `/health`, `/openapi.json`, dan
+  `/openapi.yaml`.
 - Protected endpoint wajib menerima `Api-Key` valid.
 - Authenticated endpoint wajib menerima `Api-Key` valid dan `Authorization: Bearer <accessToken>` valid.
 - Endpoint yang membutuhkan role/permission wajib menolak user yang tidak memiliki permission yang sesuai.
 - Missing/invalid API key menghasilkan `401 Unauthorized`.
 - Missing/invalid/expired bearer token pada authenticated endpoint menghasilkan `401 Unauthorized`.
 - Authenticated user yang tidak memiliki permission menghasilkan `403 Forbidden`.
+
+Access classification:
+
+- Public: `/`, `/health`, `/openapi.json`, dan `/openapi.yaml`.
+- API-key-only: signup, email verification, signin, refresh, password forgot,
+  password reset, public content reads, dan public message creation. Content
+  reads dan quote access tetap membutuhkan `Api-Key`, tetapi bearer token
+  bersifat opsional.
+- API-key plus bearer authentication: current user, user management, content
+  management writes, tag management, message management, dan asset upload.
+- Maintenance operations tidak menjadi endpoint HTTP publik dan dijalankan
+  melalui command/script internal.
+
+- API-key validation menggunakan satu configured application API key.
 
 ### 6.2 Success Response
 
@@ -161,7 +296,8 @@ total-items: <number>
 
 - Production flow mengirim email untuk verification dan password reset sesuai kebutuhan.
 - Automated tests tidak boleh bergantung pada pengiriman email asli.
-- Test/dev behavior untuk email ditangani melalui mailer adapter/mock/no-op environment, bukan melalui request-level testing flag di public API.
+- Test/dev behavior untuk email ditangani melalui mailer adapter mock/no-op;
+  public API tidak menyediakan request-level testing flag seperti `notify`.
 
 ## 9. Authorization Requirements
 
@@ -223,9 +359,9 @@ total-items: <number>
 | DELETE | `/posts/{id}` | Delete post by UUID or slug |
 
 - Post list supports filters for statuses, sections, types, slugs, exclude, tags, search, page, and limit.
-- Guest/member default visibility only returns published posts.
-- Guest/member cannot explicitly request non-public statuses.
-- Authorized content managers can access non-public statuses.
+- Requests without a bearer user default to published posts only.
+- Requests without a bearer user cannot explicitly request non-public statuses.
+- Users with `posts.manage` can access non-public statuses.
 - List response excludes full `content`.
 - Detail response includes full `content`.
 - Cover image returns normalized asset metadata.
@@ -245,9 +381,9 @@ total-items: <number>
 | GET    | `/tokens/quotes` | Return quote/market data for requested token slugs |
 
 - Token list supports filters for statuses, sharia statuses, slugs, exclude, tags, search, page, and limit.
-- Guest/member default visibility excludes restricted/non-public statuses.
-- Guest/member cannot explicitly request restricted/non-public statuses.
-- Authorized token managers can access restricted/non-public statuses.
+- Requests without a bearer user default to published/non-restricted statuses only.
+- Requests without a bearer user cannot explicitly request restricted/non-public statuses.
+- Users with `tokens.manage` can access restricted/non-public statuses.
 - List response excludes full `content`.
 - Detail response includes full `content`.
 - Logo returns normalized asset metadata.
@@ -296,7 +432,8 @@ total-items: <number>
 - `/assets` uses Vercel Blob in development and production.
 - `/imgbb` uses ImgBB in development and production.
 - Upload uses `multipart/form-data` with a file field.
-- Maximum file size is 4MB unless configured otherwise.
+- `/assets` accepts files up to 4MB.
+- `/imgbb` accepts image files up to 32MB.
 - Upload requires `posts.manage` or `tokens.manage`.
 - Successful upload stores asset metadata in PostgreSQL.
 - Asset response includes normalized final URL and metadata.
@@ -310,6 +447,13 @@ total-items: <number>
 - Asset cleanup must be available as an internal maintenance command/script.
 - Asset cleanup must avoid deleting assets still referenced by users, posts, tokens, or other persisted records.
 - Asset cleanup should not be exposed as a normal public/protected HTTP API endpoint unless there is a clear operational requirement.
+- Asset cleanup accepts `dryRun`, `limit`, and `maxAgeDays` options.
+- Cleanup only targets old, unreferenced Vercel Blob assets.
+- Cleanup reports candidate, deleted, and failed counts together with failure details.
+- A missing object in Vercel Blob is treated as already deleted, allowing its
+  database metadata to be removed safely.
+- Seed/demo routes and other development-only HTTP endpoints are outside the
+  v1.1.0 API scope.
 
 ## 17. Rate Limiting Requirements
 
@@ -320,12 +464,19 @@ total-items: <number>
 - Bucket key is based on client IP after trusted proxy/BFF boundary handling.
 - Different client IP values must use separate buckets.
 - Requests over limit return `429 Too Many Requests`.
+- If the Upstash rate-limit provider is unavailable in production, protected
+  requests fail closed with `503 Service Unavailable` rather than bypassing the
+  rate limit.
 
 ## 18. Data Requirements
 
 - PostgreSQL is the source of truth for users, auth tokens, refresh tokens, posts, tokens, tags, messages, assets, activity logs, and relationships.
 - Production PostgreSQL provider is Neon.
-- Database UUID behavior follows the existing schema behavior.
+- Database UUID behavior follows the existing schema behavior: UUID primary keys
+  use `defaultRandom()` and are not migrated to `uuidv7()`.
+- Access tokens use `ACCESS_TOKEN_SECRET`; refresh tokens are opaque random
+  values persisted and revoked in PostgreSQL, with no separate refresh-token
+  signing secret.
 - Existing table names, enum values, column names, foreign keys, and junction relationships must remain representable.
 - Tags relationship with posts and tokens remains relational through junction tables.
 - Refresh tokens remain persisted in PostgreSQL.
