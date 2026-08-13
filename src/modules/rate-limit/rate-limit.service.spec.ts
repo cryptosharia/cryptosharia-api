@@ -1,5 +1,5 @@
-import { ServiceUnavailableException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
+import { RateLimitError } from './rate-limit.error';
 import { RateLimitService } from './rate-limit.service';
 
 describe('RateLimitService', () => {
@@ -28,7 +28,7 @@ describe('RateLimitService', () => {
     });
 
     await expect(service.check('127.0.0.1')).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
+      RateLimitError,
     );
   });
 });

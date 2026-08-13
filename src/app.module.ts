@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { validate } from './env.validation';
 import { ZodExceptionFilter } from './zod.exception-filter';
 import { AppExceptionFilter } from './app.exception-filter';
@@ -9,6 +9,7 @@ import { UsersModule } from './modules/users/users.module';
 import { OpenApiModule } from './modules/openapi/openapi.module';
 import { SystemModule } from './modules/system/system.module';
 import { SecurityModule } from './modules/security/security.module';
+import { ApiKeyGuard } from './modules/security/api-key.guard';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SecurityModule } from './modules/security/security.module';
     SecurityModule,
   ],
   providers: [
+    { provide: APP_GUARD, useExisting: ApiKeyGuard },
     { provide: APP_FILTER, useClass: AppExceptionFilter },
     { provide: APP_FILTER, useClass: ZodExceptionFilter },
   ],

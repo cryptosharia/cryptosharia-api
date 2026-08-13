@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -12,14 +11,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Query } from '@nestjs/common';
-import type { FastifyReply, FastifyRequest } from 'fastify';
-import { CurrentUserId } from '#src/common/current-user-id.decorator';
-import { CurrentUser } from '#src/common/current-user.decorator';
+import type { FastifyReply } from 'fastify';
+import { CurrentUser } from '#src/modules/security/current-user.decorator';
 import { ParseZodPipe } from '#src/common/parse-zod.pipe';
 import { BearerAuthGuard } from '#src/modules/security/bearer-auth.guard';
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
-import type { User } from '#src/modules/drizzle/drizzle.types';
 import { UsersExceptionFilter } from './users.exception-filter';
 import { ExcludeSensitiveFieldsInterceptor } from './exclude-sensitive-fields.interceptor';
 import {
@@ -53,29 +50,18 @@ export class UsersController {
   }
 
   @Get(':id')
-  async selectById(
-    @Param(new ParseZodPipe(UserParam)) { id }: UserParam,
-    @CurrentUser() currentUser: FastifyRequest['user'],
-  ) {
-    if (
-      id !== currentUser?.id &&
-      !currentUser?.permissions.includes('users.read')
-    )
-      throw new ForbiddenException();
+  @RequirePermissions({ permissions: ['users.read'], allowOwner: true })
+  async selectById(@Param(new ParseZodPipe(UserParam)) { id }: UserParam) {
     return this.usersService.selectById(id);
   }
 
   @Patch(':id')
+  @RequirePermissions({ permissions: ['users.update'], allowOwner: true })
   async updateProfile(
     @Param(new ParseZodPipe(UserParam)) { id }: UserParam,
     @Body(new ParseZodPipe(ProfileUpdateBody)) body: ProfileUpdateBody,
-    @CurrentUser() currentUser: FastifyRequest['user'],
+    @CurrentUser() currentUser: CurrentUser,
   ) {
-    if (
-      id !== currentUser?.id &&
-      !currentUser?.permissions.includes('users.update')
-    )
-      throw new ForbiddenException();
     return this.usersService.update(id, body, currentUser.id);
   }
 
@@ -84,9 +70,9 @@ export class UsersController {
   async updateStatus(
     @Param(new ParseZodPipe(UserParam)) { id }: UserParam,
     @Body(new ParseZodPipe(StatusBody)) body: StatusBody,
-    @CurrentUserId() currentUserId: User['id'],
+    @CurrentUser() currentUser: CurrentUser,
   ) {
-    return this.usersService.update(id, body, currentUserId);
+    return this.usersService.update(id, body, currentUser.id);
   }
 
   @Put(':id/role')
@@ -94,8 +80,8 @@ export class UsersController {
   async updateRole(
     @Param(new ParseZodPipe(UserParam)) { id }: UserParam,
     @Body(new ParseZodPipe(RoleBody)) body: RoleBody,
-    @CurrentUserId() currentUserId: User['id'],
+    @CurrentUser() currentUser: CurrentUser,
   ) {
-    return this.usersService.update(id, body, currentUserId);
+    return this.usersService.update(id, body, currentUser.id);
   }
 }

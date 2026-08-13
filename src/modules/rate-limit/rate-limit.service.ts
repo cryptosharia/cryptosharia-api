@@ -1,7 +1,8 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { RateLimitError } from './rate-limit.error';
 
 export type RateLimitResult = {
   limit: number;
@@ -32,7 +33,7 @@ export class RateLimitService {
     try {
       return await this.limiter.limit(identifier);
     } catch {
-      throw new ServiceUnavailableException();
+      throw new RateLimitError('RATE_LIMIT_PROVIDER_UNAVAILABLE');
     }
   }
 }

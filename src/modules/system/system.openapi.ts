@@ -7,10 +7,10 @@ export const systemRouteConfig: RouteConfig[] = [
     method: 'get',
     path: '/health',
     summary: 'Health check',
-    description: 'Returns the application health status.',
+    description: 'Returns the API health status.',
     responses: createResponsesConfig({
       200: {
-        description: 'Application is available',
+        description: 'API is available',
         body: z.object({ status: z.literal('UP') }),
       },
     }),
