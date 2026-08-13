@@ -72,8 +72,6 @@ does not use.
 
 - Domain errors live in `<name>.error.ts` as a `<NAME>_ERRORS` code-to-message
   map, an error-code union derived from its keys, and a `<Name>Error` class.
-- Use entity-prefixed domain codes for resource failures, such as
-  `<ENTITY>_NOT_FOUND`, rather than generic codes like `NOT_FOUND`.
 - `<Name>Error` stores the selected code on `code` and passes the mapped message
   to `super(...)`.
 - Exception filters live in `<name>.exception-filter.ts` and map domain errors
