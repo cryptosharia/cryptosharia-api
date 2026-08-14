@@ -39,16 +39,37 @@ export const User = createSelectSchema(users, {
 export type User = z.infer<typeof User>;
 
 export const ActivityLog = createSelectSchema(activityLogs, {
-  action: (f) =>
-    f.min(1).max(50).meta({
+  action: z
+    .enum([
+      'asset.upload',
+      'auth.password-reset.complete',
+      'auth.password-reset.request',
+      'auth.refresh',
+      'auth.signin',
+      'auth.signout',
+      'auth.signup',
+      'auth.verify',
+      'imgbb.upload',
+      'post.create',
+      'post.delete',
+      'post.update',
+      'tag.create',
+      'tag.delete',
+      'tag.update',
+      'token.create',
+      'token.delete',
+      'token.update',
+      'user.role.update',
+      'user.status.update',
+      'user.update',
+    ])
+    .meta({
       description: 'Action performed by the actor',
       example: 'auth.signin',
     }),
-  subjectType: (f) =>
-    f
-      .min(1)
-      .max(50)
-      .meta({ description: 'Type of affected subject', example: 'auth' }),
+  subjectType: z
+    .enum(['asset', 'auth', 'imgbb_image', 'posts', 'tags', 'tokens', 'user'])
+    .meta({ description: 'Type of affected subject', example: 'auth' }),
   ipAddress: (f) =>
     f
       .max(45)
