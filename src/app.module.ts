@@ -13,6 +13,8 @@ import { ApiKeyGuard } from './modules/security/api-key.guard';
 import { ImageProviderModule } from './modules/image-provider/image-provider.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
+import { MarketDataModule } from './modules/market-data/market-data.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { StorageModule } from './modules/storage/storage.module';
     MailerModule,
     StorageModule,
     ImageProviderModule,
+    ActivityLogsModule,
+    MarketDataModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },

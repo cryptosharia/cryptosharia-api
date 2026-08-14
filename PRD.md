@@ -150,14 +150,15 @@ menjadi dependency business logic.
 3. `CryptoModule`
 4. `MailerModule`
 5. `ActivityLogsModule`
-6. `AuthModule`
-7. `StorageModule`
-8. `ImageProviderModule`
-9. `AssetsModule`
-10. `TagsModule`
-11. `PostsModule`
-12. `TokensModule`
-13. `MessagesModule`
+6. `MarketDataModule`
+7. `AuthModule`
+8. `StorageModule`
+9. `ImageProviderModule`
+10. `AssetsModule`
+11. `TagsModule`
+12. `PostsModule`
+13. `TokensModule`
+14. `MessagesModule`
 
 Cross-cutting modules seperti Security, OpenAPI, Drizzle, dan System adalah
 fondasi aplikasi. Permission enforcement di SecurityModule dikembangkan
