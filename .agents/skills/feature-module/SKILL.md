@@ -19,10 +19,12 @@ A full persistent feature resource module uses this standard shape:
 ```
 src/modules/<name>/
 ├── <name>.module.ts            # NestJS module declaration
+├── <name>.constants.ts         # Module-level constants
+├── <name>.helpers.ts           # Module-level helper functions
+├── <name>.schemas.ts           # Zod request/response DTO schemas
 ├── <name>.controller.ts        # HTTP routes, decorators, pipe validation
 ├── <name>.service.ts           # Pure business logic layer
 ├── <name>.repository.ts        # Pure Drizzle database query layer
-├── <name>.schemas.ts           # Zod request/response DTO schemas
 ├── <name>.error.ts             # Domain error class and error code union
 ├── <name>.exception-filter.ts  # Controller filter translating domain errors to HTTP exceptions
 └── <name>.openapi.ts           # Prefixed <name>RouteConfig for OpenAPI docs
@@ -49,6 +51,8 @@ does not use.
 - Owns business workflow and coordinates repositories.
 - Does not import Drizzle tables or run direct database queries.
 - Does not import or throw NestJS HTTP exceptions.
+- Is the module's public application contract and may be injected by other
+  modules. Consumer modules use exported services.
 
 **Repository**
 
@@ -78,6 +82,12 @@ does not use.
   to HTTP exceptions.
 - Exception filters send `{ error: exception.code, message: exception.message }`.
 - Controllers apply the filter with `@UseFilters(<Name>ExceptionFilter)`.
+
+**Empty Commands**
+
+- Use `204 No Content` for successful command endpoints that intentionally have
+  no response representation.
+- Do not document or return a JSON response body for `204` routes.
 
 **OpenAPI**
 

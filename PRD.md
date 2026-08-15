@@ -254,7 +254,7 @@ total-items: <number>
 | POST   | `/auth/signin`          | Authenticate email/password and issue access + refresh tokens |
 | POST   | `/auth/refresh`         | Rotate refresh token and issue a new token pair               |
 | POST   | `/auth/signout`         | Revoke refresh token                                          |
-| GET    | `/auth/me`              | Return current authenticated user profile and permissions     |
+| GET    | `/auth/me`              | Return current authenticated user profile                     |
 | POST   | `/auth/password/forgot` | Request password reset                                        |
 | POST   | `/auth/password/reset`  | Reset password using reset token                              |
 
@@ -263,6 +263,8 @@ total-items: <number>
 - Signup membuat user normal dengan role `member`.
 - Request signup tidak boleh bisa mengatur role, status, verification state, atau privileged fields lain.
 - Nama user disimpan dalam bentuk trimmed.
+- Signup menerima `redirectUrl` dengan tepat satu placeholder `{token}` untuk
+  link verification email.
 - User baru wajib melalui email verification sebelum bisa signin.
 - Re-signup menggunakan email yang belum verified memperbarui akun unverified yang sama dan mengganti verification token aktif.
 - Re-signup menggunakan email yang sudah verified menghasilkan conflict.
@@ -277,18 +279,20 @@ total-items: <number>
 - User yang belum verified tidak dapat signin.
 - User dengan status non-active tidak dapat signin.
 - Password diverifikasi menggunakan hashing strategy yang aman dan compatible dengan data existing.
-- Signin yang berhasil mengembalikan safe user payload, access token, dan refresh token.
+- Signin yang berhasil mengembalikan access token dan refresh token.
 - Refresh token disimpan di PostgreSQL.
 - Refresh token rotation wajib dilakukan saat `/auth/refresh` berhasil.
 - Refresh token lama harus revoked setelah token baru dibuat.
 - Refresh token yang invalid, expired, revoked, atau tidak ditemukan menghasilkan `401`.
 - Signout merevoke refresh token dan bersifat idempotent.
-- `/auth/me` mengembalikan safe user profile, role, dan permissions dari bearer token yang valid.
+- `/auth/me` mengembalikan safe user profile dan role dari bearer token yang valid.
 
 ### 8.4 Password Reset
 
 - Forgot password tidak boleh membuka informasi apakah email terdaftar atau tidak.
 - Jika user ada, sistem membuat reset token baru, menyimpannya dalam bentuk hash, dan merevoke reset token aktif sebelumnya.
+- Forgot password menerima `redirectUrl` dengan tepat satu placeholder `{token}`
+  untuk link password reset email.
 - Reset token memiliki masa berlaku terbatas.
 - Reset password hanya berhasil dengan reset token yang valid, belum expired, dan belum revoked.
 - Reset password yang berhasil memperbarui password hash dan merevoke reset token.
@@ -476,8 +480,8 @@ total-items: <number>
 - Database UUID behavior follows the existing schema behavior: UUID primary keys
   use `defaultRandom()` and are not migrated to `uuidv7()`.
 - Access tokens use `ACCESS_TOKEN_SECRET`; refresh tokens are opaque random
-  values persisted and revoked in PostgreSQL, with no separate refresh-token
-  signing secret.
+  values returned only to the client, stored as SHA-256 hashes, and revoked in
+  PostgreSQL, with no separate refresh-token signing secret.
 - Existing table names, enum values, column names, foreign keys, and junction relationships must remain representable.
 - Tags relationship with posts and tokens remains relational through junction tables.
 - Refresh tokens remain persisted in PostgreSQL.
