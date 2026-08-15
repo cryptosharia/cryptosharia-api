@@ -43,7 +43,7 @@ export const usersRouteConfig: RouteConfig[] = [
         body: z.array(UserResponse),
         headers: {
           'total-items': z.string().meta({
-            description: 'Total matching users',
+            description: 'Total matching users (before pagination)',
           }),
         },
       },
@@ -73,7 +73,7 @@ export const usersRouteConfig: RouteConfig[] = [
   {
     method: 'patch',
     path: '/users/{id}',
-    summary: 'Update a user profile',
+    summary: 'Update user profile',
     description: 'Update the display name and/or avatar reference.',
     security: protectedSecurity,
     request: {
@@ -120,7 +120,7 @@ export const usersRouteConfig: RouteConfig[] = [
     method: 'put',
     path: '/users/{id}/role',
     summary: 'Update user role',
-    description: 'Change a user system role.',
+    description: 'Change a user role.',
     security: protectedSecurity,
     request: {
       params: UserParam,

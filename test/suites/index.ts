@@ -10,10 +10,10 @@ export class SuitesService {
 
   constructor(readonly ctx: Context) {
     this._suites = [
-      new OpenApiSuite(ctx),
       new SystemSuite(ctx),
-      new UsersSuite(ctx),
+      new OpenApiSuite(ctx),
       new AuthSuite(ctx),
+      new UsersSuite(ctx),
     ];
   }
 

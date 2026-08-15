@@ -15,8 +15,28 @@ export const UsersQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().trim().max(255).optional(),
-  roles: z.array(User.shape.role).optional(),
-  statuses: z.array(User.shape.status).optional(),
+  roles: z
+    .preprocess(
+      (value) =>
+        value === undefined
+          ? undefined
+          : Array.isArray(value)
+            ? value
+            : [value],
+      z.array(User.shape.role).optional(),
+    )
+    .optional(),
+  statuses: z
+    .preprocess(
+      (value) =>
+        value === undefined
+          ? undefined
+          : Array.isArray(value)
+            ? value
+            : [value],
+      z.array(User.shape.status).optional(),
+    )
+    .optional(),
 });
 export type UsersQuery = z.infer<typeof UsersQuery>;
 

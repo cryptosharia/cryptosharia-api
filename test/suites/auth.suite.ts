@@ -55,7 +55,7 @@ export class AuthSuite extends Suite {
           expect(response.status).toBe(401);
         });
 
-        it('rejects /auth/me without a bearer token', async () => {
+        it('rejects /auth/me request without a bearer token', async () => {
           const { response } = await this.ctx.client.GET('/auth/me');
           expect(response.status).toBe(401);
         });
@@ -64,9 +64,11 @@ export class AuthSuite extends Suite {
       describe('signup', () => {
         it('sends a styled verification email with a fallback link', async () => {
           await signup();
-          expect(mailer().messages[0].html).toContain('Verify Email Address');
           expect(mailer().messages[0].html).toContain(
-            'copy and paste this link',
+            'Verifikasi Alamat Email',
+          );
+          expect(mailer().messages[0].html).toContain(
+            'salin dan tempel tautan berikut',
           );
         });
 

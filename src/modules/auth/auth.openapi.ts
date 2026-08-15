@@ -103,7 +103,7 @@ export const authRouteConfig: RouteConfig[] = [
   {
     method: 'post',
     path: '/auth/refresh',
-    summary: 'Refresh tokens',
+    summary: 'Refresh token',
     description:
       'Revokes the submitted refresh token and issues a replacement access and refresh token pair.',
     security: apiKeySecurity,
