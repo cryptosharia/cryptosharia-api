@@ -4,6 +4,7 @@ import {
 } from '@asteasolutions/zod-to-openapi';
 import { usersRouteConfig } from '#src/modules/users/users.openapi';
 import { systemRouteConfig } from '#src/modules/system/system.openapi';
+import { authRouteConfig } from '#src/modules/auth/auth.openapi';
 
 export function generateOpenApiDocument() {
   const registry = new OpenAPIRegistry();
@@ -24,15 +25,20 @@ export function generateOpenApiDocument() {
       'API key required by protected routes. Include as: api-key: <key>',
   });
 
-  const routes = [...systemRouteConfig, ...usersRouteConfig];
+  const routes = [
+    ...systemRouteConfig,
+    ...authRouteConfig,
+    ...usersRouteConfig,
+  ];
   for (const route of routes) registry.registerPath(route);
 
   return new OpenApiGeneratorV31(registry.definitions).generateDocument({
     openapi: '3.1.0',
     info: {
-      version: '1.0.0',
+      version: '1.1.0',
       title: 'Cryptosharia API',
-      description: 'OpenAPI specification for the Cryptosharia API.',
+      description:
+        'OpenAPI specification for the Cryptosharia API.<br>Go to <a href="/openapi.json">openapi.json</a> or <a href="/openapi.yaml">openapi.yaml</a> for the raw specification.',
     },
   });
 }

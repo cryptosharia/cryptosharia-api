@@ -15,6 +15,7 @@ import { MailerModule } from './modules/mailer/mailer.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
 import { MarketDataModule } from './modules/market-data/market-data.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { MarketDataModule } from './modules/market-data/market-data.module';
     ImageProviderModule,
     ActivityLogsModule,
     MarketDataModule,
+    AuthModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },

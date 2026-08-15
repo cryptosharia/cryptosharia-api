@@ -12,6 +12,7 @@ import {
 } from 'drizzle-orm';
 import { users } from '#src/modules/drizzle/drizzle.schema';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
+import type { DbExecutor } from '#src/modules/drizzle/drizzle.types';
 import { User } from '#src/modules/drizzle/drizzle.types';
 import { escapeLikePattern } from '#src/common/escape-like-pattern';
 import { UsersError } from './users.error';
@@ -44,8 +45,11 @@ export class UsersRepository {
     return filters.length ? and(...filters) : undefined;
   }
 
-  async selectById(id: User['id']): Promise<User> {
-    const [user] = await this.drizzleService.db
+  async selectById(
+    id: User['id'],
+    dbExecutor: DbExecutor = this.drizzleService.db,
+  ): Promise<User> {
+    const [user] = await dbExecutor
       .select()
       .from(users)
       .where(eq(users.id, id));
@@ -54,8 +58,11 @@ export class UsersRepository {
   }
 
   /** Looks up a required user identity by its unique email address. */
-  async selectByEmail(email: User['email']): Promise<User> {
-    const [user] = await this.drizzleService.db
+  async selectByEmail(
+    email: User['email'],
+    dbExecutor: DbExecutor = this.drizzleService.db,
+  ): Promise<User> {
+    const [user] = await dbExecutor
       .select()
       .from(users)
       .where(eq(users.email, email));
@@ -96,9 +103,10 @@ export class UsersRepository {
   /** Creates a member account with the Users table's non-privileged defaults. */
   async insert(
     data: Pick<User, 'name' | 'email' | 'hashedPassword'>,
+    dbExecutor: DbExecutor = this.drizzleService.db,
   ): Promise<User> {
     try {
-      const [user] = await this.drizzleService.db
+      const [user] = await dbExecutor
         .insert(users)
         .values({
           ...data,
@@ -126,10 +134,11 @@ export class UsersRepository {
     id: User['id'],
     data: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>,
     updatedBy?: User['id'],
+    dbExecutor: DbExecutor = this.drizzleService.db,
   ): Promise<User> {
     if (!Object.keys(data).length) throw new UsersError('USER_UPDATE_EMPTY');
 
-    const [user] = await this.drizzleService.db
+    const [user] = await dbExecutor
       .update(users)
       .set({ ...data, ...(updatedBy ? { updatedBy } : {}) })
       .where(eq(users.id, id))

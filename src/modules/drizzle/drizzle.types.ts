@@ -1,5 +1,7 @@
 import { createSelectSchema } from 'drizzle-zod';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
+import * as schema from './drizzle.schema';
 import {
   activityLogs,
   assets,
@@ -14,6 +16,10 @@ import {
   tokens,
   users,
 } from './drizzle.schema';
+
+export type DbExecutor =
+  | NodePgDatabase<typeof schema>
+  | Parameters<Parameters<NodePgDatabase<typeof schema>['transaction']>[0]>[0];
 
 export const User = createSelectSchema(users, {
   name: (f) =>

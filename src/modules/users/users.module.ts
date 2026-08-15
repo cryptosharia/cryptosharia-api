@@ -10,6 +10,6 @@ import { SecurityModule } from '#src/modules/security/security.module';
   imports: [DrizzleModule, SecurityModule],
   controllers: [UsersController],
   providers: [UsersRepository, UsersService, ExcludeSensitiveFieldsInterceptor],
-  exports: [UsersService],
+  exports: [UsersService, ExcludeSensitiveFieldsInterceptor],
 })
 export class UsersModule {}
