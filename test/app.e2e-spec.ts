@@ -6,10 +6,12 @@ import {
 import createClient from 'openapi-fetch';
 import type { AddressInfo } from 'node:net';
 import { AppModule } from '#src/app.module';
+import { MailerService } from '#src/modules/mailer/mailer.service';
 import type { paths } from '#test/schema';
 import type { Context } from './helpers/context.type';
 import { resetTestDatabase } from './helpers/reset-test-database';
 import { SuitesService } from './suites/index';
+import { TestMailerService } from './helpers/test-mailer.service';
 
 describe('App', () => {
   const ctx = {} as Context;
@@ -17,7 +19,10 @@ describe('App', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(MailerService)
+      .useClass(TestMailerService)
+      .compile();
 
     ctx.app = moduleRef.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(),
@@ -30,7 +35,7 @@ describe('App', () => {
     ctx.baseUrl = `http://127.0.0.1:${port}`;
     ctx.client = createClient<paths>({
       baseUrl: ctx.baseUrl,
-      headers: { 'api-key': process.env.API_KEY ?? '' },
+      headers: { 'api-key': process.env.API_KEY! },
     });
     ctx.clientWithoutApiKey = createClient<paths>({
       baseUrl: ctx.baseUrl,
@@ -39,6 +44,8 @@ describe('App', () => {
 
   beforeEach(async () => {
     await resetTestDatabase();
+    const mailer = ctx.app.get<TestMailerService>(MailerService);
+    mailer.clear();
   });
 
   afterAll(async () => {
