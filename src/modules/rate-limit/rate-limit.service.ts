@@ -16,6 +16,7 @@ export class RateLimitService {
   private readonly limiter: Ratelimit | undefined;
 
   constructor(configService: ConfigService) {
+    // Local and test runs do not require external Upstash credentials or shared limits.
     if (configService.get<string>('NODE_ENV') !== 'production') return;
 
     this.limiter = new Ratelimit({
@@ -33,6 +34,7 @@ export class RateLimitService {
     try {
       return await this.limiter.limit(identifier);
     } catch {
+      // A missing limit decision must deny the request rather than silently disabling protection.
       throw new RateLimitError('RATE_LIMIT_PROVIDER_UNAVAILABLE');
     }
   }

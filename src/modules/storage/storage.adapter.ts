@@ -19,6 +19,7 @@ export class StorageAdapter {
     file: Blob;
     contentType?: string;
   }): Promise<{ url: string; pathname: string }> {
+    // Reject before calling Vercel Blob so provider limits do not define API behavior.
     if (input.file.size > MAX_FILE_SIZE) {
       throw new StorageError('FILE_TOO_LARGE');
     }

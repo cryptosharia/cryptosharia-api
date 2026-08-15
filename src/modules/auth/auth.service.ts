@@ -17,6 +17,7 @@ import { AuthRepository } from './auth.repository';
 import {
   createPasswordResetEmail,
   createVerificationEmail,
+  replaceTokenPlaceholder,
 } from './auth.helpers';
 
 @Injectable()
@@ -102,9 +103,10 @@ export class AuthService {
       subject: 'Verify your CryptoSharia Account',
       html: createVerificationEmail({
         name: user.name,
-        url: input.redirectUrl.replace('{token}', encodeURIComponent(token)),
+        url: replaceTokenPlaceholder(input.redirectUrl, token),
       }),
     });
+    // ActivityLogsService absorbs storage failures, so audit logging cannot fail signup.
     await this.activityLogsService.log({
       userId: user.id,
       action: 'auth.signup',
@@ -285,6 +287,7 @@ export class AuthService {
       );
     } catch (error) {
       if (error instanceof UsersError && error.code === 'USER_NOT_FOUND')
+        // Keep the response indistinguishable from an existing account to prevent email enumeration.
         return;
       throw error;
     }
@@ -324,11 +327,11 @@ export class AuthService {
         to: user.email,
         subject: 'Reset your CryptoSharia password',
         html: createPasswordResetEmail({
-          url: input.redirectUrl.replace('{token}', encodeURIComponent(token)),
+          url: replaceTokenPlaceholder(input.redirectUrl, token),
         }),
       });
     } catch {
-      // The generic response must not disclose email delivery or account existence.
+      // Delivery failures must retain the same generic response as unknown email addresses.
     }
   }
 

@@ -10,6 +10,7 @@ export async function resetTestDatabase() {
     const names = rows
       .map((r) => `"${r.table_name.replaceAll('"', '""')}"`)
       .join(', ');
+    // Cascade clears dependent rows and restart identity keeps database fixtures deterministic.
     await pool.query(`TRUNCATE TABLE ${names} RESTART IDENTITY CASCADE`);
   } finally {
     await pool.end();

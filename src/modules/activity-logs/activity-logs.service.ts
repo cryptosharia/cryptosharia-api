@@ -21,6 +21,7 @@ export class ActivityLogsService {
     try {
       await this.activityLogsRepository.insert(input);
     } catch {
+      // Audit persistence is best-effort and must not roll back the caller's successful action.
       this.logger.error(`Failed to log activity: ${input.action}`);
     }
   }

@@ -20,6 +20,7 @@ describe('App', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
+      // Capture transactional emails for assertions without network delivery.
       .overrideProvider(MailerService)
       .useClass(TestMailerService)
       .compile();
@@ -43,6 +44,7 @@ describe('App', () => {
   });
 
   beforeEach(async () => {
+    // Suites share one application and database, so reset state to keep every case isolated.
     await resetTestDatabase();
     const mailer = ctx.app.get<TestMailerService>(MailerService);
     mailer.clear();

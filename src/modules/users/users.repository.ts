@@ -57,7 +57,6 @@ export class UsersRepository {
     return user;
   }
 
-  /** Looks up a required user identity by its unique email address. */
   async selectByEmail(
     email: User['email'],
     dbExecutor: DbExecutor = this.drizzleService.db,
@@ -70,7 +69,6 @@ export class UsersRepository {
     return user;
   }
 
-  /** Lists users newest-first with the requested filters and pagination. */
   async selectAll(options: {
     search?: string;
     roles?: User['role'][];
@@ -87,7 +85,6 @@ export class UsersRepository {
       .offset((options.page - 1) * options.limit);
   }
 
-  /** Counts users matching the requested filters without pagination. */
   async count(options: {
     search?: string;
     roles?: User['role'][];
@@ -129,7 +126,6 @@ export class UsersRepository {
     }
   }
 
-  /** Persists changes to user data and returns the updated record. */
   async update(
     id: User['id'],
     data: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>,

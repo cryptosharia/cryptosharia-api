@@ -39,9 +39,11 @@ export class ImageProviderAdapter {
     mimeType: string;
     deleteUrl: string;
   }> {
+    // ImgBB accepts arbitrary payloads; enforce this endpoint's image-only contract before upload.
     if (!input.contentType.startsWith('image/'))
       throw new ImageProviderError('INVALID_FILE');
 
+    // Keep the API limit independent from changes to ImgBB's provider limit.
     if (input.file.size > MAX_IMAGE_SIZE)
       throw new ImageProviderError('FILE_TOO_LARGE');
 
@@ -65,6 +67,7 @@ export class ImageProviderAdapter {
       const { data } = (await response.json()) as ImgbbResponse;
       if (!data) throw new ImageProviderError('UPLOAD_FAILED');
 
+      // Normalize ImgBB's string-or-number fields before persisting application metadata.
       return {
         providerId: data.id,
         title: data.title,

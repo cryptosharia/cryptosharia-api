@@ -3,6 +3,7 @@ import {
   VERIFICATION_TOKEN_EXPIRES_IN_HOURS,
 } from './auth.constants';
 
+// Email templates interpolate user data into HTML, so encode text and attribute values first.
 function escapeHtml(value: string) {
   return value.replace(
     /[&<>'"]/g,
@@ -15,6 +16,11 @@ function escapeHtml(value: string) {
         '"': '&quot;',
       })[character]!,
   );
+}
+
+/** Replaces the redirect template token after encoding it for use in an URL. */
+export function replaceTokenPlaceholder(url: string, token: string) {
+  return url.replace('{token}', encodeURIComponent(token));
 }
 
 export function createVerificationEmail(input: { name: string; url: string }) {

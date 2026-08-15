@@ -31,6 +31,7 @@ export class PermissionGuard implements CanActivate {
     const resourceId = (request.params as Record<string, string> | undefined)?.[
       required.ownerParam ?? 'id'
     ];
+    // Ownership is an alternative grant only for routes that opt in via allowOwner.
     const isOwner = required.allowOwner && resourceId === request.user.id;
     if (!hasPermission && !isOwner) {
       throw new ForbiddenException();

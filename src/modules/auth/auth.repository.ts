@@ -50,6 +50,7 @@ export class AuthRepository {
     input: { type: AuthToken['type']; tokenHash: string; now: Date },
     dbExecutor: DbExecutor,
   ): Promise<AuthToken | undefined> {
+    // The conditional update makes a token single-use even when concurrent requests race to redeem it.
     const [token] = await dbExecutor
       .update(authTokens)
       .set({ revokedAt: input.now })
@@ -80,6 +81,7 @@ export class AuthRepository {
     input: { tokenHash: string; now: Date },
     dbExecutor: DbExecutor,
   ): Promise<RefreshToken | undefined> {
+    // Revoke while reading so a stolen refresh token cannot be replayed after rotation.
     const [token] = await dbExecutor
       .update(refreshTokens)
       .set({ revokedAt: input.now })
