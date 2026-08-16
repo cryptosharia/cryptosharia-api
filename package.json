@@ -13,7 +13,7 @@
     "test:unit": "vitest run --project unit",
     "test:e2e": "vitest run --project e2e",
     "test:gen-schema": "bun test/generate-schema.ts",
-    "assets:cleanup": "bun src/scripts/assets-cleanup.ts",
+    "assets:cleanup": "bun scripts/assets-cleanup.ts",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
