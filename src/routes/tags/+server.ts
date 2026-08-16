@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		return parsedQuery.response;
 	}
 
-	const { search, slugs, limit, page } = parsedQuery.data;
+	const { search, slugs, contentSections, showInNavigation, limit, page } = parsedQuery.data;
 	const offset = (page - 1) * limit;
 
 	try {
@@ -22,6 +22,14 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		if (slugs && slugs.length > 0) {
 			filters.push(inArray(tags.slug, slugs as string[]));
+		}
+
+		if (contentSections && contentSections.length > 0) {
+			filters.push(inArray(tags.contentSection, contentSections as ('news' | 'education')[]));
+		}
+
+		if (showInNavigation !== undefined) {
+			filters.push(eq(tags.showInNavigation, showInNavigation));
 		}
 
 		if (search) {
@@ -54,7 +62,10 @@ export const GET: RequestHandler = async ({ url }) => {
 						}
 					}
 				},
-				orderBy: (table, { asc }) => [asc(table.name)]
+			orderBy: (table, { asc }) =>
+				contentSections || showInNavigation !== undefined
+					? [asc(table.displayOrder), asc(table.name)]
+					: [asc(table.name)]
 			}),
 			db.select({ value: count() }).from(tags).where(where)
 		]);
@@ -89,7 +100,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return parsedBody.response;
 		}
 
-		const { name, slug, description } = parsedBody.data;
+		const { name, slug, description, contentSection, showInNavigation, displayOrder } = parsedBody.data;
+		if (showInNavigation && !contentSection) {
+			return ApiResponse.badRequest({ contentSection: ['Required for public navigation categories'] });
+		}
 
 		const existingTag = await db.query.tags.findFirst({
 			where: or(eq(tags.name, name), eq(tags.slug, slug))
@@ -107,6 +121,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				name,
 				slug,
 				description,
+				contentSection,
+				showInNavigation,
+				displayOrder,
 				createdBy: userId,
 				updatedBy: userId
 			})

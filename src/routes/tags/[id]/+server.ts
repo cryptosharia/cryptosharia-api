@@ -54,6 +54,15 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		const updateData = parsedBody.data;
+		const nextContentSection =
+			updateData.contentSection === undefined ? existingTag.contentSection : updateData.contentSection;
+		const nextShowInNavigation =
+			updateData.showInNavigation === undefined
+				? existingTag.showInNavigation
+				: updateData.showInNavigation;
+		if (nextShowInNavigation && !nextContentSection) {
+			return ApiResponse.badRequest({ contentSection: ['Required for public navigation categories'] });
+		}
 
 		if (updateData.name || updateData.slug) {
 			const conflictFilter = [];
@@ -80,7 +89,12 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 		const [updatedTag] = await db
 			.update(tags)
 			.set({
-				...updateData,
+				name: updateData.name,
+				slug: updateData.slug,
+				description: updateData.description,
+				contentSection: updateData.contentSection,
+				showInNavigation: updateData.showInNavigation,
+				displayOrder: updateData.displayOrder,
 				updatedBy: userId
 			})
 			.where(eq(tags.id, existingTag.id))

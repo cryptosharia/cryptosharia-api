@@ -96,6 +96,9 @@ export const postSectionEnum = pgEnum('post_section', [
  */
 export const postTypeEnum = pgEnum('post_type', ['article', 'webinar', 'video', 'headline']);
 
+/** Public site sections that may expose a tag as a navigation category. */
+export const tagContentSectionEnum = pgEnum('tag_content_section', ['news', 'education']);
+
 /**
  * Password hashing algorithm used for user passwords.
  */
@@ -303,6 +306,9 @@ export const tags = pgTable('tags', {
 	slug: varchar('slug', { length: 50 }).notNull().unique(),
 	/** Detailed context about this tag */
 	description: text('description'),
+	contentSection: tagContentSectionEnum('content_section'),
+	showInNavigation: boolean('show_in_navigation').notNull().default(false),
+	displayOrder: integer('display_order'),
 	...CREATED_AT,
 	...UPDATED_AT,
 	...CREATED_BY,

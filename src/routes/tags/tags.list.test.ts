@@ -66,4 +66,19 @@ describe('Tags API Integration - List', () => {
 		expect(response.status).toBe(200);
 		expect(data?.data?.items).toHaveLength(0);
 	});
+
+	it('should return only visible content categories in display order', async () => {
+		await db.insert(tagsTable).values([
+			{ name: 'Later', slug: 'later', contentSection: 'news', showInNavigation: true, displayOrder: 2 },
+			{ name: 'First', slug: 'first', contentSection: 'news', showInNavigation: true, displayOrder: 1 },
+			{ name: 'Hidden', slug: 'hidden', contentSection: 'news', showInNavigation: false, displayOrder: 0 }
+		]);
+
+		const { data, response } = await client.GET('/tags', {
+			params: { query: { contentSections: ['news'], showInNavigation: true, limit: 10, page: 1 } }
+		});
+
+		expect(response.status).toBe(200);
+		expect(data?.data?.items.map((tag) => tag.slug)).toEqual(['first', 'later']);
+	});
 });

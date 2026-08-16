@@ -24,6 +24,37 @@ describe('Tags API Integration - Write', () => {
 			expect(data?.data?.slug).toBe('new-tag');
 		});
 
+		it('should create a public content category', async () => {
+			const { client: adminClient } = await createAuthenticatedClient('admin');
+
+			const { data, response } = await adminClient.POST('/tags', {
+				body: {
+					name: 'Crypto News',
+					slug: 'crypto-news',
+					contentSection: 'news',
+					showInNavigation: true,
+					displayOrder: 1
+				}
+			});
+
+			expect(response.status).toBe(201);
+			expect(data?.data).toMatchObject({
+				contentSection: 'news',
+				showInNavigation: true,
+				displayOrder: 1
+			});
+		});
+
+		it('should reject a public category without a content section', async () => {
+			const { client: adminClient } = await createAuthenticatedClient('admin');
+
+			const { response } = await adminClient.POST('/tags', {
+				body: { name: 'Invalid Category', slug: 'invalid-category', showInNavigation: true }
+			});
+
+			expect(response.status).toBe(400);
+		});
+
 		it('should return 403 without auth', async () => {
 			const { response } = await client.POST('/tags', {
 				body: { name: 'Test', slug: 'test' }

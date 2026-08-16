@@ -2,6 +2,7 @@ import { zQueryArray } from '$lib/utils';
 import { OpenApiResponse, PaginatedData, UserMetadata } from '$lib/api';
 import z from '$lib/zod-openapi';
 import { Tag } from '$lib/db/types';
+import { tagContentSectionEnum } from '$lib/db/tables';
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 export const TagsGetQuery = z
@@ -10,6 +11,10 @@ export const TagsGetQuery = z
 		slugs: zQueryArray(z.string(), {
 			description: 'List of tag slugs to filter by.<br>Example: halal,defi'
 		}),
+		contentSections: zQueryArray(z.enum(tagContentSectionEnum.enumValues), {
+			description: 'Public content sections to filter by. Example: news,education'
+		}),
+		showInNavigation: z.coerce.boolean().optional(),
 		limit: z.coerce.number().min(1).max(100).default(10),
 		page: z.coerce.number().min(1).default(1)
 	})
@@ -20,6 +25,9 @@ export const TagsGetItem = Tag.pick({
 	name: true,
 	slug: true,
 	description: true,
+	contentSection: true,
+	showInNavigation: true,
+	displayOrder: true,
 	createdAt: true,
 	updatedAt: true
 })
@@ -59,7 +67,10 @@ export const TagsCreateBody = z
 	.object({
 		name: z.string().trim().min(1).max(50, 'Name must be at most 50 characters'),
 		slug: z.string().trim().min(1).max(50, 'Slug must be at most 50 characters'),
-		description: z.string().optional()
+		description: z.string().optional(),
+		contentSection: z.enum(tagContentSectionEnum.enumValues).nullable().optional(),
+		showInNavigation: z.boolean().optional().default(false),
+		displayOrder: z.coerce.number().int().min(0).optional().nullable()
 	})
 	.openapi('TagsCreateBody');
 export type TagsCreateBody = z.infer<typeof TagsCreateBody>;
@@ -116,7 +127,10 @@ export const TagsUpdateBody = z
 	.object({
 		name: z.string().trim().min(1).max(50, 'Name must be at most 50 characters').optional(),
 		slug: z.string().trim().min(1).max(50, 'Slug must be at most 50 characters').optional(),
-		description: z.string().optional()
+		description: z.string().optional(),
+		contentSection: z.enum(tagContentSectionEnum.enumValues).nullable().optional(),
+		showInNavigation: z.boolean().optional(),
+		displayOrder: z.coerce.number().int().min(0).optional().nullable()
 	})
 	.openapi('TagsUpdateBody');
 export type TagsUpdateBody = z.infer<typeof TagsUpdateBody>;
