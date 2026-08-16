@@ -26,7 +26,7 @@ describe('AuthService', () => {
   let users: Record<string, ReturnType<typeof vi.fn>>;
   let crypto: Record<string, ReturnType<typeof vi.fn>>;
   let mailer: { send: ReturnType<typeof vi.fn> };
-  let activityLogs: { log: ReturnType<typeof vi.fn> };
+  let audit: { log: ReturnType<typeof vi.fn> };
   let service: AuthService;
 
   beforeEach(() => {
@@ -57,13 +57,13 @@ describe('AuthService', () => {
       signJwt: vi.fn().mockResolvedValue('access-token'),
     };
     mailer = { send: vi.fn().mockResolvedValue(undefined) };
-    activityLogs = { log: vi.fn().mockResolvedValue(undefined) };
+    audit = { log: vi.fn().mockResolvedValue(undefined) };
     service = new AuthService(
       repository as never,
       users as never,
       crypto as never,
       mailer as never,
-      activityLogs as never,
+      audit as never,
     );
   });
 

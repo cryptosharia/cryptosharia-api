@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ActivityLogsModule } from '#src/modules/activity-logs/activity-logs.module';
+import { AuditModule } from '#src/modules/audit/audit.module';
 import { DrizzleModule } from '#src/modules/drizzle/drizzle.module';
 import { ImageProviderModule } from '#src/modules/image-provider/image-provider.module';
 import { SecurityModule } from '#src/modules/security/security.module';
@@ -13,7 +13,7 @@ import { AssetsService } from './assets.service';
     DrizzleModule,
     StorageModule,
     ImageProviderModule,
-    ActivityLogsModule,
+    AuditModule,
     SecurityModule,
   ],
   controllers: [AssetsController],

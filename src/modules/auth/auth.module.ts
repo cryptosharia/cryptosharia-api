@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ActivityLogsModule } from '#src/modules/activity-logs/activity-logs.module';
+import { AuditModule } from '#src/modules/audit/audit.module';
 import { CryptoModule } from '#src/modules/crypto/crypto.module';
 import { DrizzleModule } from '#src/modules/drizzle/drizzle.module';
 import { MailerModule } from '#src/modules/mailer/mailer.module';
@@ -13,7 +13,7 @@ import { AuthService } from './auth.service';
     DrizzleModule,
     CryptoModule,
     MailerModule,
-    ActivityLogsModule,
+    AuditModule,
     UsersModule,
   ],
   controllers: [AuthController],

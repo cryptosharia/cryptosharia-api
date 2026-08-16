@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Asset, ImgbbImage, User } from '#src/modules/drizzle/drizzle.types';
-import { ActivityLogsService } from '#src/modules/activity-logs/activity-logs.service';
+import { AuditService } from '#src/modules/audit/audit.service';
 import { ImageProviderError } from '#src/modules/image-provider/image-provider.error';
 import { ImageProviderService } from '#src/modules/image-provider/image-provider.service';
 import { StorageError } from '#src/modules/storage/storage.error';
@@ -33,7 +33,7 @@ class MockImageProviderService {
   upload = vi.fn();
 }
 
-class MockActivityLogsService {
+class MockAuditService {
   log = vi.fn();
 }
 
@@ -86,7 +86,7 @@ describe('AssetsService', () => {
   let assetsRepository: MockAssetsRepository;
   let storageService: MockStorageService;
   let imageProviderService: MockImageProviderService;
-  let activityLogsService: MockActivityLogsService;
+  let auditService: MockAuditService;
   let configService: { get: ReturnType<typeof vi.fn> };
   let assetsService: AssetsService;
 
@@ -100,13 +100,13 @@ describe('AssetsService', () => {
     assetsRepository = new MockAssetsRepository();
     storageService = new MockStorageService();
     imageProviderService = new MockImageProviderService();
-    activityLogsService = new MockActivityLogsService();
+    auditService = new MockAuditService();
     configService = { get: vi.fn().mockReturnValue('test') };
     assetsService = new AssetsService(
       assetsRepository as unknown as AssetsRepository,
       storageService as unknown as StorageService,
       imageProviderService as unknown as ImageProviderService,
-      activityLogsService as unknown as ActivityLogsService,
+      auditService as unknown as AuditService,
       configService as unknown as ConfigService,
     );
   });
@@ -140,12 +140,12 @@ describe('AssetsService', () => {
         provider: 'vercel_blob',
         createdBy: mockUser.id,
       });
-      expect(activityLogsService.log).toHaveBeenCalledWith({
+      expect(auditService.log).toHaveBeenCalledWith({
         userId: mockUser.id,
         action: 'asset.upload',
         subjectType: 'asset',
         subjectId: mockAsset.id,
-        description: 'Uploaded asset: file.txt',
+        description: 'Upload aset: file.txt',
       });
     });
 
@@ -229,12 +229,12 @@ describe('AssetsService', () => {
         deleteUrl: mockImgbbImage.deleteUrl,
         createdBy: mockUser.id,
       });
-      expect(activityLogsService.log).toHaveBeenCalledWith({
+      expect(auditService.log).toHaveBeenCalledWith({
         userId: mockUser.id,
         action: 'imgbb.upload',
         subjectType: 'imgbb_image',
         subjectId: mockImgbbImage.id,
-        description: 'Uploaded image: cover.png',
+        description: 'Upload gambar: cover.png',
       });
     });
 

@@ -1,14 +1,14 @@
 import { Logger } from '@nestjs/common';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ActivityLogsService } from './activity-logs.service';
+import { AuditService } from './audit.service';
 
-describe('ActivityLogsService', () => {
+describe('AuditService', () => {
   let repository: { insert: ReturnType<typeof vi.fn> };
-  let service: ActivityLogsService;
+  let service: AuditService;
 
   beforeEach(() => {
     repository = { insert: vi.fn() };
-    service = new ActivityLogsService(repository as never);
+    service = new AuditService(repository as never);
   });
 
   afterEach(() => {
@@ -24,7 +24,7 @@ describe('ActivityLogsService', () => {
       subjectId: '33918257-c532-4e5c-a0a8-b1173883cb80',
       description: 'Updated user profile',
       ipAddress: '127.0.0.1',
-    } satisfies Parameters<ActivityLogsService['log']>[0];
+    } satisfies Parameters<AuditService['log']>[0];
 
     await expect(service.log(input)).resolves.toBeUndefined();
     expect(repository.insert).toHaveBeenCalledWith(input);
@@ -40,7 +40,7 @@ describe('ActivityLogsService', () => {
       service.log({ action: 'user.update', subjectType: 'user' }),
     ).resolves.toBeUndefined();
     expect(loggerError).toHaveBeenCalledWith(
-      'Failed to log activity: user.update',
+      'Gagal mencatat aktivitas: user.update',
     );
     loggerError.mockRestore();
   });

@@ -4,7 +4,7 @@ import type { ActivityLog } from '#src/modules/drizzle/drizzle.types';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
 
 @Injectable()
-export class ActivityLogsRepository {
+export class AuditRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
 
   async insert(input: {

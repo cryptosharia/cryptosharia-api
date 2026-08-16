@@ -1,14 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { ActivityLog } from '#src/modules/drizzle/drizzle.types';
-import { ActivityLogsRepository } from './activity-logs.repository';
+import { AuditRepository } from './audit.repository';
 
 @Injectable()
-export class ActivityLogsService {
-  private readonly logger = new Logger(ActivityLogsService.name);
+export class AuditService {
+  private readonly logger = new Logger(AuditService.name);
 
-  constructor(
-    private readonly activityLogsRepository: ActivityLogsRepository,
-  ) {}
+  constructor(private readonly auditRepository: AuditRepository) {}
 
   async log(input: {
     userId?: ActivityLog['userId'];
@@ -19,10 +17,10 @@ export class ActivityLogsService {
     ipAddress?: ActivityLog['ipAddress'];
   }): Promise<void> {
     try {
-      await this.activityLogsRepository.insert(input);
+      await this.auditRepository.insert(input);
     } catch {
       // Audit persistence is best-effort and must not roll back the caller's successful action.
-      this.logger.error(`Failed to log activity: ${input.action}`);
+      this.logger.error(`Gagal mencatat aktivitas: ${input.action}`);
     }
   }
 }

@@ -13,10 +13,11 @@ import { ApiKeyGuard } from './modules/security/api-key.guard';
 import { ImageProviderModule } from './modules/image-provider/image-provider.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import { StorageModule } from './modules/storage/storage.module';
-import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { MarketDataModule } from './modules/market-data/market-data.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AssetsModule } from './modules/assets/assets.module';
+import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
   imports: [
@@ -29,10 +30,11 @@ import { AssetsModule } from './modules/assets/assets.module';
     MailerModule,
     StorageModule,
     ImageProviderModule,
-    ActivityLogsModule,
+    AuditModule,
     MarketDataModule,
     AuthModule,
     AssetsModule,
+    TagsModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },

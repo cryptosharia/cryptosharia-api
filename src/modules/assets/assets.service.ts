@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { User } from '#src/modules/drizzle/drizzle.types';
-import { ActivityLogsService } from '#src/modules/activity-logs/activity-logs.service';
+import { AuditService } from '#src/modules/audit/audit.service';
 import { ImageProviderError } from '#src/modules/image-provider/image-provider.error';
 import { ImageProviderService } from '#src/modules/image-provider/image-provider.service';
 import { StorageError } from '#src/modules/storage/storage.error';
@@ -33,7 +33,7 @@ export class AssetsService {
     private readonly assetsRepository: AssetsRepository,
     private readonly storageService: StorageService,
     private readonly imageProviderService: ImageProviderService,
-    private readonly activityLogsService: ActivityLogsService,
+    private readonly auditService: AuditService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -76,12 +76,12 @@ export class AssetsService {
         provider: 'vercel_blob',
         createdBy: userId,
       });
-      await this.activityLogsService.log({
+      await this.auditService.log({
         userId,
         action: 'asset.upload',
         subjectType: 'asset',
         subjectId: asset.id,
-        description: `Uploaded asset: ${asset.filename}`,
+        description: `Upload aset: ${asset.filename}`,
       });
 
       return asset;
@@ -118,12 +118,12 @@ export class AssetsService {
         deleteUrl: providerImage.deleteUrl,
         createdBy: userId,
       });
-      await this.activityLogsService.log({
+      await this.auditService.log({
         userId,
         action: 'imgbb.upload',
         subjectType: 'imgbb_image',
         subjectId: image.id,
-        description: `Uploaded image: ${image.fileName}`,
+        description: `Upload gambar: ${image.fileName}`,
       });
 
       return image;

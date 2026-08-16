@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ActivityLogsService } from '#src/modules/activity-logs/activity-logs.service';
+import { AuditService } from '#src/modules/audit/audit.service';
 import { CryptoService } from '#src/modules/crypto/crypto.service';
 import type { User } from '#src/modules/drizzle/drizzle.types';
 import { MailerService } from '#src/modules/mailer/mailer.service';
@@ -27,7 +27,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly cryptoService: CryptoService,
     private readonly mailerService: MailerService,
-    private readonly activityLogsService: ActivityLogsService,
+    private readonly auditService: AuditService,
   ) {}
 
   private createAccessToken(user: Pick<User, 'id' | 'role'>) {
@@ -100,18 +100,18 @@ export class AuthService {
 
     await this.mailerService.send({
       to: user.email,
-      subject: 'Verify your CryptoSharia Account',
+      subject: 'Verifikasi email CryptoSharia',
       html: createVerificationEmail({
         name: user.name,
         url: replaceTokenPlaceholder(input.redirectUrl, token),
       }),
     });
-    // ActivityLogsService absorbs storage failures, so audit logging cannot fail signup.
-    await this.activityLogsService.log({
+    // AuditService absorbs storage failures, so audit logging cannot fail signup.
+    await this.auditService.log({
       userId: user.id,
       action: 'auth.signup',
       subjectType: 'auth',
-      description: `New user registered: ${user.email}`,
+      description: `User baru terdaftar: ${user.email}`,
       ipAddress: input.ipAddress,
     });
     return user;
@@ -136,11 +136,11 @@ export class AuthService {
       );
       return token.userId;
     });
-    await this.activityLogsService.log({
+    await this.auditService.log({
       userId,
       action: 'auth.verify',
       subjectType: 'auth',
-      description: 'Email verification completed',
+      description: 'Email terverifikasi',
       ipAddress: input.ipAddress,
     });
   }
@@ -196,7 +196,7 @@ export class AuthService {
         tx,
       );
     });
-    await this.activityLogsService.log({
+    await this.auditService.log({
       userId: user.id,
       action: 'auth.signin',
       subjectType: 'auth',
@@ -237,11 +237,11 @@ export class AuthService {
       );
       return user;
     });
-    await this.activityLogsService.log({
+    await this.auditService.log({
       userId: user.id,
       action: 'auth.refresh',
       subjectType: 'auth',
-      description: 'Access and refresh tokens rotated',
+      description: 'Refresh token dirotasi',
       ipAddress: input.ipAddress,
     });
     return { accessToken: await this.createAccessToken(user), refreshToken };
@@ -253,11 +253,11 @@ export class AuthService {
       new Date(),
     );
     if (token)
-      await this.activityLogsService.log({
+      await this.auditService.log({
         userId: token.userId,
         action: 'auth.signout',
         subjectType: 'auth',
-        description: 'Refresh token revoked via signout',
+        description: 'Refresh token dicabut saat signout',
         ipAddress: input.ipAddress,
       });
   }
@@ -315,17 +315,17 @@ export class AuthService {
         tx,
       );
     });
-    await this.activityLogsService.log({
+    await this.auditService.log({
       userId: user.id,
       action: 'auth.password-reset.request',
       subjectType: 'auth',
-      description: 'Password reset requested',
+      description: 'Lupa password',
       ipAddress: input.ipAddress,
     });
     try {
       await this.mailerService.send({
         to: user.email,
-        subject: 'Reset your CryptoSharia password',
+        subject: 'Reset password CryptoSharia',
         html: createPasswordResetEmail({
           url: replaceTokenPlaceholder(input.redirectUrl, token),
         }),
@@ -365,11 +365,11 @@ export class AuthService {
       );
       return token.userId;
     });
-    await this.activityLogsService.log({
+    await this.auditService.log({
       userId,
       action: 'auth.password-reset.complete',
       subjectType: 'auth',
-      description: 'Password reset completed successfully',
+      description: 'Reset password berhasil',
       ipAddress: input.ipAddress,
     });
   }
