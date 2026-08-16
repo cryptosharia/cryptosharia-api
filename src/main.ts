@@ -4,6 +4,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import multipart from '@fastify/multipart';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { join } from 'node:path';
 
@@ -12,6 +13,10 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+  // Cap multipart buffering at the largest endpoint limit before request handlers run.
+  await app.register(multipart, {
+    limits: { files: 1, fileSize: 32 * 1024 * 1024 },
+  });
 
   app.use((req: FastifyRequest, _res: FastifyReply, next: () => void) => {
     console.log(`[${req.method}] ${req.url}`);

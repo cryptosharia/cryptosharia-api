@@ -16,6 +16,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
 import { MarketDataModule } from './modules/market-data/market-data.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { AssetsModule } from './modules/assets/assets.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AuthModule } from './modules/auth/auth.module';
     ActivityLogsModule,
     MarketDataModule,
     AuthModule,
+    AssetsModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },

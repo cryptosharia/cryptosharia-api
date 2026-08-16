@@ -5,6 +5,7 @@ import {
 import { usersRouteConfig } from '#src/modules/users/users.openapi';
 import { systemRouteConfig } from '#src/modules/system/system.openapi';
 import { authRouteConfig } from '#src/modules/auth/auth.openapi';
+import { assetsRouteConfig } from '#src/modules/assets/assets.openapi';
 
 export function generateOpenApiDocument() {
   const registry = new OpenAPIRegistry();
@@ -29,6 +30,7 @@ export function generateOpenApiDocument() {
     ...systemRouteConfig,
     ...authRouteConfig,
     ...usersRouteConfig,
+    ...assetsRouteConfig,
   ];
   for (const route of routes) registry.registerPath(route);
 

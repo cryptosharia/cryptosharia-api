@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { del, put } from '@vercel/blob';
+import { BlobNotFoundError, del, put } from '@vercel/blob';
 import { MAX_FILE_SIZE } from './storage.constants';
 import { StorageError } from './storage.error';
 
@@ -40,7 +40,10 @@ export class StorageAdapter {
   async delete(pathnameOrUrl: string): Promise<void> {
     try {
       await del(pathnameOrUrl, { token: this.apiKey });
-    } catch {
+    } catch (error) {
+      // A missing object is already in the desired cleanup state.
+      if (error instanceof BlobNotFoundError) return;
+
       throw new StorageError('DELETION_FAILED');
     }
   }

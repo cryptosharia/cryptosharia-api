@@ -4,6 +4,7 @@ import { OpenApiSuite } from './openapi.suite';
 import { SystemSuite } from './system.suite';
 import { Suite } from '#test/helpers/suite.base';
 import { AuthSuite } from './auth.suite';
+import { AssetsSuite } from './assets.suite';
 
 export class SuitesService {
   private readonly _suites: Suite[];
@@ -14,6 +15,7 @@ export class SuitesService {
       new OpenApiSuite(ctx),
       new AuthSuite(ctx),
       new UsersSuite(ctx),
+      new AssetsSuite(ctx),
     ];
   }
 

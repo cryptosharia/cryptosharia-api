@@ -252,8 +252,9 @@ Tanpa akses, `GET /lessons/:id` return `403 Forbidden`, error code `COURSE_ACCES
 - Tabel `assets` hanya menyimpan `pathname` + `provider`. Tidak ada kolom `url`.
 - Backend men-derive URL dari `(provider, pathname)` saat menyusun response, via satu helper (misal `AssetUrlResolver`).
   - `provider = 'vercel_blob'` → `https://<VERCEL_BLOB_BASE_URL>/<pathname>`.
-- Semua response resource menampilkan URL ter-derive, bukan id:
-  - `posts.coverImageUrl`, `cryptoassets.logoUrl`, `courses.coverImageUrl`, `users.avatarUrl`, `orders.proofImageUrl`.
+- Semua response resource menampilkan nested asset object, bukan foreign-key id:
+  - `posts.coverImage`, `cryptoassets.logo`, `courses.coverImage`, `users.avatar`, `orders.proofImage`.
+  - Object berisi `id`, URL ter-derive, dan metadata asset yang relevan.
 - Request (write) tetap menerima id: `coverImageId`, `logoId`, `avatarId`, `proofImageId`.
 - Resource yang tidak punya asset reference (null) → field URL diisi `null`.
 
@@ -322,7 +323,7 @@ Operasi berikut wajib dijalankan dalam DB transaction:
 | PUT    | `/users/:id/status` | admin           | Ubah `status`                                                                                         |
 | PUT    | `/users/:id/role`   | admin           | Ubah `role`                                                                                           |
 
-Response user (`GET /users`, `GET /users/:id`, `GET /auth/me`) menyertakan `avatarUrl` (URL ter-derive, lihat 4.8).
+Response user (`GET /users`, `GET /users/:id`, `GET /auth/me`) menyertakan `avatar` sebagai nested asset object (lihat 4.8).
 
 ### 5.3 Posts
 
@@ -334,7 +335,7 @@ Response user (`GET /users`, `GET /users/:id`, `GET /auth/me`) menyertakan `avat
 | PATCH  | `/posts/:id` | editor+ | Update post                                                                                            |
 | DELETE | `/posts/:id` | editor+ | Delete post                                                                                            |
 
-Response post menyertakan `coverImageUrl` (URL ter-derive, lihat 4.8). Request `POST`/`PATCH` menerima `coverImageId`.
+Response post menyertakan `coverImage` sebagai nested asset object (lihat 4.8). Request `POST`/`PATCH` menerima `coverImageId`.
 
 ### 5.4 Crypto Assets
 
@@ -346,7 +347,7 @@ Response post menyertakan `coverImageUrl` (URL ter-derive, lihat 4.8). Request `
 | PATCH  | `/cryptoassets/:id` | editor+ | Update crypto asset                                                                                          |
 | DELETE | `/cryptoassets/:id` | editor+ | Delete crypto asset                                                                                          |
 
-Response cryptoasset menyertakan `logoUrl` (URL ter-derive, lihat 4.8). Request `POST`/`PATCH` menerima `logoId`.
+Response cryptoasset menyertakan `logo` sebagai nested asset object (lihat 4.8). Request `POST`/`PATCH` menerima `logoId`.
 
 ### 5.5 Assets
 
@@ -371,7 +372,7 @@ Response cryptoasset menyertakan `logoUrl` (URL ter-derive, lihat 4.8). Request 
 | PATCH  | `/lessons/:id`               | editor+     |                                                                                                                              |
 | DELETE | `/lessons/:id`               | editor+     | Ditolak (`409`) jika course terkait sudah pernah punya `orders`/`enrollments`/`certificates`. Lihat 4.6                      |
 
-Response course menyertakan `coverImageUrl` (URL ter-derive, lihat 4.8). Request `POST`/`PATCH` menerima `coverImageId`.
+Response course menyertakan `coverImage` sebagai nested asset object (lihat 4.8). Request `POST`/`PATCH` menerima `coverImageId`.
 
 ### 5.7 Academy — Acquisition (Course & Subscription)
 

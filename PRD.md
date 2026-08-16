@@ -441,7 +441,13 @@ total-items: <number>
 - `/imgbb` accepts image files up to 32MB.
 - Upload requires `posts.manage` or `tokens.manage`.
 - Successful upload stores asset metadata in PostgreSQL.
-- Asset response includes normalized final URL and metadata.
+- Asset response includes the persisted asset metadata with its `id` for
+  reference from posts, tokens, and user avatar fields. It does not return a
+  derived public URL.
+- Resource write requests accept asset IDs (`avatarId`, `coverImageId`, or
+  `logoId`). Resource read responses expose referenced assets as nested objects
+  (`avatar`, `coverImage`, or `logo`) containing the asset ID, derived public
+  URL, and useful metadata; an unset reference returns `null`.
 - Missing file, empty file, invalid payload, or oversized file returns validation error.
 - Storage provider failure returns provider failure error.
 - Automated E2E tests fully mock both Vercel Blob and ImgBB integrations and must not perform real object storage network calls.

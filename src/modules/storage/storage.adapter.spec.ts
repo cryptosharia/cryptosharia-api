@@ -7,6 +7,7 @@ import { StorageError } from './storage.error';
 vi.mock('@vercel/blob', () => ({
   del: vi.fn(),
   put: vi.fn(),
+  BlobNotFoundError: class BlobNotFoundError extends Error {},
 }));
 
 describe('StorageAdapter', () => {
@@ -77,6 +78,14 @@ describe('StorageAdapter', () => {
     await expect(adapter.delete('file.txt')).rejects.toMatchObject({
       code: 'DELETION_FAILED',
     });
+  });
+
+  it('treats a missing blob as already deleted', async () => {
+    const { BlobNotFoundError } = await import('@vercel/blob');
+    vi.mocked(del).mockRejectedValue(new BlobNotFoundError());
+    const adapter = new StorageAdapter(config as never);
+
+    await expect(adapter.delete('missing.txt')).resolves.toBeUndefined();
   });
 
   it.each([

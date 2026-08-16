@@ -439,7 +439,7 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Refresh tokens
+     * Refresh token
      * @description Revokes the submitted refresh token and issues a replacement access and refresh token pair.
      */
     post: {
@@ -1698,6 +1698,306 @@ export interface paths {
       };
     };
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/assets': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Upload an asset
+     * @description Upload a file and persist its metadata.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'multipart/form-data': unknown;
+        };
+      };
+      responses: {
+        /** @description Asset uploaded */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** Format: uuid */
+              id: string;
+              /** @description Provider pathname of the stored object */
+              pathname: string;
+              /**
+               * @description Original or generated filename
+               * @example cover.png
+               */
+              filename: string;
+              /**
+               * @description Object size in bytes
+               * @example 1024
+               */
+              size: number;
+              /**
+               * @description MIME type of the stored object
+               * @example image/png
+               */
+              mimeType: string | null;
+              /** @description Image width in pixels */
+              width: number | null;
+              /** @description Image height in pixels */
+              height: number | null;
+              /**
+               * @description Storage provider that owns the object
+               * @example vercel_blob
+               * @enum {string}
+               */
+              provider: 'picsum' | 'vercel_blob';
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: uuid */
+              createdBy: string | null;
+            };
+          };
+        };
+        /** @description Validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /**
+               * @description Fields validation errors
+               * @example {
+               *       "<field1>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ],
+               *       "<field2>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ]
+               *     }
+               */
+              message: {
+                [key: string]: string[];
+              };
+            };
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Unauthorized';
+            };
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Forbidden';
+            };
+          };
+        };
+        /** @description Storage provider upload failed */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Storage provider upload failed';
+              /** @enum {string} */
+              error: 'STORAGE_UPLOAD_FAILED';
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/imgbb': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Upload an image through ImgBB
+     * @description Upload an image through ImgBB and persist its provider metadata.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'multipart/form-data': unknown;
+        };
+      };
+      responses: {
+        /** @description Image uploaded */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** Format: uuid */
+              id: string;
+              /** @description Unique ImgBB asset identifier */
+              imgbbId: string;
+              /**
+               * @description ImgBB asset title
+               * @example CryptoSharia cover
+               */
+              title: string;
+              /**
+               * Format: uri
+               * @description Direct URL of the ImgBB asset
+               */
+              url: string;
+              /** @description Image width in pixels */
+              width: number;
+              /** @description Image height in pixels */
+              height: number;
+              /** @description Object size in bytes */
+              size: number;
+              /**
+               * @description Uploaded filename
+               * @example cover.png
+               */
+              fileName: string;
+              /**
+               * @description Uploaded MIME type
+               * @example image/png
+               */
+              mimeType: string;
+              /**
+               * Format: uri
+               * @description Provider URL used to delete the asset
+               */
+              deleteUrl: string;
+              /** Format: date-time */
+              createdAt: string;
+              /** Format: uuid */
+              createdBy: string | null;
+            };
+          };
+        };
+        /** @description Validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /**
+               * @description Fields validation errors
+               * @example {
+               *       "<field1>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ],
+               *       "<field2>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ]
+               *     }
+               */
+              message: {
+                [key: string]: string[];
+              };
+            };
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Unauthorized';
+            };
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Forbidden';
+            };
+          };
+        };
+        /** @description Image provider upload failed */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Image provider upload failed';
+              /** @enum {string} */
+              error: 'IMAGE_UPLOAD_FAILED';
+            };
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;

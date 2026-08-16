@@ -3,15 +3,20 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import multipart from '@fastify/multipart';
 import createClient from 'openapi-fetch';
 import type { AddressInfo } from 'node:net';
 import { AppModule } from '#src/app.module';
 import { MailerService } from '#src/modules/mailer/mailer.service';
+import { StorageService } from '#src/modules/storage/storage.service';
+import { ImageProviderService } from '#src/modules/image-provider/image-provider.service';
 import type { paths } from '#test/schema';
 import type { Context } from './helpers/context.type';
 import { resetTestDatabase } from './helpers/reset-test-database';
 import { SuitesService } from './suites/index';
 import { TestMailerService } from './helpers/test-mailer.service';
+import { TestStorageService } from './helpers/test-storage.service';
+import { TestImageProviderService } from './helpers/test-image-provider.service';
 
 describe('App', () => {
   const ctx = {} as Context;
@@ -23,11 +28,20 @@ describe('App', () => {
       // Capture transactional emails for assertions without network delivery.
       .overrideProvider(MailerService)
       .useClass(TestMailerService)
+      // Fake object-storage and image providers so upload tests never hit the network.
+      .overrideProvider(StorageService)
+      .useClass(TestStorageService)
+      .overrideProvider(ImageProviderService)
+      .useClass(TestImageProviderService)
       .compile();
 
     ctx.app = moduleRef.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(),
     );
+    // Keep the E2E Fastify instance aligned with the production multipart boundary.
+    await ctx.app.register(multipart, {
+      limits: { files: 1, fileSize: 32 * 1024 * 1024 },
+    });
 
     await ctx.app.init();
     await ctx.app.listen(0);
@@ -48,6 +62,8 @@ describe('App', () => {
     await resetTestDatabase();
     const mailer = ctx.app.get<TestMailerService>(MailerService);
     mailer.clear();
+    ctx.app.get<TestStorageService>(StorageService).reset();
+    ctx.app.get<TestImageProviderService>(ImageProviderService).reset();
   });
 
   afterAll(async () => {
