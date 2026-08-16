@@ -12,9 +12,23 @@ export const UserParam = User.pick({ id: true });
 export type UserParam = z.infer<typeof UserParam>;
 
 export const UsersQuery = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
-  search: z.string().trim().max(255).optional(),
+  page: z.coerce
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .min(1, 'Minimal 1')
+    .default(1)
+    .meta({ description: 'Halaman' }),
+  limit: z.coerce
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .min(1, 'Minimal 1')
+    .max(100, 'Maksimal 100')
+    .default(20)
+    .meta({ description: 'Item per halaman' }),
+  search: z.string().trim().max(255, 'Maksimal 255 karakter').optional().meta({
+    description: 'Cari user berdasarkan nama atau email',
+    example: 'john',
+  }),
   roles: z
     .preprocess(
       (value) =>
@@ -23,7 +37,13 @@ export const UsersQuery = z.object({
           : Array.isArray(value)
             ? value
             : [value],
-      z.array(User.shape.role).optional(),
+      z
+        .array(User.shape.role)
+        .optional()
+        .meta({
+          description: 'Filter berdasarkan role user',
+          example: ['member'],
+        }),
     )
     .optional(),
   statuses: z
@@ -34,7 +54,13 @@ export const UsersQuery = z.object({
           : Array.isArray(value)
             ? value
             : [value],
-      z.array(User.shape.status).optional(),
+      z
+        .array(User.shape.status)
+        .optional()
+        .meta({
+          description: 'Filter berdasarkan status akun',
+          example: ['active'],
+        }),
     )
     .optional(),
 });
@@ -43,7 +69,7 @@ export type UsersQuery = z.infer<typeof UsersQuery>;
 export const ProfileUpdateBody = User.pick({ name: true, avatarId: true })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'At least one profile field is required',
+    message: 'Minimal satu field profil wajib diisi',
   });
 export type ProfileUpdateBody = z.infer<typeof ProfileUpdateBody>;
 

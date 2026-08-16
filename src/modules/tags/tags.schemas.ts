@@ -1,0 +1,97 @@
+import { z } from 'zod';
+import { AuditMetadata } from '#src/modules/audit/audit.schemas';
+import { Tag } from '#src/modules/drizzle/drizzle.types';
+
+export const TagIdentifier = z
+  .union([Tag.shape.id, Tag.shape.slug])
+  .meta({ description: 'ID atau slug tag', example: 'halal-crypto' });
+
+export const TagResponse = Tag.omit({
+  createdBy: true,
+  updatedBy: true,
+}).extend(AuditMetadata.shape);
+export type TagResponse = z.infer<typeof TagResponse>;
+
+export const TagParam = z.object({ identifier: TagIdentifier });
+export type TagParam = z.infer<typeof TagParam>;
+
+export const TagIdParam = z.object({
+  id: Tag.shape.id.meta({ description: 'ID tag' }),
+});
+export type TagIdParam = z.infer<typeof TagIdParam>;
+
+export const TagsQuery = z.object({
+  page: z.coerce
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .min(1, 'Minimal 1')
+    .default(1)
+    .meta({
+      description: 'Halaman',
+    }),
+  limit: z.coerce
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .min(1, 'Minimal 1')
+    .max(100, 'Maksimal 100')
+    .default(20)
+    .meta({
+      description: 'Item per halaman',
+    }),
+  search: z.string().trim().max(255, 'Maksimal 255 karakter').optional().meta({
+    description:
+      'Cari berdasarkan nama, slug, atau deskripsi tag (case-insensitive)',
+    example: 'halal',
+  }),
+  slugs: z.preprocess(
+    (value) =>
+      value === undefined ? undefined : Array.isArray(value) ? value : [value],
+    z
+      .array(Tag.shape.slug)
+      .optional()
+      .meta({
+        description: 'Filter berdasarkan slug tag',
+        example: ['halal-crypto'],
+      }),
+  ),
+});
+export type TagsQuery = z.infer<typeof TagsQuery>;
+
+export const TagCreateBody = Tag.pick({ name: true }).extend({
+  slug: Tag.shape.slug,
+  description: Tag.shape.description.optional(),
+});
+export type TagCreateBody = z.infer<typeof TagCreateBody>;
+
+export const TagUpdateBody = TagCreateBody.partial().refine(
+  (value) => Object.keys(value).length > 0,
+  'Minimal satu field tag wajib diisi',
+);
+export type TagUpdateBody = z.infer<typeof TagUpdateBody>;
+
+export const TagDeleteQuery = z.object({
+  force: z.preprocess(
+    (value) => (value === 'true' ? true : value === 'false' ? false : value),
+    z.boolean().default(false).meta({
+      description: 'Hapus tag meskipun masih digunakan',
+    }),
+  ),
+});
+export type TagDeleteQuery = z.infer<typeof TagDeleteQuery>;
+
+export const TagInUseDetails = {
+  usage: z
+    .object({
+      posts: z
+        .number()
+        .int('Harus berupa bilangan bulat')
+        .nonnegative('Harus berupa angka non-negatif')
+        .meta({ description: 'Jumlah post yang memakai tag' }),
+      tokens: z
+        .number()
+        .int('Harus berupa bilangan bulat')
+        .nonnegative('Harus berupa angka non-negatif')
+        .meta({ description: 'Jumlah token yang memakai tag' }),
+    })
+    .meta({ description: 'Referensi yang menghalangi penghapusan' }),
+};

@@ -37,16 +37,16 @@ export const authRouteConfig: RouteConfig[] = [
   {
     method: 'post',
     path: '/auth/signup',
-    summary: 'Sign up',
+    summary: 'Signup',
     description:
-      'Creates an unverified user account and sends a verification email to the supplied redirect URL.',
+      'Membuat akun baru (belum terverifikasi) dan kirim email verifikasi ke redirectUrl.',
     security: apiKeySecurity,
     request: {
       body: { content: { 'application/json': { schema: SignupBody } } },
     },
     responses: createResponsesConfig({
       201: {
-        description: 'User registered & verification email sent',
+        description: 'Akun dibuat & email verifikasi terkirim',
         body: UserResponse,
       },
       400: validationError,
@@ -60,15 +60,14 @@ export const authRouteConfig: RouteConfig[] = [
   {
     method: 'post',
     path: '/auth/verify',
-    summary: 'Verify email',
-    description:
-      'Consumes a one-time verification token and marks the associated email address as verified.',
+    summary: 'Verifikasi email',
+    description: 'Verifikasi email pakai token sekali pakai.',
     security: apiKeySecurity,
     request: {
       body: { content: { 'application/json': { schema: VerifyBody } } },
     },
     responses: createResponsesConfig({
-      204: { description: 'Email verified' },
+      204: { description: 'Email terverifikasi' },
       400: validationError,
       401: authErrors[401],
       404: {
@@ -80,15 +79,15 @@ export const authRouteConfig: RouteConfig[] = [
   {
     method: 'post',
     path: '/auth/signin',
-    summary: 'Sign in',
+    summary: 'Signin',
     description:
-      'Authenticates an active verified user account and issues an access and refresh token pair.',
+      'Autentikasi dengan email & password, lalu dapat access token dan refresh token.',
     security: apiKeySecurity,
     request: {
       body: { content: { 'application/json': { schema: SigninBody } } },
     },
     responses: createResponsesConfig({
-      200: { description: 'Signed in', body: SessionResponse },
+      200: { description: 'Signin berhasil', body: SessionResponse },
       400: validationError,
       401: {
         description: AUTH_ERRORS.INVALID_CREDENTIALS,
@@ -105,13 +104,13 @@ export const authRouteConfig: RouteConfig[] = [
     path: '/auth/refresh',
     summary: 'Refresh token',
     description:
-      'Revokes the submitted refresh token and issues a replacement access and refresh token pair.',
+      'Cabut refresh token lama dan terbitkan access token + refresh token baru.',
     security: apiKeySecurity,
     request: {
       body: { content: { 'application/json': { schema: RefreshBody } } },
     },
     responses: createResponsesConfig({
-      200: { description: 'Tokens refreshed', body: SessionResponse },
+      200: { description: 'Refresh token berhasil', body: SessionResponse },
       400: validationError,
       401: {
         description: AUTH_ERRORS.REFRESH_TOKEN_INVALID,
@@ -126,15 +125,14 @@ export const authRouteConfig: RouteConfig[] = [
   {
     method: 'post',
     path: '/auth/signout',
-    summary: 'Sign out',
-    description:
-      'Revokes the submitted refresh token. Repeating the request remains successful.',
+    summary: 'Signout',
+    description: 'Cabut refresh token. Request yang diulang tetap sukses.',
     security: apiKeySecurity,
     request: {
       body: { content: { 'application/json': { schema: SignoutBody } } },
     },
     responses: createResponsesConfig({
-      204: { description: 'Signed out' },
+      204: { description: 'Signout berhasil' },
       400: validationError,
       401: authErrors[401],
     }),
@@ -142,26 +140,26 @@ export const authRouteConfig: RouteConfig[] = [
   {
     method: 'get',
     path: '/auth/me',
-    summary: 'Get current user',
-    description: 'Returns the user profile for the bearer-authenticated user.',
+    summary: 'User saat ini',
+    description: 'Mengembalikan profil user yang sedang login.',
     security: fullSecurity,
     responses: createResponsesConfig({
-      200: { description: 'Current user', body: UserResponse },
+      200: { description: 'User saat ini', body: UserResponse },
       ...authErrors,
     }),
   },
   {
     method: 'post',
     path: '/auth/password/forgot',
-    summary: 'Request password reset',
+    summary: 'Lupa password',
     description:
-      'Sends a password reset email when the account exists while always returning the same response.',
+      'Kirim email reset password jika akun ada, tapi responsnya selalu sama.',
     security: apiKeySecurity,
     request: {
       body: { content: { 'application/json': { schema: ForgotPasswordBody } } },
     },
     responses: createResponsesConfig({
-      204: { description: 'Password reset email sent' },
+      204: { description: 'Email reset password terkirim' },
       400: validationError,
       401: authErrors[401],
     }),
@@ -171,13 +169,13 @@ export const authRouteConfig: RouteConfig[] = [
     path: '/auth/password/reset',
     summary: 'Reset password',
     description:
-      'Consumes a one-time password reset token, updates the password, and revokes active refresh sessions.',
+      'Pakai token reset sekali pakai untuk ganti password dan cabut sesi refresh aktif.',
     security: apiKeySecurity,
     request: {
       body: { content: { 'application/json': { schema: ResetPasswordBody } } },
     },
     responses: createResponsesConfig({
-      204: { description: 'Password reset' },
+      204: { description: 'Password berhasil direset' },
       400: validationError,
       401: authErrors[401],
       404: {

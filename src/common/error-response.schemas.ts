@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 export const APP_ERRORS = {
-  UNAUTHORIZED: 'Unauthorized',
-  FORBIDDEN: 'Forbidden',
-  NOT_FOUND: 'Not found',
-  INTERNAL_SERVER_ERROR: 'Internal server error',
-  VALIDATION_FAILED: 'Validation failed',
-  TOO_MANY_REQUESTS: 'Too many requests',
-  SERVICE_UNAVAILABLE: 'Service unavailable',
+  UNAUTHORIZED: 'Tidak terautentikasi',
+  FORBIDDEN: 'Akses ditolak',
+  NOT_FOUND: 'Tidak ditemukan',
+  INTERNAL_SERVER_ERROR: 'Terjadi kesalahan pada server',
+  VALIDATION_FAILED: 'Validasi gagal',
+  TOO_MANY_REQUESTS: 'Terlalu banyak permintaan',
+  SERVICE_UNAVAILABLE: 'Layanan tidak tersedia',
 } as const;
 
 export const UnauthorizedResponse = z.object({
@@ -52,8 +52,9 @@ export type ServiceUnavailableResponse = z.infer<
 
 export const ValidationFailedResponse = z.object({
   error: z.literal('VALIDATION_FAILED'),
-  message: z.record(z.string(), z.array(z.string())).meta({
-    description: 'Fields validation errors',
+  message: z.literal(APP_ERRORS.VALIDATION_FAILED),
+  details: z.record(z.string(), z.array(z.string())).meta({
+    description: 'Kesalahan validasi per field',
     example: {
       '<field1>': ['<error1>', '<error2>'],
       '<field2>': ['<error1>', '<error2>'],

@@ -1,6 +1,6 @@
 export const ASSETS_ERRORS = {
-  STORAGE_UPLOAD_FAILED: 'Storage provider upload failed',
-  IMAGE_UPLOAD_FAILED: 'Image provider upload failed',
+  STORAGE_UPLOAD_FAILED: 'Upload file gagal',
+  IMAGE_UPLOAD_FAILED: 'Upload gambar gagal',
 } as const;
 
 export type AssetsErrorCode = keyof typeof ASSETS_ERRORS;

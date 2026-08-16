@@ -177,7 +177,7 @@ export class AuthSuite extends Suite {
           });
           expect(known.response.status).toBe(204);
           expect(mailer().messages.at(-1)?.subject).toBe(
-            'Reset your CryptoSharia password',
+            'Reset password CryptoSharia',
           );
         });
       });

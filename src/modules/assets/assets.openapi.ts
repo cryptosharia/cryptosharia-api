@@ -16,7 +16,7 @@ const protectedSecurity: { [key: string]: string[] }[] = [
 ];
 const multipartBody = z.any().meta({
   description:
-    "Multipart form-data payload. Must include a file part named 'file'.",
+    'Payload multipart/form-data. Wajib ada field file bernama `file`.',
 });
 const authErrors = {
   401: { description: APP_ERRORS.UNAUTHORIZED, body: UnauthorizedResponse },
@@ -27,14 +27,14 @@ export const assetsRouteConfig: RouteConfig[] = [
   {
     method: 'post',
     path: '/assets',
-    summary: 'Upload an asset',
-    description: 'Upload a file and persist its metadata.',
+    summary: 'Upload file, dapatkan id',
+    description: 'Upload file dan dapatkan id-nya.',
     security: protectedSecurity,
     request: {
       body: { content: { 'multipart/form-data': { schema: multipartBody } } },
     },
     responses: createResponsesConfig({
-      201: { description: 'Asset uploaded', body: AssetResponse },
+      201: { description: 'Upload berhasil', body: AssetResponse },
       400: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
@@ -49,15 +49,14 @@ export const assetsRouteConfig: RouteConfig[] = [
   {
     method: 'post',
     path: '/imgbb',
-    summary: 'Upload an image through ImgBB',
-    description:
-      'Upload an image through ImgBB and persist its provider metadata.',
+    summary: 'Upload gambar, dapatkan url',
+    description: 'Upload gambar dan dapatkan url-nya.',
     security: protectedSecurity,
     request: {
       body: { content: { 'multipart/form-data': { schema: multipartBody } } },
     },
     responses: createResponsesConfig({
-      201: { description: 'Image uploaded', body: ImgbbImageResponse },
+      201: { description: 'Upload berhasil', body: ImgbbImageResponse },
       400: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,

@@ -1,5 +1,5 @@
 export const MAILER_ERRORS = {
-  MAILER_PROVIDER_FAILURE: 'Email provider failed',
+  MAILER_PROVIDER_FAILURE: 'Gagal mengirim email',
 } as const;
 
 export type MailerErrorCode = keyof typeof MAILER_ERRORS;

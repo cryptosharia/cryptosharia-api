@@ -113,7 +113,8 @@ export class AssetsSuite extends Suite {
           expect(response.status).toBe(400);
           expect(error?.error).toBe('VALIDATION_FAILED');
           expect(
-            (error?.message as { [key: string]: string[] } | undefined)?.file,
+            (error as { details?: Record<string, string[]> } | undefined)
+              ?.details?.file,
           ).toBeDefined();
         });
 

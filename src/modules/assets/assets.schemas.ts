@@ -2,11 +2,11 @@ import { z } from 'zod';
 import { Asset, ImgbbImage } from '#src/modules/drizzle/drizzle.types';
 
 const UploadFileSchema = z.object({
-  filename: z.string().min(1),
+  filename: z.string().min(1, 'Tidak boleh kosong'),
   contentType: z.string(),
-  size: z.number().positive('File is required'),
+  size: z.number().positive('File wajib diisi'),
   buffer: z.instanceof(Buffer),
-  truncated: z.literal(false, { error: 'File is too large' }),
+  truncated: z.literal(false, { error: 'File terlalu besar' }),
 });
 export type UploadFile = z.infer<typeof UploadFileSchema>;
 
@@ -16,7 +16,7 @@ export type AssetUpload = z.infer<typeof AssetUpload>;
 export const ImgbbUpload = z.object({
   file: UploadFileSchema.refine(
     (file) => file.contentType.startsWith('image/'),
-    'Only image files are allowed',
+    'Hanya file gambar yang diperbolehkan',
   ),
 });
 export type ImgbbUpload = z.infer<typeof ImgbbUpload>;
@@ -29,16 +29,34 @@ export type ImgbbImageResponse = z.infer<typeof ImgbbImageResponse>;
 
 export const AssetCleanupOptions = z.object({
   dryRun: z.boolean().default(true),
-  limit: z.number().int().positive().max(1000).default(100),
-  maxAgeDays: z.number().int().positive().default(7),
+  limit: z
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .positive('Harus berupa angka positif')
+    .max(1000, 'Maksimal 1000')
+    .default(100),
+  maxAgeDays: z
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .positive('Harus berupa angka positif')
+    .default(7),
 });
 export type AssetCleanupOptions = z.infer<typeof AssetCleanupOptions>;
 
 export const AssetCleanupResult = z.object({
   dryRun: z.boolean(),
-  candidates: z.number().int().nonnegative(),
-  deleted: z.number().int().nonnegative(),
-  failed: z.number().int().nonnegative(),
+  candidates: z
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .nonnegative('Harus berupa angka non-negatif'),
+  deleted: z
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .nonnegative('Harus berupa angka non-negatif'),
+  failed: z
+    .number()
+    .int('Harus berupa bilangan bulat')
+    .nonnegative('Harus berupa angka non-negatif'),
   failures: z.array(
     z.object({
       assetId: z.uuid(),

@@ -5,7 +5,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { z, ZodError } from 'zod';
-import { ValidationFailedResponse } from './common/error-response.schemas';
+import {
+  APP_ERRORS,
+  ValidationFailedResponse,
+} from './common/error-response.schemas';
 import { FastifyReply } from 'fastify';
 
 @Catch(ZodError)
@@ -16,7 +19,8 @@ export class ZodExceptionFilter implements ExceptionFilter {
 
     return res.status(HttpStatus.BAD_REQUEST).send({
       error: 'VALIDATION_FAILED',
-      message: z.flattenError(exception).fieldErrors,
+      message: APP_ERRORS.VALIDATION_FAILED,
+      details: z.flattenError(exception).fieldErrors,
     } satisfies ValidationFailedResponse);
   }
 }

@@ -1,7 +1,7 @@
 export const USERS_ERRORS = {
-  USER_NOT_FOUND: 'User not found',
-  EMAIL_UNIQUE_VIOLATION: 'Email must be unique',
-  USER_UPDATE_EMPTY: 'At least one field is required',
+  USER_NOT_FOUND: 'User tidak ditemukan',
+  EMAIL_UNIQUE_VIOLATION: 'Email harus unik',
+  USER_UPDATE_EMPTY: 'Minimal satu field wajib diisi',
 } as const;
 
 export type UsersErrorCode = keyof typeof USERS_ERRORS;

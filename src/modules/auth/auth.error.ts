@@ -1,10 +1,11 @@
 export const AUTH_ERRORS = {
-  EMAIL_ALREADY_REGISTERED: 'Email already registered',
-  INVALID_CREDENTIALS: 'Invalid email or password',
-  USER_INACTIVE: 'Your account is not active. Please contact support.',
-  VERIFICATION_TOKEN_INVALID: 'Invalid or expired verification token',
-  PASSWORD_RESET_TOKEN_INVALID: 'Invalid or expired password reset token',
-  REFRESH_TOKEN_INVALID: 'Invalid or expired refresh token',
+  EMAIL_ALREADY_REGISTERED: 'Email sudah terdaftar',
+  INVALID_CREDENTIALS: 'Email atau password salah',
+  USER_INACTIVE: 'Akun tidak aktif. Hubungi support.',
+  VERIFICATION_TOKEN_INVALID: 'Token verifikasi tidak valid atau kedaluwarsa',
+  PASSWORD_RESET_TOKEN_INVALID:
+    'Token reset password tidak valid atau kedaluwarsa',
+  REFRESH_TOKEN_INVALID: 'Refresh token tidak valid atau kedaluwarsa',
 } as const;
 
 export type AuthErrorCode = keyof typeof AUTH_ERRORS;

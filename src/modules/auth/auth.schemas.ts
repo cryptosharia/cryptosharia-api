@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { User } from '#src/modules/drizzle/drizzle.types';
 
-const Password = z.string().min(12).meta({
-  description: 'Password with at least 12 characters.',
+const Password = z.string().min(12, 'Password minimal 12 karakter').meta({
+  description: 'Minimal 12 karakter.',
   example: 'secure-password',
 });
-const OpaqueToken = z.string().min(1).meta({
-  description: 'Opaque single-use token.',
+const OpaqueToken = z.string().min(1, 'Token tidak boleh kosong').meta({
+  description: 'Token opaque sekali pakai.',
   example: 'opaque-token',
 });
 const RedirectUrl = z
@@ -21,10 +21,10 @@ const RedirectUrl = z
         return false;
       }
     },
-    { message: 'Redirect URL must contain exactly one {token} placeholder' },
+    { message: 'URL redirect harus berisi tepat satu placeholder {token}' },
   )
   .meta({
-    description: 'Redirect URL containing exactly one `{token}` placeholder.',
+    description: 'URL redirect berisi satu placeholder `{token}`.',
     example: 'https://app.cryptosharia.id/verify/{token}',
   });
 
@@ -63,11 +63,11 @@ export type ResetPasswordBody = z.infer<typeof ResetPasswordBody>;
 
 export const SessionResponse = z.object({
   accessToken: z.string().meta({
-    description: 'Short-lived JWT access token.',
+    description: 'Access token JWT (short-lived).',
     example: 'eyJhbGciOiJIUzI1NiIs...',
   }),
   refreshToken: z.string().meta({
-    description: 'Opaque refresh token used to rotate the session.',
+    description: 'Refresh token opaque untuk rotasi sesi.',
     example: 'opaque-refresh-token',
   }),
 });
