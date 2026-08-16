@@ -360,8 +360,8 @@ total-items: <number>
 | GET    | `/posts`      | List posts                  |
 | POST   | `/posts`      | Create post                 |
 | GET    | `/posts/{id}` | Get post by UUID or slug    |
-| PATCH  | `/posts/{id}` | Update post by UUID or slug |
-| DELETE | `/posts/{id}` | Delete post by UUID or slug |
+| PATCH  | `/posts/{id}` | Update post by UUID         |
+| DELETE | `/posts/{id}` | Delete post by UUID         |
 
 - Post list supports filters for statuses, sections, types, slugs, exclude, tags, search, page, and limit.
 - Requests without a bearer user default to published posts only.
@@ -381,8 +381,8 @@ total-items: <number>
 | GET    | `/tokens`        | List crypto tokens                                 |
 | POST   | `/tokens`        | Create token                                       |
 | GET    | `/tokens/{id}`   | Get token by UUID or slug                          |
-| PATCH  | `/tokens/{id}`   | Update token by UUID or slug                       |
-| DELETE | `/tokens/{id}`   | Delete token by UUID or slug                       |
+| PATCH  | `/tokens/{id}`   | Update token by UUID                               |
+| DELETE | `/tokens/{id}`   | Delete token by UUID                               |
 | GET    | `/tokens/quotes` | Return quote/market data for requested token slugs |
 
 - Token list supports filters for statuses, sharia statuses, slugs, exclude, tags, search, page, and limit.
@@ -403,15 +403,18 @@ total-items: <number>
 | ------ | ------------ | -------------------------- |
 | GET    | `/tags`      | List tags                  |
 | POST   | `/tags`      | Create tag                 |
-| GET    | `/tags/{id}` | Get tag by UUID or slug    |
-| PATCH  | `/tags/{id}` | Update tag by UUID or slug |
-| DELETE | `/tags/{id}` | Delete tag by UUID or slug |
+| GET    | `/tags/{identifier}` | Get tag by UUID or slug    |
+| PATCH  | `/tags/{id}` | Update tag by UUID         |
+| DELETE | `/tags/{id}` | Delete tag by UUID         |
 
 - Tag list supports search, slug filter, page, and limit.
+- `slugs` accepts one or more repeated query values, consistent with user role/status filters.
+- Tag `slug` is provided by the client, must be a lowercase hyphenated identifier, and is not generated from `name`.
+- Tag detail accepts either UUID or slug through `{identifier}`; update and delete use the tag UUID.
 - Create/update/delete require `tags.manage`.
-- Duplicate name or slug returns conflict.
-- Delete without force returns conflict when tag is still used by posts or tokens.
-- Delete conflict response includes usage counts for posts and tokens.
+- Duplicate name or slug returns `409 NAME_OR_SLUG_CONFLICT`.
+- Delete without force returns conflict when tag is still used.
+- Delete conflict is `409 TAG_IN_USE` and includes `{ details: { usage: { posts, tokens } } }`.
 - Delete supports `force=true`.
 
 ## 14. Messages Requirements
