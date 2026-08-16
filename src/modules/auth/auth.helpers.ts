@@ -2,21 +2,7 @@ import {
   PASSWORD_RESET_TOKEN_EXPIRES_IN_MINUTES,
   VERIFICATION_TOKEN_EXPIRES_IN_HOURS,
 } from './auth.constants';
-
-// Email templates interpolate user data into HTML, so encode text and attribute values first.
-function escapeHtml(value: string) {
-  return value.replace(
-    /[&<>'"]/g,
-    (character) =>
-      ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        "'": '&#39;',
-        '"': '&quot;',
-      })[character]!,
-  );
-}
+import { escapeHtml } from '#src/common/escape-html';
 
 /** Replaces the redirect template token after encoding it for use in an URL. */
 export function replaceTokenPlaceholder(url: string, token: string) {

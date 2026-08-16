@@ -6,6 +6,7 @@ import { Suite } from '#test/helpers/suite.base';
 import { AuthSuite } from './auth.suite';
 import { AssetsSuite } from './assets.suite';
 import { TagsSuite } from './tags.suite';
+import { MessagesSuite } from './messages.suite';
 
 export class SuitesService {
   private readonly _suites: Suite[];
@@ -17,6 +18,7 @@ export class SuitesService {
       new AuthSuite(ctx),
       new UsersSuite(ctx),
       new TagsSuite(ctx),
+      new MessagesSuite(ctx),
       new AssetsSuite(ctx),
     ];
   }

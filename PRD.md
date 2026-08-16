@@ -71,7 +71,7 @@ contract/module yang sesuai.
 - `RateLimitModule` — production-only rate limiting menggunakan Upstash Redis.
   Rate limiting disabled sepenuhnya pada development/testing; generic Redis
   client tidak diekspos ke feature modules dan refresh token tetap di PostgreSQL.
-- `ActivityLogsModule` — audit log internal yang dipakai lintas feature module.
+- `AuditModule` — audit log internal yang dipakai lintas feature module.
 
 #### Cross-Cutting Modules
 
@@ -87,9 +87,9 @@ contract/module yang sesuai.
 AuthModule -> UsersModule
 AuthModule -> CryptoModule
 AuthModule -> MailerModule
-AuthModule -> ActivityLogsModule
+AuthModule -> AuditModule
 
-ActivityLogsModule -> DrizzleModule
+AuditModule -> DrizzleModule
 RateLimitModule -> Upstash Redis adapter (production only)
 
 SecurityModule -> CryptoModule
@@ -101,18 +101,18 @@ AssetsModule -> DrizzleModule
 
 PostsModule -> AssetsModule
 PostsModule -> TagsModule
-PostsModule -> ActivityLogsModule
+PostsModule -> AuditModule
 TokensModule -> AssetsModule
 TokensModule -> TagsModule
 TokensModule -> MarketDataModule
-TokensModule -> ActivityLogsModule
+TokensModule -> AuditModule
 
 Feature modules -> SecurityModule
 Feature modules -> DrizzleModule
 Application modules -> infrastructure/provider modules
 Infrastructure/provider modules -X-> feature modules
 
-ActivityLogsModule -X-> AuthModule
+AuditModule -X-> AuthModule
 SecurityModule -X-> feature modules
 ```
 
@@ -126,7 +126,7 @@ network calls.
 
 - `users` belongs to `UsersModule`.
 - `auth_tokens` and `refresh_tokens` are Auth persistence owned by `AuthModule`.
-- `activity_logs` is internal persistence owned by `ActivityLogsModule`.
+- `activity_logs` is internal persistence owned by `AuditModule`.
 - `assets` and `imgbb_images` are asset/provider persistence owned by
   `AssetsModule`.
 - `posts` belongs to `PostsModule`.
@@ -149,7 +149,7 @@ menjadi dependency business logic.
 2. `UsersModule`
 3. `CryptoModule`
 4. `MailerModule`
-5. `ActivityLogsModule`
+5. `AuditModule`
 6. `MarketDataModule`
 7. `AuthModule`
 8. `StorageModule`

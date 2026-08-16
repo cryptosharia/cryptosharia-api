@@ -7,6 +7,7 @@ import { systemRouteConfig } from '#src/modules/system/system.openapi';
 import { authRouteConfig } from '#src/modules/auth/auth.openapi';
 import { assetsRouteConfig } from '#src/modules/assets/assets.openapi';
 import { tagsRouteConfig } from '#src/modules/tags/tags.openapi';
+import { messagesRouteConfig } from '#src/modules/messages/messages.openapi';
 
 export function generateOpenApiDocument() {
   const registry = new OpenAPIRegistry();
@@ -32,6 +33,7 @@ export function generateOpenApiDocument() {
     ...authRouteConfig,
     ...usersRouteConfig,
     ...tagsRouteConfig,
+    ...messagesRouteConfig,
     ...assetsRouteConfig,
   ];
   for (const route of routes) registry.registerPath(route);

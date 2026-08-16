@@ -18,6 +18,7 @@ import { MarketDataModule } from './modules/market-data/market-data.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AssetsModule } from './modules/assets/assets.module';
 import { TagsModule } from './modules/tags/tags.module';
+import { MessagesModule } from './modules/messages/messages.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { TagsModule } from './modules/tags/tags.module';
     AuthModule,
     AssetsModule,
     TagsModule,
+    MessagesModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },

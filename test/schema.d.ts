@@ -1012,9 +1012,13 @@ export interface paths {
     get: {
       parameters: {
         query?: {
+          /** @description Halaman */
           page?: number;
+          /** @description Item per halaman */
           limit?: number;
+          /** @description Cari user berdasarkan nama atau email */
           search?: string;
+          /** @description Filter berdasarkan role user */
           roles?: (
             | 'super_admin'
             | 'admin'
@@ -1022,6 +1026,7 @@ export interface paths {
             | 'tokens_manager'
             | 'member'
           )[];
+          /** @description Filter berdasarkan status akun */
           statuses?: ('active' | 'inactive' | 'suspended' | 'banned')[];
         };
         header?: never;
@@ -2674,6 +2679,384 @@ export interface paths {
     };
     trace?: never;
   };
+  '/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List pesan
+     * @description Menampilkan pesan dengan search, filter pengirim, dan pagination.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Halaman */
+          page?: number;
+          /** @description Item per halaman */
+          limit?: number;
+          /** @description Cari berdasarkan nama, email, atau isi pesan */
+          search?: string;
+          /** @description Filter berdasarkan email pengirim */
+          senders?: string[];
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Pesan berhasil ditampilkan */
+        200: {
+          headers: {
+            'total-items': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID pesan
+               */
+              id: string;
+              /**
+               * @description Nama pengirim
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email pengirim
+               * @example john@example.com
+               */
+              email: string;
+              /** @description Isi pesan */
+              message: string;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+            }[];
+          };
+        };
+        /** @description Validasi gagal */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              /**
+               * @description Kesalahan validasi per field
+               * @example {
+               *       "<field1>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ],
+               *       "<field2>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ]
+               *     }
+               */
+              details: {
+                [key: string]: string[];
+              };
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * Kirim pesan
+     * @description Menyimpan pesan contact form dan mengirim notifikasi email.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Nama pengirim
+             * @example John Doe
+             */
+            name: string;
+            /**
+             * Format: email
+             * @description Email pengirim
+             * @example john@example.com
+             */
+            email: string;
+            /** @description Isi pesan */
+            message: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Pesan terkirim */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID pesan
+               */
+              id: string;
+              /**
+               * @description Nama pengirim
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email pengirim
+               * @example john@example.com
+               */
+              email: string;
+              /** @description Isi pesan */
+              message: string;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              /**
+               * @description Kesalahan validasi per field
+               * @example {
+               *       "<field1>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ],
+               *       "<field2>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ]
+               *     }
+               */
+              details: {
+                [key: string]: string[];
+              };
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/messages/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Detail pesan
+     * @description Menampilkan detail pesan berdasarkan ID.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID pesan */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Pesan ditemukan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID pesan
+               */
+              id: string;
+              /**
+               * @description Nama pengirim
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email pengirim
+               * @example john@example.com
+               */
+              email: string;
+              /** @description Isi pesan */
+              message: string;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              /**
+               * @description Kesalahan validasi per field
+               * @example {
+               *       "<field1>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ],
+               *       "<field2>": [
+               *         "<error1>",
+               *         "<error2>"
+               *       ]
+               *     }
+               */
+              details: {
+                [key: string]: string[];
+              };
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Pesan tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Pesan tidak ditemukan';
+              /** @enum {string} */
+              error: 'MESSAGE_NOT_FOUND';
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/assets': {
     parameters: {
       query?: never;
@@ -2684,8 +3067,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Upload aset
-     * @description Upload file dan simpan metadatanya.
+     * Upload file, dapatkan id
+     * @description Upload file dan dapatkan id-nya.
      */
     post: {
       parameters: {
@@ -2842,8 +3225,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Upload gambar via ImgBB
-     * @description Upload gambar via ImgBB dan simpan metadatanya.
+     * Upload gambar, dapatkan url
+     * @description Upload gambar dan dapatkan url-nya.
      */
     post: {
       parameters: {
