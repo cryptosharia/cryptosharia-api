@@ -5,7 +5,7 @@ import {
   CurrentUser,
   type CurrentUser as CurrentUserType,
 } from '#src/modules/security/current-user.decorator';
-import { BearerAuthGuard } from '#src/modules/security/bearer-auth.guard';
+import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
 import { MAX_IMAGE_SIZE } from '#src/modules/image-provider/image-provider.constants';
@@ -55,7 +55,7 @@ async function readUploadedFile(
 
 @Controller()
 @UseFilters(AssetsExceptionFilter)
-@UseGuards(BearerAuthGuard, PermissionGuard)
+@UseGuards(AuthenticationGuard, PermissionGuard)
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 

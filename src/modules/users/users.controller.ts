@@ -14,7 +14,7 @@ import { Query } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 import { CurrentUser } from '#src/modules/security/current-user.decorator';
 import { ParseZodPipe } from '#src/common/parse-zod.pipe';
-import { BearerAuthGuard } from '#src/modules/security/bearer-auth.guard';
+import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
 import { UsersExceptionFilter } from './users.exception-filter';
@@ -30,7 +30,7 @@ import { UsersService } from './users.service';
 
 @Controller('users')
 @UseFilters(UsersExceptionFilter)
-@UseGuards(BearerAuthGuard, PermissionGuard)
+@UseGuards(AuthenticationGuard, PermissionGuard)
 @UseInterceptors(ExcludeSensitiveFieldsInterceptor)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

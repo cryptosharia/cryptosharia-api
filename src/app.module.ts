@@ -1,4 +1,8 @@
-import { Module } from '@nestjs/common';
+import {
+  Module,
+  type NestModule,
+  type MiddlewareConsumer,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { validate } from './env.validation';
@@ -10,6 +14,7 @@ import { OpenApiModule } from './modules/openapi/openapi.module';
 import { SystemModule } from './modules/system/system.module';
 import { SecurityModule } from './modules/security/security.module';
 import { ApiKeyGuard } from './modules/security/api-key.guard';
+import { BearerAuthMiddleware } from './modules/security/bearer-auth.middleware';
 import { ImageProviderModule } from './modules/image-provider/image-provider.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import { StorageModule } from './modules/storage/storage.module';
@@ -44,4 +49,8 @@ import { MessagesModule } from './modules/messages/messages.module';
     { provide: APP_FILTER, useClass: ZodExceptionFilter },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(BearerAuthMiddleware).forRoutes('*');
+  }
+}

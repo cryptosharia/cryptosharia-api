@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 import { ParseZodPipe } from '#src/common/parse-zod.pipe';
-import { BearerAuthGuard } from '#src/modules/security/bearer-auth.guard';
+import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
 import { MessagesExceptionFilter } from './messages.exception-filter';
@@ -33,7 +33,7 @@ export class MessagesController {
   }
 
   @Get()
-  @UseGuards(BearerAuthGuard, PermissionGuard)
+  @UseGuards(AuthenticationGuard, PermissionGuard)
   @RequirePermissions('messages.read')
   async selectAll(
     @Query(new ParseZodPipe(MessagesQuery)) query: MessagesQuery,
@@ -48,7 +48,7 @@ export class MessagesController {
   }
 
   @Get(':id')
-  @UseGuards(BearerAuthGuard, PermissionGuard)
+  @UseGuards(AuthenticationGuard, PermissionGuard)
   @RequirePermissions('messages.read')
   selectById(@Param(new ParseZodPipe(MessageIdParam)) { id }: MessageIdParam) {
     return this.messagesService.selectById(id);

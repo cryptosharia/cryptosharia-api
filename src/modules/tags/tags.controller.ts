@@ -18,7 +18,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { getClientIp } from '#src/common/get-client-ip';
 import { ParseZodPipe } from '#src/common/parse-zod.pipe';
 import { CurrentUser } from '#src/modules/security/current-user.decorator';
-import { BearerAuthGuard } from '#src/modules/security/bearer-auth.guard';
+import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
 import { TagsExceptionFilter } from './tags.exception-filter';
@@ -58,7 +58,7 @@ export class TagsController {
   }
 
   @Post()
-  @UseGuards(BearerAuthGuard, PermissionGuard)
+  @UseGuards(AuthenticationGuard, PermissionGuard)
   @RequirePermissions('tags.manage')
   create(
     @Body(new ParseZodPipe(TagCreateBody)) body: TagCreateBody,
@@ -72,7 +72,7 @@ export class TagsController {
   }
 
   @Patch(':id')
-  @UseGuards(BearerAuthGuard, PermissionGuard)
+  @UseGuards(AuthenticationGuard, PermissionGuard)
   @RequirePermissions('tags.manage')
   update(
     @Param(new ParseZodPipe(TagIdParam)) { id }: TagIdParam,
@@ -88,7 +88,7 @@ export class TagsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(BearerAuthGuard, PermissionGuard)
+  @UseGuards(AuthenticationGuard, PermissionGuard)
   @RequirePermissions('tags.manage')
   async delete(
     @Param(new ParseZodPipe(TagIdParam)) { id }: TagIdParam,

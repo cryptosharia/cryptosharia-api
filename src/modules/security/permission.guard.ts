@@ -23,16 +23,18 @@ export class PermissionGuard implements CanActivate {
     );
     if (!required?.permissions.length) return true;
 
+    // BearerAuthMiddleware (run by @fastify/middie) resolves the user on
+    // req.raw, the raw IncomingMessage, not on the FastifyRequest wrapper.
     const request = context.switchToHttp().getRequest<FastifyRequest>();
-    if (!request.user) throw new UnauthorizedException();
+    if (!request.raw.user) throw new UnauthorizedException();
     const hasPermission = required.permissions.some((permission) =>
-      request.user?.permissions.includes(permission),
+      request.raw.user?.permissions.includes(permission),
     );
     const resourceId = (request.params as Record<string, string> | undefined)?.[
       required.ownerParam ?? 'id'
     ];
     // Ownership is an alternative grant only for routes that opt in via allowOwner.
-    const isOwner = required.allowOwner && resourceId === request.user.id;
+    const isOwner = required.allowOwner && resourceId === request.raw.user.id;
     if (!hasPermission && !isOwner) {
       throw new ForbiddenException();
     }

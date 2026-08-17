@@ -14,7 +14,7 @@ import type { FastifyRequest } from 'fastify';
 import { getClientIp } from '#src/common/get-client-ip';
 import { ParseZodPipe } from '#src/common/parse-zod.pipe';
 import { CurrentUser } from '#src/modules/security/current-user.decorator';
-import { BearerAuthGuard } from '#src/modules/security/bearer-auth.guard';
+import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
 import { ExcludeSensitiveFieldsInterceptor } from '#src/modules/users/exclude-sensitive-fields.interceptor';
 import { AuthExceptionFilter } from './auth.exception-filter';
 import {
@@ -94,7 +94,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(BearerAuthGuard)
+  @UseGuards(AuthenticationGuard)
   me(@CurrentUser() currentUser: CurrentUser) {
     return this.authService.me(currentUser.id);
   }
