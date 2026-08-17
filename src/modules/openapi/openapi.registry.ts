@@ -1,6 +1,6 @@
 import {
   OpenAPIRegistry,
-  OpenApiGeneratorV31,
+  OpenApiGeneratorV32,
 } from '@asteasolutions/zod-to-openapi';
 import { usersRouteConfig } from '#src/modules/users/users.openapi';
 import { systemRouteConfig } from '#src/modules/system/system.openapi';
@@ -38,8 +38,8 @@ export function generateOpenApiDocument() {
   ];
   for (const route of routes) registry.registerPath(route);
 
-  return new OpenApiGeneratorV31(registry.definitions).generateDocument({
-    openapi: '3.1.0',
+  return new OpenApiGeneratorV32(registry.definitions).generateDocument({
+    openapi: '3.2.0',
     info: {
       version: '1.1.0',
       title: 'Cryptosharia API',
