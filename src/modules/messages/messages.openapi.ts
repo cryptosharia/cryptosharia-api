@@ -36,7 +36,7 @@ export const messagesRouteConfig: RouteConfig[] = [
         description: 'Pesan terkirim',
         body: MessageResponse,
       },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },
@@ -57,7 +57,7 @@ export const messagesRouteConfig: RouteConfig[] = [
         body: z.array(MessageResponse),
         headers: { 'total-items': z.string() },
       },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },
@@ -74,7 +74,7 @@ export const messagesRouteConfig: RouteConfig[] = [
     request: { params: MessageIdParam },
     responses: createResponsesConfig({
       200: { description: 'Pesan ditemukan', body: MessageResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },

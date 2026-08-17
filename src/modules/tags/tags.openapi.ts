@@ -24,7 +24,7 @@ const protectedSecurity: { [key: string]: string[] }[] = [
   { ApiKeyAuth: [], BearerAuth: [] },
 ];
 const commonWriteErrors = {
-  400: {
+  422: {
     description: APP_ERRORS.VALIDATION_FAILED,
     body: ValidationFailedResponse,
   },
@@ -45,7 +45,7 @@ export const tagsRouteConfig: RouteConfig[] = [
         body: z.array(TagResponse),
         headers: { 'total-items': z.string() },
       },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },
@@ -77,7 +77,7 @@ export const tagsRouteConfig: RouteConfig[] = [
     request: { params: TagParam },
     responses: createResponsesConfig({
       200: { description: 'Tag ditemukan', body: TagResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },

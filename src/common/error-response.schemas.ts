@@ -53,12 +53,19 @@ export type ServiceUnavailableResponse = z.infer<
 export const ValidationFailedResponse = z.object({
   error: z.literal('VALIDATION_FAILED'),
   message: z.literal(APP_ERRORS.VALIDATION_FAILED),
-  details: z.record(z.string(), z.array(z.string())).meta({
-    description: 'Kesalahan validasi per field',
-    example: {
-      '<field1>': ['<error1>', '<error2>'],
-      '<field2>': ['<error1>', '<error2>'],
-    },
+  details: z.object({
+    root: z.array(z.string()).meta({
+      description: 'Kesalahan validasi root',
+      example: ['<error1>', '<error2>', '<error...>'],
+    }),
+    fields: z.record(z.string(), z.array(z.string())).meta({
+      description: 'Kesalahan validasi per field',
+      example: {
+        '<field1>': ['<error1>', '<error2>', '<error...>'],
+        '<field2>': ['<error1>', '<error2>', '<error...>'],
+        '<field...>': ['<error...>'],
+      },
+    }),
   }),
 });
 export type ValidationFailedResponse = z.infer<typeof ValidationFailedResponse>;

@@ -147,12 +147,20 @@ export class UsersSuite extends Suite {
 
         it('rejects an empty profile update', async () => {
           const member = await createSession('member@example.com');
-          const { response } = await this.ctx.client.PATCH('/users/{id}', {
-            params: { path: { id: member.user.id } },
-            body: {},
-            headers: { authorization: `Bearer ${member.accessToken}` },
-          });
-          expect(response.status).toBe(400);
+          const { error, response } = await this.ctx.client.PATCH(
+            '/users/{id}',
+            {
+              params: { path: { id: member.user.id } },
+              body: {},
+              headers: { authorization: `Bearer ${member.accessToken}` },
+            },
+          );
+          expect(response.status).toBe(422);
+          expect(error?.error).toBe('VALIDATION_FAILED');
+          expect(
+            (error as { details?: { root?: string[] } } | undefined)?.details
+              ?.root,
+          ).toContain('Minimal satu field profil wajib diisi');
         });
       });
 

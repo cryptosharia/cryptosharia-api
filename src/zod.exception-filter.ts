@@ -16,11 +16,15 @@ export class ZodExceptionFilter implements ExceptionFilter {
   catch(exception: ZodError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<FastifyReply>();
+    const { fieldErrors, formErrors } = z.flattenError(exception);
 
-    return res.status(HttpStatus.BAD_REQUEST).send({
+    return res.status(HttpStatus.UNPROCESSABLE_ENTITY).send({
       error: 'VALIDATION_FAILED',
       message: APP_ERRORS.VALIDATION_FAILED,
-      details: z.flattenError(exception).fieldErrors,
+      details: {
+        root: formErrors,
+        fields: fieldErrors,
+      },
     } satisfies ValidationFailedResponse);
   }
 }

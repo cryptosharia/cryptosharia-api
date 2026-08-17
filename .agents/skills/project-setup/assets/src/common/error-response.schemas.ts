@@ -36,12 +36,20 @@ export type InternalServerErrorResponse = z.infer<
 
 export const ValidationFailedResponse = z.object({
   error: z.literal('VALIDATION_FAILED'),
-  message: z.record(z.string(), z.array(z.string())).meta({
-    description: 'Fields validation errors',
-    example: {
-      '<field1>': ['<error1>', '<error2>'],
-      '<field2>': ['<error1>', '<error2>'],
-    },
+  message: z.literal(APP_ERRORS.VALIDATION_FAILED),
+  details: z.object({
+    root: z.array(z.string()).meta({
+      description: 'Root validation errors',
+      example: ['<error1>', '<error2>', '<error...>'],
+    }),
+    fields: z.record(z.string(), z.array(z.string())).meta({
+      description: 'Per-field validation errors',
+      example: {
+        '<field1>': ['<error1>', '<error2>', '<error...>'],
+        '<field2>': ['<error1>', '<error2>', '<error...>'],
+        '<field...>': ['<error...>'],
+      },
+    }),
   }),
 });
 export type ValidationFailedResponse = z.infer<typeof ValidationFailedResponse>;

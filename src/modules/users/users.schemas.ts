@@ -69,7 +69,7 @@ export type UsersQuery = z.infer<typeof UsersQuery>;
 export const ProfileUpdateBody = User.pick({ name: true, avatarId: true })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'Minimal satu field profil wajib diisi',
+    error: 'Minimal satu field wajib diisi',
   });
 export type ProfileUpdateBody = z.infer<typeof ProfileUpdateBody>;
 

@@ -123,7 +123,7 @@ export class TaskSuite extends Suite {
             description: null,
           } as CreateTaskBody);
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
 
         it('should reject empty title', async () => {
@@ -133,7 +133,7 @@ export class TaskSuite extends Suite {
             description: null,
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
 
         it('should reject missing description key', async () => {
@@ -142,7 +142,7 @@ export class TaskSuite extends Suite {
             slug: 'no-desc-key',
           } as CreateTaskBody);
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
 
         it('should reject description too long', async () => {
@@ -152,7 +152,7 @@ export class TaskSuite extends Suite {
             description: 'x'.repeat(1001),
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
       });
 
@@ -211,10 +211,10 @@ export class TaskSuite extends Suite {
           expect(response.status).toBe(404);
         });
 
-        it('should return 400 for an invalid task id', async () => {
+        it('should return 422 for an invalid task id', async () => {
           const { response } = await getTask('not-a-uuid', token);
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
 
         it('should return 404 for another users task', async () => {
@@ -294,7 +294,7 @@ export class TaskSuite extends Suite {
             title: '',
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
 
         it('should return 404 when task does not exist', async () => {
@@ -305,12 +305,12 @@ export class TaskSuite extends Suite {
           expect(response.status).toBe(404);
         });
 
-        it('should return 400 for an invalid task id', async () => {
+        it('should return 422 for an invalid task id', async () => {
           const { response } = await updateTask('not-a-uuid', token, {
             title: 'Updated title',
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
       });
 
@@ -355,10 +355,10 @@ export class TaskSuite extends Suite {
           expect(response.status).toBe(404);
         });
 
-        it('should return 400 for an invalid task id', async () => {
+        it('should return 422 for an invalid task id', async () => {
           const { response } = await deleteTask('not-a-uuid', token);
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
       });
     });

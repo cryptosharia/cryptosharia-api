@@ -35,7 +35,7 @@ export const assetsRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       201: { description: 'Upload berhasil', body: AssetResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },
@@ -57,7 +57,7 @@ export const assetsRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       201: { description: 'Upload berhasil', body: ImgbbImageResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },

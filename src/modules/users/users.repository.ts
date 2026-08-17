@@ -132,8 +132,6 @@ export class UsersRepository {
     updatedBy?: User['id'],
     dbExecutor: DbExecutor = this.drizzleService.db,
   ): Promise<User> {
-    if (!Object.keys(data).length) throw new UsersError('USER_UPDATE_EMPTY');
-
     const [user] = await dbExecutor
       .update(users)
       .set({ ...data, ...(updatedBy ? { updatedBy } : {}) })

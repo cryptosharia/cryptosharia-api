@@ -43,7 +43,7 @@ export const tasksRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       201: { description: 'Task created', body: TaskResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },
@@ -92,7 +92,7 @@ export const tasksRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       200: { description: 'Task updated', body: TaskResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },

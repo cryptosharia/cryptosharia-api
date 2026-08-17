@@ -10,7 +10,6 @@ import { UsersError, UsersErrorCode } from './users.error';
 const STATUS_CODES = {
   USER_NOT_FOUND: HttpStatus.NOT_FOUND,
   EMAIL_UNIQUE_VIOLATION: HttpStatus.CONFLICT,
-  USER_UPDATE_EMPTY: HttpStatus.BAD_REQUEST,
 } as const satisfies Record<UsersErrorCode, number>;
 
 @Catch(UsersError)

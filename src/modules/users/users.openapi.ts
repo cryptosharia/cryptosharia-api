@@ -48,7 +48,7 @@ export const usersRouteConfig: RouteConfig[] = [
           }),
         },
       },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },
@@ -83,7 +83,7 @@ export const usersRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       200: { description: 'Profil diubah', body: UserResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },
@@ -106,7 +106,7 @@ export const usersRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       200: { description: 'Status diubah', body: UserResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },
@@ -129,7 +129,7 @@ export const usersRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       200: { description: 'Role diubah', body: UserResponse },
-      400: {
+      422: {
         description: APP_ERRORS.VALIDATION_FAILED,
         body: ValidationFailedResponse,
       },

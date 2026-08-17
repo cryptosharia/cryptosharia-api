@@ -238,13 +238,13 @@ export class TagsSuite extends Suite {
             body: { name: '', slug: 'Bad Slug' },
             headers,
           });
-          expect(invalid.response.status).toBe(400);
+          expect(invalid.response.status).toBe(422);
           expect(invalid.error?.error).toBe('VALIDATION_FAILED');
           expect(
             (
               invalid.error as
-                { details?: Record<string, string[]> } | undefined
-            )?.details?.name,
+                { details?: { fields?: Record<string, string[]> } } | undefined
+            )?.details?.fields?.name,
           ).toBeDefined();
 
           await this.ctx.client.POST('/tags', {

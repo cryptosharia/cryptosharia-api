@@ -65,7 +65,7 @@ export type TagCreateBody = z.infer<typeof TagCreateBody>;
 
 export const TagUpdateBody = TagCreateBody.partial().refine(
   (value) => Object.keys(value).length > 0,
-  'Minimal satu field tag wajib diisi',
+  { error: 'Minimal satu field wajib diisi' },
 );
 export type TagUpdateBody = z.infer<typeof TagUpdateBody>;
 

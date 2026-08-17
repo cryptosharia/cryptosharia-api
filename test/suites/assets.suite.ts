@@ -110,11 +110,13 @@ export class AssetsSuite extends Suite {
             headers: { authorization: `Bearer ${accessToken}` },
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
           expect(error?.error).toBe('VALIDATION_FAILED');
           expect(
-            (error as { details?: Record<string, string[]> } | undefined)
-              ?.details?.file,
+            (
+              error as
+                { details?: { fields?: Record<string, string[]> } } | undefined
+            )?.details?.fields?.file,
           ).toBeDefined();
         });
 
@@ -128,7 +130,7 @@ export class AssetsSuite extends Suite {
             headers: { authorization: `Bearer ${accessToken}` },
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
           expect(error?.error).toBe('VALIDATION_FAILED');
         });
 
@@ -147,7 +149,7 @@ export class AssetsSuite extends Suite {
             headers: { authorization: `Bearer ${accessToken}` },
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
           expect(error?.error).toBe('VALIDATION_FAILED');
         });
       });
@@ -170,7 +172,7 @@ export class AssetsSuite extends Suite {
             headers: { authorization: `Bearer ${accessToken}` },
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
           expect(error?.error).toBe('VALIDATION_FAILED');
         });
 
@@ -189,7 +191,7 @@ export class AssetsSuite extends Suite {
             headers: { authorization: `Bearer ${accessToken}` },
           });
 
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
           expect(error?.error).toBe('VALIDATION_FAILED');
         });
       });

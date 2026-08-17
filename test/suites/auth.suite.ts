@@ -79,7 +79,7 @@ export class AuthSuite extends Suite {
               redirectUrl: 'https://app.cryptosharia.id/verify',
             },
           });
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
         });
       });
 

@@ -49,7 +49,7 @@ export const authRouteConfig: RouteConfig[] = [
         description: 'Akun dibuat & email verifikasi terkirim',
         body: UserResponse,
       },
-      400: validationError,
+      422: validationError,
       401: authErrors[401],
       409: {
         description: AUTH_ERRORS.EMAIL_ALREADY_REGISTERED,
@@ -68,7 +68,7 @@ export const authRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       204: { description: 'Email terverifikasi' },
-      400: validationError,
+      422: validationError,
       401: authErrors[401],
       404: {
         description: AUTH_ERRORS.VERIFICATION_TOKEN_INVALID,
@@ -88,7 +88,7 @@ export const authRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       200: { description: 'Signin berhasil', body: SessionResponse },
-      400: validationError,
+      422: validationError,
       401: {
         description: AUTH_ERRORS.INVALID_CREDENTIALS,
         body: createErrorResponse(AUTH_ERRORS, ['INVALID_CREDENTIALS']),
@@ -111,7 +111,7 @@ export const authRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       200: { description: 'Refresh token berhasil', body: SessionResponse },
-      400: validationError,
+      422: validationError,
       401: {
         description: AUTH_ERRORS.REFRESH_TOKEN_INVALID,
         body: createErrorResponse(AUTH_ERRORS, ['REFRESH_TOKEN_INVALID']),
@@ -133,7 +133,7 @@ export const authRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       204: { description: 'Signout berhasil' },
-      400: validationError,
+      422: validationError,
       401: authErrors[401],
     }),
   },
@@ -160,7 +160,7 @@ export const authRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       204: { description: 'Email reset password terkirim' },
-      400: validationError,
+      422: validationError,
       401: authErrors[401],
     }),
   },
@@ -176,7 +176,7 @@ export const authRouteConfig: RouteConfig[] = [
     },
     responses: createResponsesConfig({
       204: { description: 'Password berhasil direset' },
-      400: validationError,
+      422: validationError,
       401: authErrors[401],
       404: {
         description: AUTH_ERRORS.PASSWORD_RESET_TOKEN_INVALID,

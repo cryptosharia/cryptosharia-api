@@ -81,7 +81,7 @@ export class MessagesSuite extends Suite {
           const { error, response } = await this.ctx.client.POST('/messages', {
             body: { name: '', email: 'invalid', message: 'short' },
           });
-          expect(response.status).toBe(400);
+          expect(response.status).toBe(422);
           expect(error?.error).toBe('VALIDATION_FAILED');
         });
       });
@@ -150,7 +150,7 @@ export class MessagesSuite extends Suite {
             params: { path: { id: 'invalid' } },
             headers: { authorization: `Bearer ${accessToken}` },
           });
-          expect(invalid.response.status).toBe(400);
+          expect(invalid.response.status).toBe(422);
 
           const missing = await this.ctx.client.GET('/messages/{id}', {
             params: { path: { id: crypto.randomUUID() } },
