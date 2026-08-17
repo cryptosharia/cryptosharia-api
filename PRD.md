@@ -355,35 +355,39 @@ total-items: <number>
 
 ## 11. Posts Requirements
 
-| Method | Endpoint      | Requirement                 |
-| ------ | ------------- | --------------------------- |
-| GET    | `/posts`      | List posts                  |
-| POST   | `/posts`      | Create post                 |
-| GET    | `/posts/{id}` | Get post by UUID or slug    |
-| PATCH  | `/posts/{id}` | Update post by UUID         |
-| DELETE | `/posts/{id}` | Delete post by UUID         |
+| Method | Endpoint               | Requirement                 |
+| ------ | ---------------------- | --------------------------- |
+| GET    | `/posts`               | List posts                  |
+| POST   | `/posts`               | Create post                 |
+| GET    | `/posts/{identifier}`  | Get post by UUID or slug    |
+| PATCH  | `/posts/{id}`          | Update post by UUID         |
+| DELETE | `/posts/{id}`          | Delete post by UUID         |
 
 - Post list supports filters for statuses, sections, types, slugs, exclude, tags, search, page, and limit.
 - Requests without a bearer user default to published posts only.
-- Requests without a bearer user cannot explicitly request non-public statuses.
+- Requests without a bearer user cannot explicitly request non-public statuses; requesting them returns `403`.
 - Users with `posts.manage` can access non-public statuses.
-- List response excludes full `content`.
-- Detail response includes full `content`.
+- List response excludes full `content` and exposes normalized `coverImage` metadata, `tags`, and audit users.
+- Detail response includes full `content`; a non-published post requested without `posts.manage` returns `404`.
+- List is sorted by `COALESCE(published_at, created_at) DESC`.
+- `publishedAt` is set once on the first transition to `published` and is never cleared or reset.
 - Cover image returns normalized asset metadata.
 - Tag relation uses relational junction table, not array field.
 - Create/update/delete require `posts.manage`.
-- Duplicate slug returns conflict.
+- Duplicate slug returns `409 SLUG_CONFLICT`; update conflicts exclude the post itself.
+- Create/update resolve tag values as UUID or slug and replace tag relations when `tags` is provided.
+- Unknown tag identifiers or a missing cover image return `422 VALIDATION_FAILED` with field-level `details.fields`.
 
 ## 12. Tokens Requirements
 
-| Method | Endpoint         | Requirement                                        |
-| ------ | ---------------- | -------------------------------------------------- |
-| GET    | `/tokens`        | List crypto tokens                                 |
-| POST   | `/tokens`        | Create token                                       |
-| GET    | `/tokens/{id}`   | Get token by UUID or slug                          |
-| PATCH  | `/tokens/{id}`   | Update token by UUID                               |
-| DELETE | `/tokens/{id}`   | Delete token by UUID                               |
-| GET    | `/tokens/quotes` | Return quote/market data for requested token slugs |
+| Method | Endpoint               | Requirement                                        |
+| ------ | ---------------------- | -------------------------------------------------- |
+| GET    | `/tokens`              | List crypto tokens                                 |
+| POST   | `/tokens`              | Create token                                       |
+| GET    | `/tokens/{identifier}` | Get token by UUID or slug                          |
+| PATCH  | `/tokens/{id}`         | Update token by UUID                               |
+| DELETE | `/tokens/{id}`         | Delete token by UUID                               |
+| GET    | `/tokens/quotes`       | Return quote/market data for requested token slugs |
 
 - Token list supports filters for statuses, sharia statuses, slugs, exclude, tags, search, page, and limit.
 - Requests without a bearer user default to published/non-restricted statuses only.

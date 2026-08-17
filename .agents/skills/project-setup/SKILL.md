@@ -65,12 +65,13 @@ Replace `...globals.jest` with `...globals.vitest`
 
 #### TypeScript path aliases
 
-In `tsconfig.json`, add `baseUrl` and `paths`; remove build-only flags
+In `tsconfig.json`, add `baseUrl`, `paths`, and `noEmit`; remove build-only flags
 (`declaration`, `removeComments`, `sourceMap`, `outDir`, `incremental`):
 
 ```jsonc
 "baseUrl": "./",
-"paths": { "#src/*": ["./src/*"], "#test/*": ["./test/*"] }
+"paths": { "#src/*": ["./src/*"], "#test/*": ["./test/*"] },
+"noEmit": true
 ```
 
 ### 2. Environment files and validation
