@@ -16,7 +16,7 @@ const protectedSecurity: { [key: string]: string[] }[] = [
 ];
 const multipartBody = z.any().meta({
   description:
-    'Payload multipart/form-data. Wajib ada field file bernama `file`.',
+    'Payload `multipart/form-data`. Wajib ada field file bernama `file`.',
 });
 const authErrors = {
   401: { description: APP_ERRORS.UNAUTHORIZED, body: UnauthorizedResponse },

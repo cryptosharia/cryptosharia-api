@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { User } from '#src/modules/drizzle/drizzle.types';
+import type { Asset, User } from '#src/modules/drizzle/drizzle.types';
 import { AuditService } from '#src/modules/audit/audit.service';
 import { ImageProviderError } from '#src/modules/image-provider/image-provider.error';
 import { ImageProviderService } from '#src/modules/image-provider/image-provider.service';
@@ -9,6 +9,7 @@ import { StorageService } from '#src/modules/storage/storage.service';
 import type {
   AssetCleanupOptions,
   AssetCleanupResult,
+  AssetMetadata,
   AssetResponse,
   ImgbbImageResponse,
   UploadFile,
@@ -176,5 +177,26 @@ export class AssetsService {
       failed: failures.length,
       failures,
     };
+  }
+
+  toAssetMetadata(asset: Asset | null | undefined): AssetMetadata | null {
+    if (!asset) return null;
+    return {
+      id: asset.id,
+      url: this.resolveAssetUrl(asset),
+      filename: asset.filename,
+      size: asset.size,
+      mimeType: asset.mimeType,
+      width: asset.width,
+      height: asset.height,
+    };
+  }
+
+  private resolveAssetUrl(asset: Asset): string {
+    if (asset.pathname.startsWith('http')) return asset.pathname;
+    if (asset.provider === 'picsum') {
+      return `https://picsum.photos/${asset.pathname.replace(/^\/+/, '')}`;
+    }
+    return this.storageService.getPublicUrl(asset.pathname);
   }
 }

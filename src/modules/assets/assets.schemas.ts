@@ -24,6 +24,17 @@ export type ImgbbUpload = z.infer<typeof ImgbbUpload>;
 export const AssetResponse = Asset;
 export type AssetResponse = z.infer<typeof AssetResponse>;
 
+export const AssetMetadata = z.object({
+  id: Asset.shape.id,
+  url: z.url('Format tidak valid').meta({ description: 'URL publik aset' }),
+  filename: Asset.shape.filename,
+  size: Asset.shape.size,
+  mimeType: Asset.shape.mimeType,
+  width: Asset.shape.width,
+  height: Asset.shape.height,
+});
+export type AssetMetadata = z.infer<typeof AssetMetadata>;
+
 export const ImgbbImageResponse = ImgbbImage;
 export type ImgbbImageResponse = z.infer<typeof ImgbbImageResponse>;
 
