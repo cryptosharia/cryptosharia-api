@@ -159,36 +159,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -214,6 +184,52 @@ export interface paths {
               message: 'Email sudah terdaftar';
               /** @enum {string} */
               error: 'EMAIL_ALREADY_REGISTERED';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -264,36 +280,6 @@ export interface paths {
           };
           content?: never;
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -319,6 +305,52 @@ export interface paths {
               message: 'Token verifikasi tidak valid atau kedaluwarsa';
               /** @enum {string} */
               error: 'VERIFICATION_TOKEN_INVALID';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -388,36 +420,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Email atau password salah */
         401: {
           headers: {
@@ -443,6 +445,52 @@ export interface paths {
               message: 'Akun tidak aktif. Hubungi support.';
               /** @enum {string} */
               error: 'USER_INACTIVE';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -506,36 +554,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Refresh token tidak valid atau kedaluwarsa */
         401: {
           headers: {
@@ -561,6 +579,52 @@ export interface paths {
               message: 'Akun tidak aktif. Hubungi support.';
               /** @enum {string} */
               error: 'USER_INACTIVE';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -611,36 +675,6 @@ export interface paths {
           };
           content?: never;
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -652,6 +686,52 @@ export interface paths {
               error: 'UNAUTHORIZED';
               /** @enum {string} */
               message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -836,36 +916,6 @@ export interface paths {
           };
           content?: never;
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -877,6 +927,52 @@ export interface paths {
               error: 'UNAUTHORIZED';
               /** @enum {string} */
               message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -932,36 +1028,6 @@ export interface paths {
           };
           content?: never;
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -987,6 +1053,52 @@ export interface paths {
               message: 'Token reset password tidak valid atau kedaluwarsa';
               /** @enum {string} */
               error: 'PASSWORD_RESET_TOKEN_INVALID';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -1107,36 +1219,6 @@ export interface paths {
             }[];
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -1162,6 +1244,52 @@ export interface paths {
               error: 'FORBIDDEN';
               /** @enum {string} */
               message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -1418,36 +1546,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -1487,6 +1585,52 @@ export interface paths {
               message: 'User tidak ditemukan';
               /** @enum {string} */
               error: 'USER_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -1599,36 +1743,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -1668,6 +1782,52 @@ export interface paths {
               message: 'User tidak ditemukan';
               /** @enum {string} */
               error: 'USER_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -1790,36 +1950,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -1859,6 +1989,52 @@ export interface paths {
               message: 'User tidak ditemukan';
               /** @enum {string} */
               error: 'USER_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -1977,7 +2153,7 @@ export interface paths {
           };
         };
         /** @description Validasi gagal */
-        400: {
+        422: {
           headers: {
             [name: string]: unknown;
           };
@@ -1987,21 +2163,37 @@ export interface paths {
               error: 'VALIDATION_FAILED';
               /** @enum {string} */
               message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
               details: {
-                [key: string]: string[];
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
               };
             };
           };
@@ -2114,36 +2306,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -2183,6 +2345,52 @@ export interface paths {
               message: 'Nama atau slug tag sudah ada';
               /** @enum {string} */
               error: 'NAME_OR_SLUG_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -2292,36 +2500,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tag tidak ditemukan */
         404: {
           headers: {
@@ -2333,6 +2511,52 @@ export interface paths {
               message: 'Tag tidak ditemukan';
               /** @enum {string} */
               error: 'TAG_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -2381,36 +2605,6 @@ export interface paths {
             [name: string]: unknown;
           };
           content?: never;
-        };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
         };
         /** @description Tidak terautentikasi */
         401: {
@@ -2472,6 +2666,52 @@ export interface paths {
                   posts: number;
                   /** @description Jumlah token yang memakai tag */
                   tokens: number;
+                };
+              };
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
                 };
               };
             };
@@ -2589,36 +2829,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -2672,6 +2882,1340 @@ export interface paths {
               message: 'Nama atau slug tag sudah ada';
               /** @enum {string} */
               error: 'NAME_OR_SLUG_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List post
+     * @description Menampilkan post dengan filter status, kategori, tipe, slug, tag, dan pagination. Akun tanpa izin akses hanya post berstatus `published` yang ditampilkan.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Halaman */
+          page?: number;
+          /** @description Item per halaman */
+          limit?: number;
+          /** @description Cari berdasarkan judul, slug, ringkasan, atau konten */
+          search?: string;
+          /** @description Filter berdasarkan status publikasi */
+          statuses?: ('draft' | 'published' | 'archived')[];
+          /** @description Filter berdasarkan kategori post */
+          sections?: ('news' | 'education' | 'research' | 'activity')[];
+          /** @description Filter berdasarkan tipe konten */
+          types?: ('article' | 'webinar' | 'video' | 'headline')[];
+          /** @description Filter berdasarkan slug post */
+          slugs?: string[];
+          /** @description Kecualikan slug tertentu */
+          exclude?: string[];
+          /** @description Filter berdasarkan slug tag */
+          tags?: string[];
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Post berhasil ditampilkan */
+        200: {
+          headers: {
+            'total-items': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID post
+               */
+              id: string;
+              /**
+               * @description Judul post
+               * @example Understanding Halal Crypto
+               */
+              title: string;
+              /**
+               * @description Slug post
+               * @example understanding-halal-crypto
+               */
+              slug: string;
+              /** @description Ringkasan post */
+              excerpt: string;
+              /**
+               * @description Kategori post
+               * @example education
+               * @enum {string}
+               */
+              section: 'news' | 'education' | 'research' | 'activity';
+              /**
+               * @description Tipe konten post
+               * @example article
+               * @enum {string}
+               */
+              type: 'article' | 'webinar' | 'video' | 'headline';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Post unggulan (featured) */
+              isFeatured: boolean;
+              /**
+               * Format: date-time
+               * @description Tanggal event
+               */
+              eventDate?: string | null;
+              /**
+               * Format: uri
+               * @description Link eksternal
+               */
+              externalLink: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              coverImage: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+              }[];
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            }[];
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * Buat post
+     * @description Membuat post baru.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Judul post
+             * @example Understanding Halal Crypto
+             */
+            title: string;
+            /**
+             * @description Slug post
+             * @example understanding-halal-crypto
+             */
+            slug: string;
+            /** @description Ringkasan post */
+            excerpt: string;
+            /** @description Konten post */
+            content: string;
+            /**
+             * Format: uuid
+             * @description Gambar sampul post
+             */
+            coverImageId: string;
+            /**
+             * @description Kategori post
+             * @example education
+             * @enum {string}
+             */
+            section: 'news' | 'education' | 'research' | 'activity';
+            /**
+             * @description Tipe konten post
+             * @example article
+             * @enum {string}
+             */
+            type: 'article' | 'webinar' | 'video' | 'headline';
+            /**
+             * @description Status publikasi
+             * @example published
+             * @enum {string}
+             */
+            status: 'draft' | 'published' | 'archived';
+            /** @description Post unggulan (featured) */
+            isFeatured: boolean;
+            /**
+             * Format: date-time
+             * @description Tanggal event
+             */
+            eventDate?: string | null;
+            /**
+             * Format: uri
+             * @description Link eksternal
+             */
+            externalLink: string | null;
+            tags: string[];
+          };
+        };
+      };
+      responses: {
+        /** @description Post dibuat */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID post
+               */
+              id: string;
+              /**
+               * @description Judul post
+               * @example Understanding Halal Crypto
+               */
+              title: string;
+              /**
+               * @description Slug post
+               * @example understanding-halal-crypto
+               */
+              slug: string;
+              /** @description Ringkasan post */
+              excerpt: string;
+              /** @description Konten post */
+              content: string;
+              /**
+               * @description Kategori post
+               * @example education
+               * @enum {string}
+               */
+              section: 'news' | 'education' | 'research' | 'activity';
+              /**
+               * @description Tipe konten post
+               * @example article
+               * @enum {string}
+               */
+              type: 'article' | 'webinar' | 'video' | 'headline';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Post unggulan (featured) */
+              isFeatured: boolean;
+              /**
+               * Format: date-time
+               * @description Tanggal event
+               */
+              eventDate?: string | null;
+              /**
+               * Format: uri
+               * @description Link eksternal
+               */
+              externalLink: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              coverImage: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Slug sudah ada */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Slug sudah ada';
+              /** @enum {string} */
+              error: 'SLUG_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/posts/{identifier}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Detail post
+     * @description Ambil post berdasarkan ID atau slug. Post non-published hanya dapat diakses dengan akun yang punya izin akses.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID atau slug post */
+          identifier: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Post ditemukan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID post
+               */
+              id: string;
+              /**
+               * @description Judul post
+               * @example Understanding Halal Crypto
+               */
+              title: string;
+              /**
+               * @description Slug post
+               * @example understanding-halal-crypto
+               */
+              slug: string;
+              /** @description Ringkasan post */
+              excerpt: string;
+              /** @description Konten post */
+              content: string;
+              /**
+               * @description Kategori post
+               * @example education
+               * @enum {string}
+               */
+              section: 'news' | 'education' | 'research' | 'activity';
+              /**
+               * @description Tipe konten post
+               * @example article
+               * @enum {string}
+               */
+              type: 'article' | 'webinar' | 'video' | 'headline';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Post unggulan (featured) */
+              isFeatured: boolean;
+              /**
+               * Format: date-time
+               * @description Tanggal event
+               */
+              eventDate?: string | null;
+              /**
+               * Format: uri
+               * @description Link eksternal
+               */
+              externalLink: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              coverImage: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Post tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Post tidak ditemukan';
+              /** @enum {string} */
+              error: 'POST_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/posts/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Hapus post
+     * @description Hapus post berdasarkan ID.
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID post */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Post dihapus */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Post tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Post tidak ditemukan';
+              /** @enum {string} */
+              error: 'POST_NOT_FOUND';
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /**
+     * Edit post
+     * @description Edit post berdasarkan ID.<br>Ketika tags disertakan, seluruh tag di-replace.
+     */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID post */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Judul post
+             * @example Understanding Halal Crypto
+             */
+            title?: string;
+            /**
+             * @description Slug post
+             * @example understanding-halal-crypto
+             */
+            slug?: string;
+            /** @description Ringkasan post */
+            excerpt?: string;
+            /** @description Konten post */
+            content?: string;
+            /**
+             * Format: uuid
+             * @description Gambar sampul post
+             */
+            coverImageId?: string;
+            /**
+             * @description Kategori post
+             * @example education
+             * @enum {string}
+             */
+            section?: 'news' | 'education' | 'research' | 'activity';
+            /**
+             * @description Tipe konten post
+             * @example article
+             * @enum {string}
+             */
+            type?: 'article' | 'webinar' | 'video' | 'headline';
+            /**
+             * @description Status publikasi
+             * @example published
+             * @enum {string}
+             */
+            status?: 'draft' | 'published' | 'archived';
+            /** @description Post unggulan (featured) */
+            isFeatured?: boolean;
+            /**
+             * Format: date-time
+             * @description Tanggal event
+             */
+            eventDate?: string | null;
+            /**
+             * Format: uri
+             * @description Link eksternal
+             */
+            externalLink?: string | null;
+            tags?: string[];
+          };
+        };
+      };
+      responses: {
+        /** @description Post diubah */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID post
+               */
+              id: string;
+              /**
+               * @description Judul post
+               * @example Understanding Halal Crypto
+               */
+              title: string;
+              /**
+               * @description Slug post
+               * @example understanding-halal-crypto
+               */
+              slug: string;
+              /** @description Ringkasan post */
+              excerpt: string;
+              /** @description Konten post */
+              content: string;
+              /**
+               * @description Kategori post
+               * @example education
+               * @enum {string}
+               */
+              section: 'news' | 'education' | 'research' | 'activity';
+              /**
+               * @description Tipe konten post
+               * @example article
+               * @enum {string}
+               */
+              type: 'article' | 'webinar' | 'video' | 'headline';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Post unggulan (featured) */
+              isFeatured: boolean;
+              /**
+               * Format: date-time
+               * @description Tanggal event
+               */
+              eventDate?: string | null;
+              /**
+               * Format: uri
+               * @description Link eksternal
+               */
+              externalLink: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              coverImage: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Post tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Post tidak ditemukan';
+              /** @enum {string} */
+              error: 'POST_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Slug sudah ada */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Slug sudah ada';
+              /** @enum {string} */
+              error: 'SLUG_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -2742,36 +4286,6 @@ export interface paths {
             }[];
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -2797,6 +4311,52 @@ export interface paths {
               error: 'FORBIDDEN';
               /** @enum {string} */
               message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -2867,36 +4427,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -2908,6 +4438,52 @@ export interface paths {
               error: 'UNAUTHORIZED';
               /** @enum {string} */
               message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -2975,36 +4551,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -3044,6 +4590,52 @@ export interface paths {
               message: 'Pesan tidak ditemukan';
               /** @enum {string} */
               error: 'MESSAGE_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -3135,36 +4727,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -3190,6 +4752,52 @@ export interface paths {
               error: 'FORBIDDEN';
               /** @enum {string} */
               message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };
@@ -3299,36 +4907,6 @@ export interface paths {
             };
           };
         };
-        /** @description Validasi gagal */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              /**
-               * @description Kesalahan validasi per field
-               * @example {
-               *       "<field1>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ],
-               *       "<field2>": [
-               *         "<error1>",
-               *         "<error2>"
-               *       ]
-               *     }
-               */
-              details: {
-                [key: string]: string[];
-              };
-            };
-          };
-        };
         /** @description Tidak terautentikasi */
         401: {
           headers: {
@@ -3354,6 +4932,52 @@ export interface paths {
               error: 'FORBIDDEN';
               /** @enum {string} */
               message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
             };
           };
         };

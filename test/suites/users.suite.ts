@@ -160,7 +160,7 @@ export class UsersSuite extends Suite {
           expect(
             (error as { details?: { root?: string[] } } | undefined)?.details
               ?.root,
-          ).toContain('Minimal satu field profil wajib diisi');
+          ).toContain('Minimal satu field wajib diisi');
         });
       });
 

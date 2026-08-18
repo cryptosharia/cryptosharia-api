@@ -342,7 +342,10 @@ export const Post = createSelectSchema(posts, {
     .nullable()
     .optional()
     .meta({ description: 'Tanggal event' }),
-  externalLink: (f) => f.meta({ description: 'Link eksternal' }),
+  externalLink: z
+    .url('Format tidak valid')
+    .nullable()
+    .meta({ description: 'Link eksternal' }),
   publishedAt: (f) => f.meta({ description: 'Waktu publikasi' }),
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
   updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),

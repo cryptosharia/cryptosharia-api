@@ -24,6 +24,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AssetsModule } from './modules/assets/assets.module';
 import { TagsModule } from './modules/tags/tags.module';
 import { MessagesModule } from './modules/messages/messages.module';
+import { PostsModule } from './modules/posts/posts.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { MessagesModule } from './modules/messages/messages.module';
     AssetsModule,
     TagsModule,
     MessagesModule,
+    PostsModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },
