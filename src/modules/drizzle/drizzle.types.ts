@@ -1,5 +1,5 @@
 import { createSelectSchema } from 'drizzle-zod';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
 import { z } from 'zod';
 import * as schema from './drizzle.schema';
 import {
@@ -21,8 +21,8 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const slugMessage = 'Hanya boleh berisi huruf kecil, angka, dan tanda hubung';
 
 export type DbExecutor =
-  | NodePgDatabase<typeof schema>
-  | Parameters<Parameters<NodePgDatabase<typeof schema>['transaction']>[0]>[0];
+  | NeonDatabase<typeof schema>
+  | Parameters<Parameters<NeonDatabase<typeof schema>['transaction']>[0]>[0];
 
 export const User = createSelectSchema(users, {
   id: (f) => f.meta({ description: 'ID user' }),
@@ -280,9 +280,9 @@ export const Token = createSelectSchema(tokens, {
   tradingviewSymbol: (f) =>
     f
       .max(64, 'Maksimal 64 karakter')
-      .meta({ description: 'Simbol TradingView (opsional)' }),
+      .meta({ description: 'Simbol TradingView' }),
   website: z.url('Format tidak valid').meta({
-    description: 'Situs resmi proyek',
+    description: 'Situs resmi',
     example: 'https://bitcoin.org',
   }),
   logoId: (f) => f.meta({ description: 'Logo token' }),
@@ -337,8 +337,12 @@ export const Post = createSelectSchema(posts, {
       example: 'published',
     }),
   isFeatured: (f) => f.meta({ description: 'Post unggulan (featured)' }),
-  eventDate: (f) => f.meta({ description: 'Tanggal event (webinar/event)' }),
-  externalLink: (f) => f.meta({ description: 'Link eksternal (opsional)' }),
+  eventDate: z.coerce
+    .date({ error: 'Format tidak valid' })
+    .nullable()
+    .optional()
+    .meta({ description: 'Tanggal event' }),
+  externalLink: (f) => f.meta({ description: 'Link eksternal' }),
   publishedAt: (f) => f.meta({ description: 'Waktu publikasi' }),
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
   updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
@@ -354,7 +358,7 @@ export const TokenTag = createSelectSchema(tokenTags, {
     f
       .int('Harus berupa bilangan bulat')
       .nonnegative('Tidak boleh negatif')
-      .meta({ description: 'Display order (opsional)' }),
+      .meta({ description: 'Display order' }),
 });
 export type TokenTag = z.infer<typeof TokenTag>;
 
@@ -365,7 +369,7 @@ export const PostTag = createSelectSchema(postTags, {
     f
       .int('Display order harus bilangan bulat')
       .nonnegative('Display order tidak boleh negatif')
-      .meta({ description: 'Display order (opsional)' }),
+      .meta({ description: 'Display order' }),
 });
 export type PostTag = z.infer<typeof PostTag>;
 

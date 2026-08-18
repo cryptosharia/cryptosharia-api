@@ -5,6 +5,7 @@ const envSchema = z
     NODE_ENV: z
       .enum(['development', 'test', 'production'])
       .default('development'),
+    SERVERLESS: z.preprocess((v) => v === 'true', z.boolean()).default(false),
     PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.url(),
     ACCESS_TOKEN_SECRET: z.string().min(1),
