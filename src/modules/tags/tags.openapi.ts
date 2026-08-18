@@ -64,8 +64,11 @@ export const tagsRouteConfig: RouteConfig[] = [
       201: { description: 'Tag dibuat', body: TagResponse },
       ...commonWriteErrors,
       409: {
-        description: TAGS_ERRORS.NAME_OR_SLUG_CONFLICT,
-        body: createErrorResponse(TAGS_ERRORS, ['NAME_OR_SLUG_CONFLICT']),
+        description: 'Nama atau slug tag sudah ada',
+        body: createErrorResponse(TAGS_ERRORS, [
+          'NAME_CONFLICT',
+          'SLUG_CONFLICT',
+        ]),
       },
     }),
   },
@@ -105,8 +108,11 @@ export const tagsRouteConfig: RouteConfig[] = [
         body: createErrorResponse(TAGS_ERRORS, ['TAG_NOT_FOUND']),
       },
       409: {
-        description: TAGS_ERRORS.NAME_OR_SLUG_CONFLICT,
-        body: createErrorResponse(TAGS_ERRORS, ['NAME_OR_SLUG_CONFLICT']),
+        description: 'Nama atau slug tag sudah ada',
+        body: createErrorResponse(TAGS_ERRORS, [
+          'NAME_CONFLICT',
+          'SLUG_CONFLICT',
+        ]),
       },
     }),
   },

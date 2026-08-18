@@ -193,7 +193,12 @@ export class TagsRepository {
       error.cause instanceof DatabaseError &&
       error.cause.code === '23505'
     ) {
-      throw new TagsError('NAME_OR_SLUG_CONFLICT');
+      if (error.cause.constraint === 'tags_name_unique') {
+        throw new TagsError('NAME_CONFLICT');
+      }
+      if (error.cause.constraint === 'tags_slug_unique') {
+        throw new TagsError('SLUG_CONFLICT');
+      }
     }
     throw error;
   }

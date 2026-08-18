@@ -1,6 +1,7 @@
 export const TAGS_ERRORS = {
   TAG_NOT_FOUND: 'Tag tidak ditemukan',
-  NAME_OR_SLUG_CONFLICT: 'Nama atau slug tag sudah ada',
+  NAME_CONFLICT: 'Nama tag sudah ada',
+  SLUG_CONFLICT: 'Slug tag sudah ada',
   TAG_IN_USE: 'Tag masih digunakan oleh post atau token',
 } as const;
 

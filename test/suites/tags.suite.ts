@@ -223,7 +223,7 @@ export class TagsSuite extends Suite {
             headers,
           });
           expect(updated.response.status).toBe(409);
-          expect(updated.error?.error).toBe('NAME_OR_SLUG_CONFLICT');
+          expect(updated.error?.error).toBe('SLUG_CONFLICT');
         });
       });
 
@@ -256,7 +256,7 @@ export class TagsSuite extends Suite {
             headers,
           });
           expect(duplicate.response.status).toBe(409);
-          expect(duplicate.error?.error).toBe('NAME_OR_SLUG_CONFLICT');
+          expect(duplicate.error?.error).toBe('NAME_CONFLICT');
         });
       });
 

@@ -9,7 +9,8 @@ import { TagsError, type TagsErrorCode } from './tags.error';
 
 const STATUS_CODES = {
   TAG_NOT_FOUND: HttpStatus.NOT_FOUND,
-  NAME_OR_SLUG_CONFLICT: HttpStatus.CONFLICT,
+  NAME_CONFLICT: HttpStatus.CONFLICT,
+  SLUG_CONFLICT: HttpStatus.CONFLICT,
   TAG_IN_USE: HttpStatus.CONFLICT,
 } as const satisfies Record<TagsErrorCode, number>;
 
