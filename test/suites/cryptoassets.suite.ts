@@ -14,7 +14,7 @@ function getToken(html: string) {
   return match[1];
 }
 
-export class TokensSuite extends Suite {
+export class CryptoassetsSuite extends Suite {
   register() {
     const mailer = () => this.ctx.app.get<TestMailerService>(MailerService);
     const users = () => this.ctx.app.get(UsersService);
@@ -23,12 +23,12 @@ export class TokensSuite extends Suite {
       this.ctx.app.get<TestMarketDataService>(MarketDataService);
     const createSession = async (
       email: string,
-      role: 'member' | 'tokens_manager' = 'member',
+      role: 'member' | 'cryptoassets_manager' = 'member',
     ) => {
       const password = 'secure-password';
       await this.ctx.client.POST('/auth/signup', {
         body: {
-          name: 'Token User',
+          name: 'Cryptoasset User',
           email,
           password,
           redirectUrl: 'https://app.cryptosharia.id/verify/{token}',
@@ -45,12 +45,12 @@ export class TokensSuite extends Suite {
       if (!signin.data) throw new Error('Signin response has no token pair');
       return signin.data.accessToken;
     };
-    const createAsset = async (pathname = 'test/token-logo.png') => {
+    const createAsset = async (pathname = 'test/cryptoasset-logo.png') => {
       const [asset] = await db()
         .insert(assets)
         .values({
           pathname,
-          filename: 'token-logo.png',
+          filename: 'cryptoasset-logo.png',
           size: 1,
           mimeType: 'image/png',
           width: null,
@@ -64,7 +64,7 @@ export class TokensSuite extends Suite {
       const [tag] = await db().insert(tags).values({ name, slug }).returning();
       return tag;
     };
-    const tokenBody = (input: {
+    const cryptoassetBody = (input: {
       slug: string;
       rank: number;
       name: string;
@@ -90,31 +90,31 @@ export class TokensSuite extends Suite {
       tags: input.tags ?? [],
     });
 
-    describe('Tokens', () => {
+    describe('Cryptoassets', () => {
       describe('selectAll', () => {
-        it('returns only published tokens to a guest with a total-items header', async () => {
+        it('returns only published cryptoassets to a guest with a total-items header', async () => {
           const accessToken = await createSession(
-            'token-list@example.com',
-            'tokens_manager',
+            'cryptoasset-list@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
-              slug: 'draft-token',
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
+              slug: 'draft-cryptoasset',
               rank: 1,
-              name: 'Draft Token',
+              name: 'Draft Cryptoasset',
               ticker: 'DRFT',
               logoId: asset.id,
               status: 'draft',
             }),
             headers,
           });
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
-              slug: 'published-token',
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
+              slug: 'published-cryptoasset',
               rank: 2,
-              name: 'Published Token',
+              name: 'Published Cryptoasset',
               ticker: 'PUB',
               logoId: asset.id,
               status: 'published',
@@ -122,23 +122,23 @@ export class TokensSuite extends Suite {
             headers,
           });
 
-          const { data, response } = await this.ctx.client.GET('/tokens');
+          const { data, response } = await this.ctx.client.GET('/cryptoassets');
           expect(response.status).toBe(200);
           expect(response.headers.get('total-items')).toBe('1');
           expect(data).toHaveLength(1);
-          expect(data?.[0]?.slug).toBe('published-token');
+          expect(data?.[0]?.slug).toBe('published-cryptoasset');
           expect(data?.[0]).not.toHaveProperty('content');
         });
 
         it('filters by sharia status and search', async () => {
           const accessToken = await createSession(
-            'token-filter@example.com',
-            'tokens_manager',
+            'cryptoasset-filter@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'halal-coin',
               rank: 1,
               name: 'Halal Coin',
@@ -149,8 +149,8 @@ export class TokensSuite extends Suite {
             }),
             headers,
           });
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'haram-coin',
               rank: 2,
               name: 'Haram Coin',
@@ -162,17 +162,22 @@ export class TokensSuite extends Suite {
             headers,
           });
 
-          const { data, response } = await this.ctx.client.GET('/tokens', {
-            params: { query: { shariaStatuses: ['haram'], search: 'Haram' } },
-          });
+          const { data, response } = await this.ctx.client.GET(
+            '/cryptoassets',
+            {
+              params: { query: { shariaStatuses: ['haram'], search: 'Haram' } },
+            },
+          );
           expect(response.status).toBe(200);
           expect(response.headers.get('total-items')).toBe('1');
           expect(data?.[0]?.slug).toBe('haram-coin');
         });
 
-        it('rejects explicit non-published status filters without tokens.manage', async () => {
-          const accessToken = await createSession('token-guest@example.com');
-          const { response } = await this.ctx.client.GET('/tokens', {
+        it('rejects explicit non-published status filters without cryptoassets.manage', async () => {
+          const accessToken = await createSession(
+            'cryptoasset-guest@example.com',
+          );
+          const { response } = await this.ctx.client.GET('/cryptoassets', {
             params: { query: { statuses: ['draft'] } },
             headers: { authorization: `Bearer ${accessToken}` },
           });
@@ -181,13 +186,13 @@ export class TokensSuite extends Suite {
 
         it('omits quotes by default and includes them when quote=true', async () => {
           const accessToken = await createSession(
-            'token-quote@example.com',
-            'tokens_manager',
+            'cryptoasset-quote@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'quote-coin',
               rank: 1,
               name: 'Quote Coin',
@@ -198,11 +203,11 @@ export class TokensSuite extends Suite {
             headers,
           });
 
-          const plain = await this.ctx.client.GET('/tokens');
+          const plain = await this.ctx.client.GET('/cryptoassets');
           expect(plain.response.status).toBe(200);
           expect(plain.data?.[0]).not.toHaveProperty('quote');
 
-          const quoted = await this.ctx.client.GET('/tokens', {
+          const quoted = await this.ctx.client.GET('/cryptoassets', {
             params: { query: { quote: true } },
           });
           expect(quoted.response.status).toBe(200);
@@ -214,13 +219,13 @@ export class TokensSuite extends Suite {
 
         it('returns 502 when market data fails while quotes are requested', async () => {
           const accessToken = await createSession(
-            'token-quote-fail@example.com',
-            'tokens_manager',
+            'cryptoasset-quote-fail@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'fail-coin',
               rank: 1,
               name: 'Fail Coin',
@@ -234,22 +239,25 @@ export class TokensSuite extends Suite {
             new MarketDataError('QUOTES_FETCH_FAILED'),
           );
 
-          const { error, response } = await this.ctx.client.GET('/tokens', {
-            params: { query: { quote: true } },
-          });
+          const { error, response } = await this.ctx.client.GET(
+            '/cryptoassets',
+            {
+              params: { query: { quote: true } },
+            },
+          );
           expect(response.status).toBe(502);
           expect(error?.error).toBe('QUOTES_UNAVAILABLE');
         });
 
-        it('includes quotes for a page of multiple tokens', async () => {
+        it('includes quotes for a page of multiple cryptoassets', async () => {
           const accessToken = await createSession(
-            'token-quote-batch@example.com',
-            'tokens_manager',
+            'cryptoasset-quote-batch@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'batch-one',
               rank: 1,
               name: 'Batch One',
@@ -259,8 +267,8 @@ export class TokensSuite extends Suite {
             }),
             headers,
           });
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'batch-two',
               rank: 2,
               name: 'Batch Two',
@@ -271,9 +279,12 @@ export class TokensSuite extends Suite {
             headers,
           });
 
-          const { data, response } = await this.ctx.client.GET('/tokens', {
-            params: { query: { quote: true } },
-          });
+          const { data, response } = await this.ctx.client.GET(
+            '/cryptoassets',
+            {
+              params: { query: { quote: true } },
+            },
+          );
           expect(response.status).toBe(200);
           expect(data).toHaveLength(2);
           expect(marketData().getQuotes).toHaveBeenCalledTimes(1);
@@ -287,9 +298,9 @@ export class TokensSuite extends Suite {
       });
 
       describe('security', () => {
-        it('rejects token creation without an API key', async () => {
+        it('rejects cryptoasset creation without an API key', async () => {
           const { response } = await this.ctx.clientWithoutApiKey.POST(
-            '/tokens',
+            '/cryptoassets',
             {
               body: {} as never,
             },
@@ -297,10 +308,10 @@ export class TokensSuite extends Suite {
           expect(response.status).toBe(401);
         });
 
-        it('rejects token creation without a bearer token', async () => {
+        it('rejects cryptoasset creation without a bearer token', async () => {
           const asset = await createAsset();
-          const { response } = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const { response } = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'no-auth',
               rank: 1,
               name: 'No Auth',
@@ -311,11 +322,13 @@ export class TokensSuite extends Suite {
           expect(response.status).toBe(401);
         });
 
-        it('requires tokens.manage to create a token', async () => {
-          const accessToken = await createSession('token-member@example.com');
+        it('requires cryptoassets.manage to create a cryptoasset', async () => {
+          const accessToken = await createSession(
+            'cryptoasset-member@example.com',
+          );
           const asset = await createAsset();
-          const { response } = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const { response } = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'forbidden',
               rank: 1,
               name: 'Forbidden',
@@ -329,27 +342,30 @@ export class TokensSuite extends Suite {
       });
 
       describe('create', () => {
-        it('creates a token with tags and normalized logo', async () => {
+        it('creates a cryptoasset with tags and normalized logo', async () => {
           const accessToken = await createSession(
-            'token-create@example.com',
-            'tokens_manager',
+            'cryptoasset-create@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
-          const asset = await createAsset('test/token-create.png');
+          const asset = await createAsset('test/cryptoasset-create.png');
           const tag = await createTag('DeFi', 'defi');
 
-          const { data, response } = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
-              slug: 'bitcoin',
-              rank: 1,
-              name: 'Bitcoin',
-              ticker: 'BTC',
-              logoId: asset.id,
-              status: 'published',
-              tags: [tag.slug],
-            }),
-            headers,
-          });
+          const { data, response } = await this.ctx.client.POST(
+            '/cryptoassets',
+            {
+              body: cryptoassetBody({
+                slug: 'bitcoin',
+                rank: 1,
+                name: 'Bitcoin',
+                ticker: 'BTC',
+                logoId: asset.id,
+                status: 'published',
+                tags: [tag.slug],
+              }),
+              headers,
+            },
+          );
           expect(response.status).toBe(201);
           expect(data?.slug).toBe('bitcoin');
           expect(data?.status).toBe('published');
@@ -362,19 +378,22 @@ export class TokensSuite extends Suite {
 
         it('returns validation details for an unknown logo', async () => {
           const accessToken = await createSession(
-            'token-bad-logo@example.com',
-            'tokens_manager',
+            'cryptoasset-bad-logo@example.com',
+            'cryptoassets_manager',
           );
-          const { error, response } = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
-              slug: 'bad-logo',
-              rank: 1,
-              name: 'Bad Logo',
-              ticker: 'BLG',
-              logoId: crypto.randomUUID(),
-            }),
-            headers: { authorization: `Bearer ${accessToken}` },
-          });
+          const { error, response } = await this.ctx.client.POST(
+            '/cryptoassets',
+            {
+              body: cryptoassetBody({
+                slug: 'bad-logo',
+                rank: 1,
+                name: 'Bad Logo',
+                ticker: 'BLG',
+                logoId: crypto.randomUUID(),
+              }),
+              headers: { authorization: `Bearer ${accessToken}` },
+            },
+          );
           expect(response.status).toBe(422);
           expect(error?.error).toBe('VALIDATION_FAILED');
           expect(
@@ -390,21 +409,24 @@ export class TokensSuite extends Suite {
 
         it('returns validation details for an unknown tag', async () => {
           const accessToken = await createSession(
-            'token-bad-tag@example.com',
-            'tokens_manager',
+            'cryptoasset-bad-tag@example.com',
+            'cryptoassets_manager',
           );
           const asset = await createAsset();
-          const { error, response } = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
-              slug: 'bad-tag',
-              rank: 1,
-              name: 'Bad Tag',
-              ticker: 'BTG',
-              logoId: asset.id,
-              tags: ['missing-tag'],
-            }),
-            headers: { authorization: `Bearer ${accessToken}` },
-          });
+          const { error, response } = await this.ctx.client.POST(
+            '/cryptoassets',
+            {
+              body: cryptoassetBody({
+                slug: 'bad-tag',
+                rank: 1,
+                name: 'Bad Tag',
+                ticker: 'BTG',
+                logoId: asset.id,
+                tags: ['missing-tag'],
+              }),
+              headers: { authorization: `Bearer ${accessToken}` },
+            },
+          );
           expect(response.status).toBe(422);
           expect(
             (
@@ -419,21 +441,21 @@ export class TokensSuite extends Suite {
 
         it('rejects a duplicate slug', async () => {
           const accessToken = await createSession(
-            'token-slug@example.com',
-            'tokens_manager',
+            'cryptoasset-slug@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          const body = tokenBody({
+          const body = cryptoassetBody({
             slug: 'duplicate',
             rank: 1,
             name: 'Duplicate',
             ticker: 'DUP',
             logoId: asset.id,
           });
-          await this.ctx.client.POST('/tokens', { body, headers });
-          const duplicate = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          await this.ctx.client.POST('/cryptoassets', { body, headers });
+          const duplicate = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'duplicate',
               rank: 2,
               name: 'Other',
@@ -448,13 +470,13 @@ export class TokensSuite extends Suite {
 
         it('rejects a duplicate ticker', async () => {
           const accessToken = await createSession(
-            'token-ticker@example.com',
-            'tokens_manager',
+            'cryptoasset-ticker@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'first',
               rank: 1,
               name: 'First',
@@ -463,8 +485,8 @@ export class TokensSuite extends Suite {
             }),
             headers,
           });
-          const duplicate = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const duplicate = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'second',
               rank: 2,
               name: 'Second',
@@ -479,15 +501,15 @@ export class TokensSuite extends Suite {
       });
 
       describe('selectByIdentifier', () => {
-        it('gets a token by slug and by id, and hides drafts without permission', async () => {
+        it('gets a cryptoasset by slug and by id, and hides drafts without permission', async () => {
           const accessToken = await createSession(
-            'token-detail@example.com',
-            'tokens_manager',
+            'cryptoasset-detail@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          const created = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const created = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'detail-coin',
               rank: 1,
               name: 'Detail Coin',
@@ -498,22 +520,28 @@ export class TokensSuite extends Suite {
             headers,
           });
           if (!created.data)
-            throw new Error('Create token response has no data');
+            throw new Error('Create cryptoasset response has no data');
 
-          const guest = await this.ctx.client.GET('/tokens/{identifier}', {
-            params: { path: { identifier: 'detail-coin' } },
-          });
+          const guest = await this.ctx.client.GET(
+            '/cryptoassets/{identifier}',
+            {
+              params: { path: { identifier: 'detail-coin' } },
+            },
+          );
           expect(guest.response.status).toBe(404);
 
-          const bySlug = await this.ctx.client.GET('/tokens/{identifier}', {
-            params: { path: { identifier: 'detail-coin' } },
-            headers,
-          });
+          const bySlug = await this.ctx.client.GET(
+            '/cryptoassets/{identifier}',
+            {
+              params: { path: { identifier: 'detail-coin' } },
+              headers,
+            },
+          );
           expect(bySlug.response.status).toBe(200);
           expect(bySlug.data?.id).toBe(created.data.id);
           expect(bySlug.data?.content).toBe('Content');
 
-          const byId = await this.ctx.client.GET('/tokens/{identifier}', {
+          const byId = await this.ctx.client.GET('/cryptoassets/{identifier}', {
             params: { path: { identifier: created.data.id } },
             headers,
           });
@@ -522,13 +550,13 @@ export class TokensSuite extends Suite {
 
         it('includes a quote on detail when requested', async () => {
           const accessToken = await createSession(
-            'token-detail-quote@example.com',
-            'tokens_manager',
+            'cryptoasset-detail-quote@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          const created = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const created = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'quote-detail',
               rank: 1,
               name: 'Quote Detail',
@@ -539,31 +567,40 @@ export class TokensSuite extends Suite {
             headers,
           });
           if (!created.data)
-            throw new Error('Create token response has no data');
+            throw new Error('Create cryptoasset response has no data');
 
-          const quoted = await this.ctx.client.GET('/tokens/{identifier}', {
-            params: {
-              path: { identifier: 'quote-detail' },
-              query: { quote: true },
+          const quoted = await this.ctx.client.GET(
+            '/cryptoassets/{identifier}',
+            {
+              params: {
+                path: { identifier: 'quote-detail' },
+                query: { quote: true },
+              },
             },
-          });
+          );
           expect(quoted.response.status).toBe(200);
           expect(quoted.data?.quote).toMatchObject({ priceUsd: 100 });
         });
       });
 
       describe('update/delete', () => {
-        it('updates a token, replaces tags, and keeps the original publishedAt', async () => {
+        it('updates a cryptoasset, replaces tags, and keeps the original publishedAt', async () => {
           const accessToken = await createSession(
-            'token-update@example.com',
-            'tokens_manager',
+            'cryptoasset-update@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          const oldTag = await createTag('Old Token Tag', 'old-token-tag');
-          const newTag = await createTag('New Token Tag', 'new-token-tag');
-          const created = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const oldTag = await createTag(
+            'Old Cryptoasset Tag',
+            'old-cryptoasset-tag',
+          );
+          const newTag = await createTag(
+            'New Cryptoasset Tag',
+            'new-cryptoasset-tag',
+          );
+          const created = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'update-coin',
               rank: 1,
               name: 'Update Coin',
@@ -575,39 +612,42 @@ export class TokensSuite extends Suite {
             headers,
           });
           if (!created.data)
-            throw new Error('Create token response has no data');
+            throw new Error('Create cryptoasset response has no data');
 
-          await this.ctx.client.PATCH('/tokens/{id}', {
+          await this.ctx.client.PATCH('/cryptoassets/{id}', {
             params: { path: { id: created.data.id } },
             body: { status: 'draft' },
             headers,
           });
-          const republished = await this.ctx.client.PATCH('/tokens/{id}', {
-            params: { path: { id: created.data.id } },
-            body: {
-              name: 'Updated Coin',
-              status: 'published',
-              tags: [newTag.slug],
+          const republished = await this.ctx.client.PATCH(
+            '/cryptoassets/{id}',
+            {
+              params: { path: { id: created.data.id } },
+              body: {
+                name: 'Updated Coin',
+                status: 'published',
+                tags: [newTag.slug],
+              },
+              headers,
             },
-            headers,
-          });
+          );
           expect(republished.response.status).toBe(200);
           expect(republished.data?.name).toBe('Updated Coin');
           expect(republished.data?.publishedAt).toBe(created.data.publishedAt);
           expect(republished.data?.tags).toEqual([
-            expect.objectContaining({ slug: 'new-token-tag' }),
+            expect.objectContaining({ slug: 'new-cryptoasset-tag' }),
           ]);
         });
 
         it('rejects an empty update body', async () => {
           const accessToken = await createSession(
-            'token-empty-update@example.com',
-            'tokens_manager',
+            'cryptoasset-empty-update@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          const created = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const created = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'empty-update',
               rank: 1,
               name: 'Empty Update',
@@ -617,10 +657,10 @@ export class TokensSuite extends Suite {
             headers,
           });
           if (!created.data)
-            throw new Error('Create token response has no data');
+            throw new Error('Create cryptoasset response has no data');
 
           const { error, response } = await this.ctx.client.PATCH(
-            '/tokens/{id}',
+            '/cryptoassets/{id}',
             {
               params: { path: { id: created.data.id } },
               body: {},
@@ -635,28 +675,31 @@ export class TokensSuite extends Suite {
           ).toContain('Minimal satu field wajib diisi');
         });
 
-        it('returns not found when updating a missing token', async () => {
+        it('returns not found when updating a missing cryptoasset', async () => {
           const accessToken = await createSession(
-            'token-update-missing@example.com',
-            'tokens_manager',
+            'cryptoasset-update-missing@example.com',
+            'cryptoassets_manager',
           );
-          const { response } = await this.ctx.client.PATCH('/tokens/{id}', {
-            params: { path: { id: crypto.randomUUID() } },
-            body: { name: 'Missing' },
-            headers: { authorization: `Bearer ${accessToken}` },
-          });
+          const { response } = await this.ctx.client.PATCH(
+            '/cryptoassets/{id}',
+            {
+              params: { path: { id: crypto.randomUUID() } },
+              body: { name: 'Missing' },
+              headers: { authorization: `Bearer ${accessToken}` },
+            },
+          );
           expect(response.status).toBe(404);
         });
 
-        it('deletes a token and returns not found afterwards', async () => {
+        it('deletes a cryptoasset and returns not found afterwards', async () => {
           const accessToken = await createSession(
-            'token-delete@example.com',
-            'tokens_manager',
+            'cryptoasset-delete@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          const created = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const created = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'delete-coin',
               rank: 1,
               name: 'Delete Coin',
@@ -666,44 +709,53 @@ export class TokensSuite extends Suite {
             headers,
           });
           if (!created.data)
-            throw new Error('Create token response has no data');
+            throw new Error('Create cryptoasset response has no data');
 
-          const deleted = await this.ctx.client.DELETE('/tokens/{id}', {
+          const deleted = await this.ctx.client.DELETE('/cryptoassets/{id}', {
             params: { path: { id: created.data.id } },
             headers,
           });
           expect(deleted.response.status).toBe(204);
 
-          const missing = await this.ctx.client.GET('/tokens/{identifier}', {
-            params: { path: { identifier: created.data.id } },
-            headers,
-          });
+          const missing = await this.ctx.client.GET(
+            '/cryptoassets/{identifier}',
+            {
+              params: { path: { identifier: created.data.id } },
+              headers,
+            },
+          );
           expect(missing.response.status).toBe(404);
         });
 
-        it('rejects an invalid token id format', async () => {
+        it('rejects an invalid cryptoasset id format', async () => {
           const accessToken = await createSession(
-            'token-update-bad-id@example.com',
-            'tokens_manager',
+            'cryptoasset-update-bad-id@example.com',
+            'cryptoassets_manager',
           );
-          const { response } = await this.ctx.client.PATCH('/tokens/{id}', {
-            params: { path: { id: 'not-a-uuid' } },
-            body: { name: 'Bad' },
-            headers: { authorization: `Bearer ${accessToken}` },
-          });
+          const { response } = await this.ctx.client.PATCH(
+            '/cryptoassets/{id}',
+            {
+              params: { path: { id: 'not-a-uuid' } },
+              body: { name: 'Bad' },
+              headers: { authorization: `Bearer ${accessToken}` },
+            },
+          );
           expect(response.status).toBe(422);
         });
 
         it('clears all tags when updating with an empty tag list', async () => {
           const accessToken = await createSession(
-            'token-clear-tags@example.com',
-            'tokens_manager',
+            'cryptoasset-clear-tags@example.com',
+            'cryptoassets_manager',
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset();
-          const tag = await createTag('Clear Token Tag', 'clear-token-tag');
-          const created = await this.ctx.client.POST('/tokens', {
-            body: tokenBody({
+          const tag = await createTag(
+            'Clear Cryptoasset Tag',
+            'clear-cryptoasset-tag',
+          );
+          const created = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
               slug: 'clear-tags',
               rank: 1,
               name: 'Clear Tags',
@@ -714,9 +766,9 @@ export class TokensSuite extends Suite {
             headers,
           });
           if (!created.data)
-            throw new Error('Create token response has no data');
+            throw new Error('Create cryptoasset response has no data');
 
-          const updated = await this.ctx.client.PATCH('/tokens/{id}', {
+          const updated = await this.ctx.client.PATCH('/cryptoassets/{id}', {
             params: { path: { id: created.data.id } },
             body: { tags: [] },
             headers,

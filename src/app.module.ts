@@ -25,7 +25,7 @@ import { AssetsModule } from './modules/assets/assets.module';
 import { TagsModule } from './modules/tags/tags.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { PostsModule } from './modules/posts/posts.module';
-import { TokensModule } from './modules/tokens/tokens.module';
+import { CryptoassetsModule } from './modules/cryptoassets/cryptoassets.module';
 
 @Module({
   imports: [
@@ -45,7 +45,7 @@ import { TokensModule } from './modules/tokens/tokens.module';
     TagsModule,
     MessagesModule,
     PostsModule,
-    TokensModule,
+    CryptoassetsModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },

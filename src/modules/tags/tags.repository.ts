@@ -16,9 +16,9 @@ import { escapeLikePattern } from '#src/common/escape-like-pattern';
 import { isUuid } from '#src/common/is-uuid';
 import type { AuditMetadata } from '#src/modules/audit/audit.schemas';
 import {
+  cryptoassetTags,
   postTags,
   tags,
-  tokenTags,
   users,
 } from '#src/modules/drizzle/drizzle.schema';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
@@ -167,18 +167,21 @@ export class TagsRepository {
 
   async delete(id: Tag['id'], force: boolean): Promise<Tag> {
     return this.drizzleService.db.transaction(async (tx) => {
-      const [[postUsage], [tokenUsage]] = await Promise.all([
+      const [[postUsage], [cryptoassetUsage]] = await Promise.all([
         tx
           .select({ value: count() })
           .from(postTags)
           .where(eq(postTags.tagId, id)),
         tx
           .select({ value: count() })
-          .from(tokenTags)
-          .where(eq(tokenTags.tagId, id)),
+          .from(cryptoassetTags)
+          .where(eq(cryptoassetTags.tagId, id)),
       ]);
-      const usage = { posts: postUsage.value, tokens: tokenUsage.value };
-      if (!force && (usage.posts || usage.tokens)) {
+      const usage = {
+        posts: postUsage.value,
+        cryptoassets: cryptoassetUsage.value,
+      };
+      if (!force && (usage.posts || usage.cryptoassets)) {
         throw new TagsError('TAG_IN_USE', { usage });
       }
       const [tag] = await tx.delete(tags).where(eq(tags.id, id)).returning();

@@ -1,20 +1,24 @@
 import { z } from 'zod';
 import { AssetMetadata } from '#src/modules/assets/assets.schemas';
 import { AuditMetadata } from '#src/modules/audit/audit.schemas';
-import { Tag, Token } from '#src/modules/drizzle/drizzle.types';
+import { Cryptoasset, Tag } from '#src/modules/drizzle/drizzle.types';
 
-export const TokenTagItem = Tag.pick({ id: true, name: true, slug: true });
-export type TokenTagItem = z.infer<typeof TokenTagItem>;
+export const CryptoassetTagItem = Tag.pick({
+  id: true,
+  name: true,
+  slug: true,
+});
+export type CryptoassetTagItem = z.infer<typeof CryptoassetTagItem>;
 
-export const TokenTagDetail = Tag.pick({
+export const CryptoassetTagDetail = Tag.pick({
   id: true,
   name: true,
   slug: true,
   description: true,
 });
-export type TokenTagDetail = z.infer<typeof TokenTagDetail>;
+export type CryptoassetTagDetail = z.infer<typeof CryptoassetTagDetail>;
 
-export const TokenQuote = z.object({
+export const CryptoassetQuote = z.object({
   slug: z.string(),
   rank: z.number().int(),
   infiniteSupply: z.boolean(),
@@ -25,9 +29,9 @@ export const TokenQuote = z.object({
   marketCapDominance: z.number(),
   percentChange24h: z.number(),
 });
-export type TokenQuote = z.infer<typeof TokenQuote>;
+export type CryptoassetQuote = z.infer<typeof CryptoassetQuote>;
 
-export const TokenListItem = Token.omit({
+export const CryptoassetListItem = Cryptoasset.omit({
   content: true,
   logoId: true,
   createdBy: true,
@@ -35,36 +39,36 @@ export const TokenListItem = Token.omit({
 })
   .extend({
     logo: AssetMetadata.nullable(),
-    tags: z.array(TokenTagItem),
-    quote: TokenQuote.nullable().optional(),
+    tags: z.array(CryptoassetTagItem),
+    quote: CryptoassetQuote.nullable().optional(),
   })
   .extend(AuditMetadata.shape);
-export type TokenListItem = z.infer<typeof TokenListItem>;
+export type CryptoassetListItem = z.infer<typeof CryptoassetListItem>;
 
-export const TokenDetail = Token.omit({
+export const CryptoassetDetail = Cryptoasset.omit({
   logoId: true,
   createdBy: true,
   updatedBy: true,
 })
   .extend({
     logo: AssetMetadata.nullable(),
-    tags: z.array(TokenTagDetail),
-    quote: TokenQuote.nullable().optional(),
+    tags: z.array(CryptoassetTagDetail),
+    quote: CryptoassetQuote.nullable().optional(),
   })
   .extend(AuditMetadata.shape);
-export type TokenDetail = z.infer<typeof TokenDetail>;
+export type CryptoassetDetail = z.infer<typeof CryptoassetDetail>;
 
-export const TokenIdentifier = z
-  .union([Token.shape.id, Token.shape.slug])
+export const CryptoassetIdentifier = z
+  .union([Cryptoasset.shape.id, Cryptoasset.shape.slug])
   .meta({ description: 'ID atau slug cryptoasset', example: 'bitcoin' });
 
-export const TokenParam = z.object({ identifier: TokenIdentifier });
-export type TokenParam = z.infer<typeof TokenParam>;
+export const CryptoassetParam = z.object({ identifier: CryptoassetIdentifier });
+export type CryptoassetParam = z.infer<typeof CryptoassetParam>;
 
-export const TokenIdParam = z.object({
-  id: Token.shape.id.meta({ description: 'ID cryptoasset' }),
+export const CryptoassetIdParam = z.object({
+  id: Cryptoasset.shape.id.meta({ description: 'ID cryptoasset' }),
 });
-export type TokenIdParam = z.infer<typeof TokenIdParam>;
+export type CryptoassetIdParam = z.infer<typeof CryptoassetIdParam>;
 
 export const quoteFlag = z.preprocess(
   (value) => (value === 'true' ? true : value === 'false' ? false : value),
@@ -73,10 +77,10 @@ export const quoteFlag = z.preprocess(
   }),
 );
 
-export const TokenQuoteQuery = z.object({ quote: quoteFlag });
-export type TokenQuoteQuery = z.infer<typeof TokenQuoteQuery>;
+export const CryptoassetQuoteQuery = z.object({ quote: quoteFlag });
+export type CryptoassetQuoteQuery = z.infer<typeof CryptoassetQuoteQuery>;
 
-export const TokensQuery = z.object({
+export const CryptoassetsQuery = z.object({
   page: z.coerce
     .number()
     .int('Harus berupa bilangan bulat')
@@ -98,28 +102,28 @@ export const TokensQuery = z.object({
   statuses: z.preprocess(
     (value) =>
       value === undefined ? undefined : Array.isArray(value) ? value : [value],
-    z.array(Token.shape.status).optional().meta({
+    z.array(Cryptoasset.shape.status).optional().meta({
       description: 'Filter berdasarkan status publikasi',
     }),
   ),
   shariaStatuses: z.preprocess(
     (value) =>
       value === undefined ? undefined : Array.isArray(value) ? value : [value],
-    z.array(Token.shape.shariaStatus).optional().meta({
+    z.array(Cryptoasset.shape.shariaStatus).optional().meta({
       description: 'Filter berdasarkan status syariah',
     }),
   ),
   slugs: z.preprocess(
     (value) =>
       value === undefined ? undefined : Array.isArray(value) ? value : [value],
-    z.array(Token.shape.slug).optional().meta({
-      description: 'Filter berdasarkan slug token',
+    z.array(Cryptoasset.shape.slug).optional().meta({
+      description: 'Filter berdasarkan slug cryptoasset',
     }),
   ),
   exclude: z.preprocess(
     (value) =>
       value === undefined ? undefined : Array.isArray(value) ? value : [value],
-    z.array(Token.shape.slug).optional().meta({
+    z.array(Cryptoasset.shape.slug).optional().meta({
       description: 'Kecualikan slug tertentu',
     }),
   ),
@@ -131,13 +135,13 @@ export const TokensQuery = z.object({
     }),
   ),
 });
-export type TokensQuery = z.infer<typeof TokensQuery>;
+export type CryptoassetsQuery = z.infer<typeof CryptoassetsQuery>;
 
-export const TokenWriteTags = z
+export const CryptoassetWriteTags = z
   .array(z.union([Tag.shape.id, Tag.shape.slug]))
   .max(50, 'Maksimal 50 tag');
 
-export const TokenCreateBody = Token.pick({
+export const CryptoassetCreateBody = Cryptoasset.pick({
   slug: true,
   rank: true,
   name: true,
@@ -150,12 +154,12 @@ export const TokenCreateBody = Token.pick({
   logoId: true,
   content: true,
 }).extend({
-  tags: TokenWriteTags,
+  tags: CryptoassetWriteTags,
 });
-export type TokenCreateBody = z.infer<typeof TokenCreateBody>;
+export type CryptoassetCreateBody = z.infer<typeof CryptoassetCreateBody>;
 
-export const TokenUpdateBody = TokenCreateBody.partial().refine(
+export const CryptoassetUpdateBody = CryptoassetCreateBody.partial().refine(
   (value) => Object.keys(value).length > 0,
   { error: 'Minimal satu field wajib diisi' },
 );
-export type TokenUpdateBody = z.infer<typeof TokenUpdateBody>;
+export type CryptoassetUpdateBody = z.infer<typeof CryptoassetUpdateBody>;

@@ -87,11 +87,11 @@ export const TagInUseDetails = {
         .int('Harus berupa bilangan bulat')
         .nonnegative('Harus berupa angka non-negatif')
         .meta({ description: 'Jumlah post yang memakai tag' }),
-      tokens: z
+      cryptoassets: z
         .number()
         .int('Harus berupa bilangan bulat')
         .nonnegative('Harus berupa angka non-negatif')
-        .meta({ description: 'Jumlah token yang memakai tag' }),
+        .meta({ description: 'Jumlah cryptoasset yang memakai tag' }),
     })
     .meta({ description: 'Referensi yang menghalangi penghapusan' }),
 };

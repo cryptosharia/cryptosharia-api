@@ -21,50 +21,50 @@ import { createValidationError } from '#src/common/create-validation-error';
 import type { AuditMetadata } from '#src/modules/audit/audit.schemas';
 import {
   assets,
+  cryptoassetTags,
+  cryptoassets,
   tags,
-  tokenTags,
-  tokens,
   users,
 } from '#src/modules/drizzle/drizzle.schema';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
 import type {
   Asset,
+  Cryptoasset,
   DbExecutor,
   Tag,
-  Token,
 } from '#src/modules/drizzle/drizzle.types';
-import { TokensError } from './tokens.error';
+import { CryptoassetsError } from './cryptoassets.error';
 
-export type TokenWithRelation = {
-  token: Token;
+export type CryptoassetWithRelation = {
+  cryptoasset: Cryptoasset;
   logo: Asset | null;
   tags: Tag[];
   createdBy: AuditMetadata['createdBy'];
   updatedBy: AuditMetadata['updatedBy'];
 };
 
-const createdByUser = alias(users, 'token_created_by');
-const updatedByUser = alias(users, 'token_updated_by');
+const createdByUser = alias(users, 'cryptoasset_created_by');
+const updatedByUser = alias(users, 'cryptoasset_updated_by');
 
-type TokenListInput = {
+type CryptoassetListInput = {
   page: number;
   limit: number;
   search?: string;
-  statuses?: Token['status'][];
-  shariaStatuses?: Token['shariaStatus'][];
+  statuses?: Cryptoasset['status'][];
+  shariaStatuses?: Cryptoasset['shariaStatus'][];
   slugs?: string[];
   exclude?: string[];
   tags?: string[];
 };
 
 @Injectable()
-export class TokensRepository {
+export class CryptoassetsRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
 
   private selectBase(dbExecutor: DbExecutor) {
     return dbExecutor
       .select({
-        token: tokens,
+        cryptoasset: cryptoassets,
         logo: assets,
         createdBy: {
           id: createdByUser.id,
@@ -77,38 +77,39 @@ export class TokensRepository {
           email: updatedByUser.email,
         },
       })
-      .from(tokens)
-      .leftJoin(assets, eq(tokens.logoId, assets.id))
-      .leftJoin(createdByUser, eq(tokens.createdBy, createdByUser.id))
-      .leftJoin(updatedByUser, eq(tokens.updatedBy, updatedByUser.id));
+      .from(cryptoassets)
+      .leftJoin(assets, eq(cryptoassets.logoId, assets.id))
+      .leftJoin(createdByUser, eq(cryptoassets.createdBy, createdByUser.id))
+      .leftJoin(updatedByUser, eq(cryptoassets.updatedBy, updatedByUser.id));
   }
 
-  private buildFilters(input: TokenListInput): SQL | undefined {
+  private buildFilters(input: CryptoassetListInput): SQL | undefined {
     const filters: SQL[] = [];
     if (input.statuses?.length)
-      filters.push(inArray(tokens.status, input.statuses));
+      filters.push(inArray(cryptoassets.status, input.statuses));
     if (input.shariaStatuses?.length)
-      filters.push(inArray(tokens.shariaStatus, input.shariaStatuses));
-    if (input.slugs?.length) filters.push(inArray(tokens.slug, input.slugs));
+      filters.push(inArray(cryptoassets.shariaStatus, input.shariaStatuses));
+    if (input.slugs?.length)
+      filters.push(inArray(cryptoassets.slug, input.slugs));
     if (input.exclude?.length)
-      filters.push(notInArray(tokens.slug, input.exclude));
+      filters.push(notInArray(cryptoassets.slug, input.exclude));
     if (input.tags?.length) {
-      const matchingTokenIds = this.drizzleService.db
-        .select({ tokenId: tokenTags.tokenId })
-        .from(tokenTags)
-        .innerJoin(tags, eq(tokenTags.tagId, tags.id))
+      const matchingCryptoassetIds = this.drizzleService.db
+        .select({ cryptoassetId: cryptoassetTags.cryptoassetId })
+        .from(cryptoassetTags)
+        .innerJoin(tags, eq(cryptoassetTags.tagId, tags.id))
         .where(inArray(tags.slug, input.tags));
-      filters.push(inArray(tokens.id, matchingTokenIds));
+      filters.push(inArray(cryptoassets.id, matchingCryptoassetIds));
     }
     if (input.search) {
       const pattern = `%${escapeLikePattern(input.search)}%`;
       filters.push(
         or(
-          ilike(tokens.name, pattern),
-          ilike(tokens.ticker, pattern),
-          ilike(tokens.slug, pattern),
-          ilike(tokens.excerpt, pattern),
-          ilike(tokens.content, pattern),
+          ilike(cryptoassets.name, pattern),
+          ilike(cryptoassets.ticker, pattern),
+          ilike(cryptoassets.slug, pattern),
+          ilike(cryptoassets.excerpt, pattern),
+          ilike(cryptoassets.content, pattern),
         )!,
       );
     }
@@ -116,65 +117,71 @@ export class TokensRepository {
   }
 
   private async withRelations(
-    rows: Array<Omit<TokenWithRelation, 'tags'>>,
-  ): Promise<TokenWithRelation[]> {
-    if (!rows.length) return rows as TokenWithRelation[];
-    const ids = rows.map((row) => row.token.id);
+    rows: Array<Omit<CryptoassetWithRelation, 'tags'>>,
+  ): Promise<CryptoassetWithRelation[]> {
+    if (!rows.length) return rows as CryptoassetWithRelation[];
+    const ids = rows.map((row) => row.cryptoasset.id);
     const tagRows = await this.drizzleService.db
-      .select({ tokenId: tokenTags.tokenId, tag: tags })
-      .from(tokenTags)
-      .innerJoin(tags, eq(tokenTags.tagId, tags.id))
-      .where(inArray(tokenTags.tokenId, ids))
+      .select({ cryptoassetId: cryptoassetTags.cryptoassetId, tag: tags })
+      .from(cryptoassetTags)
+      .innerJoin(tags, eq(cryptoassetTags.tagId, tags.id))
+      .where(inArray(cryptoassetTags.cryptoassetId, ids))
       .orderBy(asc(tags.name));
-    const byToken = new Map<Token['id'], Tag[]>();
+    const byCryptoasset = new Map<Cryptoasset['id'], Tag[]>();
     for (const row of tagRows) {
-      const list = byToken.get(row.tokenId) ?? [];
+      const list = byCryptoasset.get(row.cryptoassetId) ?? [];
       list.push(row.tag);
-      byToken.set(row.tokenId, list);
+      byCryptoasset.set(row.cryptoassetId, list);
     }
     return rows.map((row) => ({
       ...row,
       logo: row.logo?.id ? row.logo : null,
-      tags: byToken.get(row.token.id) ?? [],
+      tags: byCryptoasset.get(row.cryptoasset.id) ?? [],
     }));
   }
 
-  async selectAll(input: TokenListInput): Promise<TokenWithRelation[]> {
+  async selectAll(
+    input: CryptoassetListInput,
+  ): Promise<CryptoassetWithRelation[]> {
     const where = this.buildFilters(input);
     const rows = await this.selectBase(this.drizzleService.db)
       .where(where)
-      .orderBy(desc(sql`COALESCE(${tokens.publishedAt}, ${tokens.createdAt})`))
+      .orderBy(
+        desc(
+          sql`COALESCE(${cryptoassets.publishedAt}, ${cryptoassets.createdAt})`,
+        ),
+      )
       .limit(input.limit)
       .offset((input.page - 1) * input.limit);
     return this.withRelations(rows);
   }
 
-  async count(input: TokenListInput): Promise<number> {
+  async count(input: CryptoassetListInput): Promise<number> {
     const where = this.buildFilters(input);
     const [result] = await this.drizzleService.db
       .select({ value: count() })
-      .from(tokens)
+      .from(cryptoassets)
       .where(where);
     return result.value;
   }
 
   async selectByIdentifier(
     // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
-    identifier: Token['id'] | Token['slug'],
-  ): Promise<TokenWithRelation> {
+    identifier: Cryptoasset['id'] | Cryptoasset['slug'],
+  ): Promise<CryptoassetWithRelation> {
     const [row] = await this.selectBase(this.drizzleService.db).where(
       isUuid(identifier)
-        ? eq(tokens.id, identifier)
-        : eq(tokens.slug, identifier),
+        ? eq(cryptoassets.id, identifier)
+        : eq(cryptoassets.slug, identifier),
     );
-    if (!row) throw new TokensError('TOKEN_NOT_FOUND');
+    if (!row) throw new CryptoassetsError('CRYPTOASSET_NOT_FOUND');
     const [withTags] = await this.withRelations([row]);
     return withTags;
   }
 
   async insert(
     data: Pick<
-      Token,
+      Cryptoasset,
       | 'slug'
       | 'rank'
       | 'name'
@@ -190,13 +197,16 @@ export class TokensRepository {
       | 'createdBy'
       | 'updatedBy'
     > & { tagIds: Tag['id'][] },
-  ): Promise<Token> {
+  ): Promise<Cryptoasset> {
     try {
       return await this.drizzleService.db.transaction(async (tx) => {
-        const { tagIds, ...tokenData } = data;
-        const [token] = await tx.insert(tokens).values(tokenData).returning();
-        if (tagIds.length) await this.replaceTags(tx, token.id, tagIds);
-        return token;
+        const { tagIds, ...cryptoassetData } = data;
+        const [cryptoasset] = await tx
+          .insert(cryptoassets)
+          .values(cryptoassetData)
+          .returning();
+        if (tagIds.length) await this.replaceTags(tx, cryptoasset.id, tagIds);
+        return cryptoasset;
       });
     } catch (error) {
       this.mapWriteError(error);
@@ -204,10 +214,10 @@ export class TokensRepository {
   }
 
   async update(
-    id: Token['id'],
+    id: Cryptoasset['id'],
     data: Partial<
       Pick<
-        Token,
+        Cryptoasset,
         | 'slug'
         | 'rank'
         | 'name'
@@ -222,58 +232,63 @@ export class TokensRepository {
         | 'updatedBy'
       >
     > & { tagIds?: Tag['id'][] },
-  ): Promise<Token> {
+  ): Promise<Cryptoasset> {
     try {
       return await this.drizzleService.db.transaction(async (tx) => {
-        const { tagIds, ...tokenData } = data;
+        const { tagIds, ...cryptoassetData } = data;
         const setData =
-          tokenData.status === 'published'
+          cryptoassetData.status === 'published'
             ? {
-                ...tokenData,
-                publishedAt: sql`COALESCE(${tokens.publishedAt}, now())`,
+                ...cryptoassetData,
+                publishedAt: sql`COALESCE(${cryptoassets.publishedAt}, now())`,
               }
-            : tokenData;
-        const [token] = await tx
-          .update(tokens)
+            : cryptoassetData;
+        const [cryptoasset] = await tx
+          .update(cryptoassets)
           .set(setData)
-          .where(eq(tokens.id, id))
+          .where(eq(cryptoassets.id, id))
           .returning();
-        if (!token) throw new TokensError('TOKEN_NOT_FOUND');
+        if (!cryptoasset) throw new CryptoassetsError('CRYPTOASSET_NOT_FOUND');
         if (tagIds !== undefined) await this.replaceTags(tx, id, tagIds);
-        return token;
+        return cryptoasset;
       });
     } catch (error) {
-      if (error instanceof TokensError) throw error;
+      if (error instanceof CryptoassetsError) throw error;
       this.mapWriteError(error);
     }
   }
 
-  async syncRank(slug: Token['slug'], rank: Token['rank']): Promise<void> {
+  async syncRank(
+    slug: Cryptoasset['slug'],
+    rank: Cryptoasset['rank'],
+  ): Promise<void> {
     await this.drizzleService.db
-      .update(tokens)
+      .update(cryptoassets)
       .set({ rank })
-      .where(eq(tokens.slug, slug));
+      .where(eq(cryptoassets.slug, slug));
   }
 
-  async delete(id: Token['id']): Promise<Token> {
-    const [token] = await this.drizzleService.db
-      .delete(tokens)
-      .where(eq(tokens.id, id))
+  async delete(id: Cryptoasset['id']): Promise<Cryptoasset> {
+    const [cryptoasset] = await this.drizzleService.db
+      .delete(cryptoassets)
+      .where(eq(cryptoassets.id, id))
       .returning();
-    if (!token) throw new TokensError('TOKEN_NOT_FOUND');
-    return token;
+    if (!cryptoasset) throw new CryptoassetsError('CRYPTOASSET_NOT_FOUND');
+    return cryptoasset;
   }
 
   private async replaceTags(
     tx: DbExecutor,
-    tokenId: Token['id'],
+    cryptoassetId: Cryptoasset['id'],
     tagIds: Tag['id'][],
   ): Promise<void> {
-    await tx.delete(tokenTags).where(eq(tokenTags.tokenId, tokenId));
+    await tx
+      .delete(cryptoassetTags)
+      .where(eq(cryptoassetTags.cryptoassetId, cryptoassetId));
     if (tagIds.length) {
       await tx
-        .insert(tokenTags)
-        .values(tagIds.map((tagId) => ({ tokenId, tagId })));
+        .insert(cryptoassetTags)
+        .values(tagIds.map((tagId) => ({ cryptoassetId, tagId })));
     }
   }
 
@@ -291,11 +306,11 @@ export class TokensRepository {
         });
       }
       if (error.cause.code === '23505') {
-        if (error.cause.constraint === 'tokens_slug_unique') {
-          throw new TokensError('SLUG_CONFLICT');
+        if (error.cause.constraint === 'cryptoassets_slug_unique') {
+          throw new CryptoassetsError('SLUG_CONFLICT');
         }
-        if (error.cause.constraint === 'tokens_ticker_unique') {
-          throw new TokensError('TICKER_CONFLICT');
+        if (error.cause.constraint === 'cryptoassets_ticker_unique') {
+          throw new CryptoassetsError('TICKER_CONFLICT');
         }
       }
     }

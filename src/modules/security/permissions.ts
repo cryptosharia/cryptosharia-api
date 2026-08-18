@@ -3,7 +3,7 @@ import type { User } from '#src/modules/drizzle/drizzle.types';
 export const ALL_PERMISSIONS = [
   'posts.manage',
   'posts.read',
-  'tokens.manage',
+  'cryptoassets.manage',
   'tags.manage',
   'users.read',
   'users.update',
@@ -22,6 +22,6 @@ export const ROLE_PERMISSIONS: Record<User['role'], Permission[]> = {
       permission !== 'users.manage_status',
   ),
   posts_manager: ['posts.manage', 'tags.manage'],
-  tokens_manager: ['tokens.manage', 'tags.manage'],
+  cryptoassets_manager: ['cryptoassets.manage', 'tags.manage'],
   member: [],
 };

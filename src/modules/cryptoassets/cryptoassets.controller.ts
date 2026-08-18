@@ -22,29 +22,30 @@ import { CurrentUser } from '#src/modules/security/current-user.decorator';
 import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
-import { TokensExceptionFilter } from './tokens.exception-filter';
+import { CryptoassetsExceptionFilter } from './cryptoassets.exception-filter';
 import {
-  TokenCreateBody,
-  TokenIdParam,
-  TokenParam,
-  TokenQuoteQuery,
-  TokensQuery,
-  TokenUpdateBody,
-} from './tokens.schemas';
-import { TokensService } from './tokens.service';
+  CryptoassetCreateBody,
+  CryptoassetIdParam,
+  CryptoassetParam,
+  CryptoassetQuoteQuery,
+  CryptoassetsQuery,
+  CryptoassetUpdateBody,
+} from './cryptoassets.schemas';
+import { CryptoassetsService } from './cryptoassets.service';
 
-@Controller('tokens')
-@UseFilters(TokensExceptionFilter)
-export class TokensController {
-  constructor(private readonly tokensService: TokensService) {}
+@Controller('cryptoassets')
+@UseFilters(CryptoassetsExceptionFilter)
+export class CryptoassetsController {
+  constructor(private readonly cryptoassetsService: CryptoassetsService) {}
 
   @Get()
   async selectAll(
-    @Query(new ParseZodPipe(TokensQuery)) query: TokensQuery,
+    @Query(new ParseZodPipe(CryptoassetsQuery)) query: CryptoassetsQuery,
     @Res({ passthrough: true }) response: FastifyReply,
     @CurrentUser() user: CurrentUser | null,
   ) {
-    const canManage = user?.permissions.includes('tokens.manage') ?? false;
+    const canManage =
+      user?.permissions.includes('cryptoassets.manage') ?? false;
     const requestedStatuses = query.statuses;
     if (
       !canManage &&
@@ -57,24 +58,26 @@ export class TokensController {
       ...query,
       statuses: canManage
         ? requestedStatuses
-        : (['published'] as TokensQuery['statuses']),
+        : (['published'] as CryptoassetsQuery['statuses']),
     };
-    const [tokens, total] = await Promise.all([
-      this.tokensService.selectAll(filters),
-      this.tokensService.count(filters),
+    const [cryptoassets, total] = await Promise.all([
+      this.cryptoassetsService.selectAll(filters),
+      this.cryptoassetsService.count(filters),
     ]);
     response.header('total-items', total);
-    return tokens;
+    return cryptoassets;
   }
 
   @Get(':identifier')
   selectByIdentifier(
-    @Param(new ParseZodPipe(TokenParam)) { identifier }: TokenParam,
-    @Query(new ParseZodPipe(TokenQuoteQuery)) query: TokenQuoteQuery,
+    @Param(new ParseZodPipe(CryptoassetParam)) { identifier }: CryptoassetParam,
+    @Query(new ParseZodPipe(CryptoassetQuoteQuery))
+    query: CryptoassetQuoteQuery,
     @CurrentUser() user: CurrentUser | null,
   ) {
-    const canManage = user?.permissions.includes('tokens.manage') ?? false;
-    return this.tokensService.selectByIdentifier(
+    const canManage =
+      user?.permissions.includes('cryptoassets.manage') ?? false;
+    return this.cryptoassetsService.selectByIdentifier(
       identifier,
       { canViewNonPublished: canManage },
       query.quote,
@@ -83,13 +86,13 @@ export class TokensController {
 
   @Post()
   @UseGuards(AuthenticationGuard, PermissionGuard)
-  @RequirePermissions('tokens.manage')
+  @RequirePermissions('cryptoassets.manage')
   create(
-    @Body(new ParseZodPipe(TokenCreateBody)) body: TokenCreateBody,
+    @Body(new ParseZodPipe(CryptoassetCreateBody)) body: CryptoassetCreateBody,
     @CurrentUser() user: CurrentUser,
     @Req() request: FastifyRequest,
   ) {
-    return this.tokensService.create(body, {
+    return this.cryptoassetsService.create(body, {
       id: user.id,
       ipAddress: getClientIp(request),
     });
@@ -97,14 +100,14 @@ export class TokensController {
 
   @Patch(':id')
   @UseGuards(AuthenticationGuard, PermissionGuard)
-  @RequirePermissions('tokens.manage')
+  @RequirePermissions('cryptoassets.manage')
   update(
-    @Param(new ParseZodPipe(TokenIdParam)) { id }: TokenIdParam,
-    @Body(new ParseZodPipe(TokenUpdateBody)) body: TokenUpdateBody,
+    @Param(new ParseZodPipe(CryptoassetIdParam)) { id }: CryptoassetIdParam,
+    @Body(new ParseZodPipe(CryptoassetUpdateBody)) body: CryptoassetUpdateBody,
     @CurrentUser() user: CurrentUser,
     @Req() request: FastifyRequest,
   ) {
-    return this.tokensService.update(id, body, {
+    return this.cryptoassetsService.update(id, body, {
       id: user.id,
       ipAddress: getClientIp(request),
     });
@@ -113,13 +116,13 @@ export class TokensController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AuthenticationGuard, PermissionGuard)
-  @RequirePermissions('tokens.manage')
+  @RequirePermissions('cryptoassets.manage')
   async delete(
-    @Param(new ParseZodPipe(TokenIdParam)) { id }: TokenIdParam,
+    @Param(new ParseZodPipe(CryptoassetIdParam)) { id }: CryptoassetIdParam,
     @CurrentUser() user: CurrentUser,
     @Req() request: FastifyRequest,
   ): Promise<void> {
-    await this.tokensService.delete(id, {
+    await this.cryptoassetsService.delete(id, {
       id: user.id,
       ipAddress: getClientIp(request),
     });

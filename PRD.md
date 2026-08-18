@@ -11,7 +11,7 @@ Keberhasilan project diukur dari tersedianya seluruh endpoint v1.1.0, konsistens
 ## 2. Goals
 
 - Menyediakan backend API CryptoSharia yang siap digunakan di production.
-- Mempertahankan behavior utama untuk authentication, users, posts, tokens, tags, messages, assets, dan API documentation.
+- Mempertahankan behavior utama untuk authentication, users, posts, cryptoassets, tags, messages, assets, dan API documentation.
 - Menyelaraskan response body dan dokumentasi OpenAPI ke standar baru project.
 - Menyediakan rate limiting production berbasis Redis yang aman untuk serverless dan multi-instance deployment.
 - Menyediakan automated tests untuk menjaga behavior penting tidak rusak saat pengembangan berikutnya.
@@ -31,8 +31,8 @@ CryptoSharia API v1.1.0 mencakup module berikut:
 - Authentication dan session management.
 - User management.
 - Posts/content management.
-- Crypto token screening/content management.
-- Tags dan relasi tag dengan posts/tokens.
+- Cryptoasset screening/content management.
+- Tags dan relasi tag dengan posts/cryptoassets.
 - Contact messages.
 - Asset upload dan asset metadata.
 - API documentation melalui OpenAPI JSON, OpenAPI YAML, dan Scalar docs.
@@ -51,7 +51,7 @@ contract/module yang sesuai.
 - `AuthModule` — signup, verification, signin, password reset, access token,
   refresh token, signout, dan current user flow.
 - `PostsModule` — post/content dan relasi post-tag.
-- `TokensModule` — crypto token, screening data, quote flow, dan relasi token-tag.
+- `CryptoassetsModule` — cryptoasset, screening data, quote flow, dan relasi cryptoasset-tag.
 - `TagsModule` — shared tags dan pemeriksaan penggunaan tag.
 - `MessagesModule` — contact messages.
 - `AssetsModule` — asset metadata, upload orchestration, dan cleanup references.
@@ -102,10 +102,10 @@ AssetsModule -> DrizzleModule
 PostsModule -> AssetsModule
 PostsModule -> TagsModule
 PostsModule -> AuditModule
-TokensModule -> AssetsModule
-TokensModule -> TagsModule
-TokensModule -> MarketDataModule
-TokensModule -> AuditModule
+CryptoassetsModule -> AssetsModule
+CryptoassetsModule -> TagsModule
+CryptoassetsModule -> MarketDataModule
+CryptoassetsModule -> AuditModule
 
 Feature modules -> SecurityModule
 Feature modules -> DrizzleModule
@@ -130,8 +130,8 @@ network calls.
 - `assets` and `imgbb_images` are asset/provider persistence owned by
   `AssetsModule`.
 - `posts` belongs to `PostsModule`.
-- `tokens` belongs to `TokensModule`.
-- `tags`, `post_tags`, and `token_tags` belong to `TagsModule`.
+- `cryptoassets` belongs to `CryptoassetsModule`.
+- `tags`, `post_tags`, and `cryptoasset_tags` belong to `TagsModule`.
 - `messages` belongs to `MessagesModule`.
 
 Database tetap menjadi shared infrastructure dan foreign key dapat merujuk user
@@ -157,7 +157,7 @@ menjadi dependency business logic.
 10. `AssetsModule`
 11. `TagsModule`
 12. `PostsModule`
-13. `TokensModule`
+13. `CryptoassetsModule`
 14. `MessagesModule`
 
 Cross-cutting modules seperti Security, OpenAPI, Drizzle, dan System adalah
@@ -168,8 +168,8 @@ bersamaan dengan feature modules yang menggunakannya.
 
 API ini digunakan oleh:
 
-- Website atau frontend CryptoSharia yang membutuhkan data posts, tokens, tags, dan public content.
-- Admin/internal tools yang mengelola users, posts, tokens, tags, messages, dan assets.
+- Website atau frontend CryptoSharia yang membutuhkan data posts, cryptoassets, tags, dan public content.
+- Admin/internal tools yang mengelola users, posts, cryptoassets, tags, messages, dan assets.
 - Accounts/auth flow yang membutuhkan signup, signin, verification, refresh token, signout, password reset, dan current-user session data.
 - Internal operational process yang membutuhkan maintenance asset cleanup melalui script/command internal.
 
@@ -311,14 +311,14 @@ total-items: <number>
 - `super_admin`
 - `admin`
 - `posts_manager`
-- `tokens_manager`
+- `cryptoassets_manager`
 - `member`
 
 ### 9.2 Permissions
 
 - `posts.manage`
 - `posts.read`
-- `tokens.manage`
+- `cryptoassets.manage`
 - `tags.manage`
 - `users.read`
 - `users.update`
@@ -333,7 +333,7 @@ total-items: <number>
 | `super_admin`    | All permissions                                                      |
 | `admin`          | All permissions except `users.manage_role` and `users.manage_status` |
 | `posts_manager`  | `posts.manage`, `tags.manage`                                        |
-| `tokens_manager` | `tokens.manage`, `tags.manage`                                       |
+| `cryptoassets_manager` | `cryptoassets.manage`, `tags.manage`                                       |
 | `member`         | No admin permissions                                                 |
 
 ## 10. Users Requirements
@@ -378,27 +378,27 @@ total-items: <number>
 - Create/update resolve tag values as UUID or slug and replace tag relations when `tags` is provided.
 - Unknown tag identifiers or a missing cover image return `422 VALIDATION_FAILED` with field-level `details.fields`.
 
-## 12. Tokens Requirements
+## 12. Cryptoassets Requirements
 
 | Method | Endpoint               | Requirement                                        |
 | ------ | ---------------------- | -------------------------------------------------- |
-| GET    | `/tokens`              | List crypto tokens                                 |
-| POST   | `/tokens`              | Create token                                       |
-| GET    | `/tokens/{identifier}` | Get token by UUID or slug                          |
-| PATCH  | `/tokens/{id}`         | Update token by UUID                               |
-| DELETE | `/tokens/{id}`         | Delete token by UUID                               |
+| GET    | `/cryptoassets`              | List cryptoassets                                 |
+| POST   | `/cryptoassets`              | Create cryptoasset                                       |
+| GET    | `/cryptoassets/{identifier}` | Get cryptoasset by UUID or slug                          |
+| PATCH  | `/cryptoassets/{id}`         | Update cryptoasset by UUID                               |
+| DELETE | `/cryptoassets/{id}`         | Delete cryptoasset by UUID                               |
 
 - Token list supports filters for statuses, sharia statuses, slugs, exclude, tags, search, page, and limit.
 - Requests without a bearer user default to published/non-restricted statuses only.
 - Requests without a bearer user cannot explicitly request restricted/non-public statuses.
-- Users with `tokens.manage` can access restricted/non-public statuses.
+- Users with `cryptoassets.manage` can access restricted/non-public statuses.
 - List response excludes full `content` and exposes normalized `logo` metadata, `tags`, and audit users.
-- Detail response includes full `content`; a non-published token requested without `tokens.manage` returns `404`.
+- Detail response includes full `content`; a non-published cryptoasset requested without `cryptoassets.manage` returns `404`.
 - List is sorted by `COALESCE(published_at, created_at) DESC`.
 - `publishedAt` is set once on the first transition to `published` and is never cleared or reset.
 - Logo returns normalized asset metadata.
 - Tag relation uses relational junction table, not array field.
-- Create/update/delete require `tokens.manage`.
+- Create/update/delete require `cryptoassets.manage`.
 - Duplicate slug returns `409 SLUG_CONFLICT`; duplicate ticker returns `409 TICKER_CONFLICT`.
 - Create/update resolve tag values as UUID or slug and replace tag relations when `tags` is provided.
 - Unknown tag identifiers or a missing logo return `422 VALIDATION_FAILED` with field-level `details.fields`.
@@ -423,7 +423,7 @@ total-items: <number>
 - Create/update/delete require `tags.manage`.
 - Duplicate name or slug returns `409 NAME_OR_SLUG_CONFLICT`.
 - Delete without force returns conflict when tag is still used.
-- Delete conflict is `409 TAG_IN_USE` and includes `{ details: { usage: { posts, tokens } } }`.
+- Delete conflict is `409 TAG_IN_USE` and includes `{ details: { usage: { posts, cryptoassets } } }`.
 - Delete supports `force=true`.
 
 ## 14. Messages Requirements
@@ -451,10 +451,10 @@ total-items: <number>
 - Upload uses `multipart/form-data` with a file field.
 - `/assets` accepts files up to 4MB.
 - `/imgbb` accepts image files up to 32MB.
-- Upload requires `posts.manage` or `tokens.manage`.
+- Upload requires `posts.manage` or `cryptoassets.manage`.
 - Successful upload stores asset metadata in PostgreSQL.
 - Asset response includes the persisted asset metadata with its `id` for
-  reference from posts, tokens, and user avatar fields. It does not return a
+  reference from posts, cryptoassets, and user avatar fields. It does not return a
   derived public URL.
 - Resource write requests accept asset IDs (`avatarId`, `coverImageId`, or
   `logoId`). Resource read responses expose referenced assets as nested objects
@@ -468,7 +468,7 @@ total-items: <number>
 ## 16. Maintenance Requirements
 
 - Asset cleanup must be available as an internal maintenance command/script.
-- Asset cleanup must avoid deleting assets still referenced by users, posts, tokens, or other persisted records.
+- Asset cleanup must avoid deleting assets still referenced by users, posts, cryptoassets, or other persisted records.
 - Asset cleanup should not be exposed as a normal public/protected HTTP API endpoint unless there is a clear operational requirement.
 - Asset cleanup accepts `dryRun`, `limit`, and `maxAgeDays` options.
 - Cleanup only targets old, unreferenced Vercel Blob assets.
@@ -493,7 +493,7 @@ total-items: <number>
 
 ## 18. Data Requirements
 
-- PostgreSQL is the source of truth for users, auth tokens, refresh tokens, posts, tokens, tags, messages, assets, activity logs, and relationships.
+- PostgreSQL is the source of truth for users, auth tokens, refresh tokens, posts, cryptoassets, tags, messages, assets, activity logs, and relationships.
 - Production PostgreSQL provider is Neon.
 - Database UUID behavior follows the existing schema behavior: UUID primary keys
   use `defaultRandom()` and are not migrated to `uuidv7()`.
@@ -501,13 +501,13 @@ total-items: <number>
   values returned only to the client, stored as SHA-256 hashes, and revoked in
   PostgreSQL, with no separate refresh-token signing secret.
 - Existing table names, enum values, column names, foreign keys, and junction relationships must remain representable.
-- Tags relationship with posts and tokens remains relational through junction tables.
+- Tags relationship with posts and cryptoassets remains relational through junction tables.
 - Refresh tokens remain persisted in PostgreSQL.
 - Email verification and password reset tokens remain persisted in PostgreSQL as hashed opaque tokens.
 
 ## 19. Testing & Quality Requirements
 
-- E2E tests cover critical behavior for auth, users, posts, tokens, tags, messages, assets, OpenAPI, authorization, validation, and pagination.
+- E2E tests cover critical behavior for auth, users, posts, cryptoassets, tags, messages, assets, OpenAPI, authorization, validation, and pagination.
 - Unit tests cover important isolated business logic such as token handling, permission checks, password/session behavior, and service-level branching.
 - Tests must not depend on real email delivery or real object storage network calls.
 - OpenAPI-generated schema/types must stay aligned with implemented route contracts.

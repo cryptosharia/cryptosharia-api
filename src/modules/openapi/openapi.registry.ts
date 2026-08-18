@@ -9,7 +9,7 @@ import { assetsRouteConfig } from '#src/modules/assets/assets.openapi';
 import { tagsRouteConfig } from '#src/modules/tags/tags.openapi';
 import { messagesRouteConfig } from '#src/modules/messages/messages.openapi';
 import { postsRouteConfig } from '#src/modules/posts/posts.openapi';
-import { tokensRouteConfig } from '#src/modules/tokens/tokens.openapi';
+import { cryptoassetsRouteConfig } from '#src/modules/cryptoassets/cryptoassets.openapi';
 
 export function generateOpenApiDocument() {
   const registry = new OpenAPIRegistry();
@@ -36,7 +36,7 @@ export function generateOpenApiDocument() {
     ...usersRouteConfig,
     ...tagsRouteConfig,
     ...postsRouteConfig,
-    ...tokensRouteConfig,
+    ...cryptoassetsRouteConfig,
     ...messagesRouteConfig,
     ...assetsRouteConfig,
   ];

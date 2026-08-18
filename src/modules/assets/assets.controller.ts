@@ -60,7 +60,7 @@ export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
   @Post('assets')
-  @RequirePermissions('posts.manage', 'tokens.manage')
+  @RequirePermissions('posts.manage', 'cryptoassets.manage')
   async uploadAsset(
     @CurrentUser() currentUser: CurrentUserType,
     @Req() request: FastifyRequest,
@@ -72,7 +72,7 @@ export class AssetsController {
   }
 
   @Post('imgbb')
-  @RequirePermissions('posts.manage', 'tokens.manage')
+  @RequirePermissions('posts.manage', 'cryptoassets.manage')
   async uploadImgbbImage(
     @CurrentUser() currentUser: CurrentUserType,
     @Req() request: FastifyRequest,

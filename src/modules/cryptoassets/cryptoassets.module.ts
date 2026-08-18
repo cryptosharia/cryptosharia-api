@@ -5,9 +5,9 @@ import { DrizzleModule } from '#src/modules/drizzle/drizzle.module';
 import { MarketDataModule } from '#src/modules/market-data/market-data.module';
 import { SecurityModule } from '#src/modules/security/security.module';
 import { TagsModule } from '#src/modules/tags/tags.module';
-import { TokensController } from './tokens.controller';
-import { TokensRepository } from './tokens.repository';
-import { TokensService } from './tokens.service';
+import { CryptoassetsController } from './cryptoassets.controller';
+import { CryptoassetsRepository } from './cryptoassets.repository';
+import { CryptoassetsService } from './cryptoassets.service';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { TokensService } from './tokens.service';
     AuditModule,
     MarketDataModule,
   ],
-  controllers: [TokensController],
-  providers: [TokensRepository, TokensService],
+  controllers: [CryptoassetsController],
+  providers: [CryptoassetsRepository, CryptoassetsService],
 })
-export class TokensModule {}
+export class CryptoassetsModule {}

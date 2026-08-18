@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { and, asc, eq, isNull, lte } from 'drizzle-orm';
 import {
   assets,
+  cryptoassets,
   imgbbImages,
   posts,
-  tokens,
   users,
 } from '#src/modules/drizzle/drizzle.schema';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
@@ -64,19 +64,19 @@ export class AssetsRepository {
   }
 
   selectCleanupCandidates(input: { cutoff: Date; limit: number }) {
-    // A left join keeps only assets with no remaining user, post, or token reference.
+    // A left join keeps only assets with no remaining user, post, or cryptoasset reference.
     return this.drizzleService.db
       .select({ id: assets.id, pathname: assets.pathname })
       .from(assets)
       .leftJoin(posts, eq(posts.coverImageId, assets.id))
-      .leftJoin(tokens, eq(tokens.logoId, assets.id))
+      .leftJoin(cryptoassets, eq(cryptoassets.logoId, assets.id))
       .leftJoin(users, eq(users.avatarId, assets.id))
       .where(
         and(
           eq(assets.provider, 'vercel_blob'),
           lte(assets.createdAt, input.cutoff),
           isNull(posts.id),
-          isNull(tokens.id),
+          isNull(cryptoassets.id),
           isNull(users.id),
         ),
       )

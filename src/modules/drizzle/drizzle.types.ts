@@ -12,8 +12,8 @@ import {
   posts,
   refreshTokens,
   tags,
-  tokenTags,
-  tokens,
+  cryptoassetTags,
+  cryptoassets,
   users,
 } from './drizzle.schema';
 
@@ -77,9 +77,9 @@ export const ActivityLog = createSelectSchema(activityLogs, {
       'tag.create',
       'tag.delete',
       'tag.update',
-      'token.create',
-      'token.delete',
-      'token.update',
+      'cryptoasset.create',
+      'cryptoasset.delete',
+      'cryptoasset.update',
       'user.role.update',
       'user.status.update',
       'user.update',
@@ -89,7 +89,15 @@ export const ActivityLog = createSelectSchema(activityLogs, {
       example: 'auth.signin',
     }),
   subjectType: z
-    .enum(['asset', 'auth', 'imgbb_image', 'posts', 'tags', 'tokens', 'user'])
+    .enum([
+      'asset',
+      'auth',
+      'imgbb_image',
+      'posts',
+      'tags',
+      'cryptoassets',
+      'user',
+    ])
     .meta({ description: 'Tipe subjek', example: 'auth' }),
   subjectId: (f) => f.meta({ description: 'ID subjek' }),
   description: (f) => f.meta({ description: 'Rincian aktivitas' }),
@@ -236,7 +244,7 @@ export const Tag = createSelectSchema(tags, {
 });
 export type Tag = z.infer<typeof Tag>;
 
-export const Token = createSelectSchema(tokens, {
+export const Cryptoasset = createSelectSchema(cryptoassets, {
   id: (f) => f.meta({ description: 'ID cryptoasset' }),
   slug: (f) =>
     f
@@ -280,7 +288,7 @@ export const Token = createSelectSchema(tokens, {
   tradingviewSymbol: (f) =>
     f
       .max(64, 'Maksimal 64 karakter')
-      .meta({ description: 'Simbol TradingView' }),
+      .meta({ description: 'Simbol TradingView', example: 'BINANCE:BTCUSDT' }),
   website: z.url('Format tidak valid').meta({
     description: 'Situs resmi',
     example: 'https://bitcoin.org',
@@ -297,7 +305,7 @@ export const Token = createSelectSchema(tokens, {
   createdBy: (f) => f.meta({ description: 'User yang buat cryptoasset' }),
   updatedBy: (f) => f.meta({ description: 'User yang edit cryptoasset' }),
 });
-export type Token = z.infer<typeof Token>;
+export type Cryptoasset = z.infer<typeof Cryptoasset>;
 
 export const Post = createSelectSchema(posts, {
   id: (f) => f.meta({ description: 'ID post' }),
@@ -354,8 +362,8 @@ export const Post = createSelectSchema(posts, {
 });
 export type Post = z.infer<typeof Post>;
 
-export const TokenTag = createSelectSchema(tokenTags, {
-  tokenId: (f) => f.meta({ description: 'ID token' }),
+export const CryptoassetTag = createSelectSchema(cryptoassetTags, {
+  cryptoassetId: (f) => f.meta({ description: 'ID cryptoasset' }),
   tagId: (f) => f.meta({ description: 'ID tag' }),
   displayOrder: (f) =>
     f
@@ -363,7 +371,7 @@ export const TokenTag = createSelectSchema(tokenTags, {
       .nonnegative('Tidak boleh negatif')
       .meta({ description: 'Display order' }),
 });
-export type TokenTag = z.infer<typeof TokenTag>;
+export type CryptoassetTag = z.infer<typeof CryptoassetTag>;
 
 export const PostTag = createSelectSchema(postTags, {
   postId: (f) => f.meta({ description: 'ID post' }),

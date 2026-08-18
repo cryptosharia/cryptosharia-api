@@ -30,7 +30,7 @@ export class AssetsSuite extends Suite {
 
     const createSession = async (
       email: string,
-      role: 'posts_manager' | 'tokens_manager' | 'member' = 'member',
+      role: 'posts_manager' | 'cryptoassets_manager' | 'member' = 'member',
     ) => {
       const password = 'secure-password';
       const signup = await this.ctx.client.POST('/auth/signup', {
@@ -156,8 +156,12 @@ export class AssetsSuite extends Suite {
 
       describe('imgbb upload validation', () => {
         const managerToken = async () =>
-          (await createSession('manager-imgbb@example.com', 'tokens_manager'))
-            .accessToken;
+          (
+            await createSession(
+              'manager-imgbb@example.com',
+              'cryptoassets_manager',
+            )
+          ).accessToken;
 
         it('rejects a non-image file', async () => {
           const accessToken = await managerToken();
@@ -274,7 +278,7 @@ export class AssetsSuite extends Suite {
         it('maps image provider failures to a 502', async () => {
           const { accessToken } = await createSession(
             'fail-imgbb@example.com',
-            'tokens_manager',
+            'cryptoassets_manager',
           );
           imageProvider().upload.mockRejectedValueOnce(
             new ImageProviderError('UPLOAD_FAILED'),

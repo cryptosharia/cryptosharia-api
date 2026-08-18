@@ -3,10 +3,10 @@ import { UsersService } from '#src/modules/users/users.service';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
 import {
   assets,
+  cryptoassetTags,
+  cryptoassets,
   postTags,
   posts,
-  tokenTags,
-  tokens,
 } from '#src/modules/drizzle/drizzle.schema';
 import { Suite } from '#test/helpers/suite.base';
 import type { TestMailerService } from '#test/helpers/test-mailer.service';
@@ -300,12 +300,12 @@ export class TagsSuite extends Suite {
           await db()
             .insert(postTags)
             .values({ postId: post.id, tagId: created.data.id });
-          const [token] = await db()
-            .insert(tokens)
+          const [cryptoasset] = await db()
+            .insert(cryptoassets)
             .values({
-              slug: 'referenced-token',
+              slug: 'referenced-cryptoasset',
               rank: 1,
-              name: 'Referenced Token',
+              name: 'Referenced Cryptoasset',
               ticker: 'REF',
               shariaStatus: 'halal',
               status: 'draft',
@@ -316,8 +316,8 @@ export class TagsSuite extends Suite {
             })
             .returning();
           await db()
-            .insert(tokenTags)
-            .values({ tokenId: token.id, tagId: created.data.id });
+            .insert(cryptoassetTags)
+            .values({ cryptoassetId: cryptoasset.id, tagId: created.data.id });
 
           const blocked = await this.ctx.client.DELETE('/tags/{id}', {
             params: { path: { id: created.data.id }, query: { force: false } },
@@ -328,10 +328,14 @@ export class TagsSuite extends Suite {
           expect(
             (
               blocked.error as
-                | { details?: { usage?: { posts: number; tokens: number } } }
+                | {
+                    details?: {
+                      usage?: { posts: number; cryptoassets: number };
+                    };
+                  }
                 | undefined
             )?.details?.usage,
-          ).toEqual({ posts: 1, tokens: 1 });
+          ).toEqual({ posts: 1, cryptoassets: 1 });
 
           const deleted = await this.ctx.client.DELETE('/tags/{id}', {
             params: { path: { id: created.data.id }, query: { force: true } },

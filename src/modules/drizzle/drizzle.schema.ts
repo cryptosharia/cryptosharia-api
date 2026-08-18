@@ -64,7 +64,7 @@ export const userRoleEnum = pgEnum('user_role', [
   'super_admin',
   'admin',
   'posts_manager',
-  'tokens_manager',
+  'cryptoassets_manager',
   'member',
 ]);
 /** Auth token purpose categories. */
@@ -136,8 +136,8 @@ export const authTokens = pgTable('auth_tokens', {
   createdAt: createdAt(),
 });
 
-/** Crypto token screening and editorial content. */
-export const tokens = pgTable('tokens', {
+/** Crypto asset screening and editorial content. */
+export const cryptoassets = pgTable('cryptoassets', {
   id: primaryKeyUuid(),
   slug: varchar('slug', { length: 100 }).notNull().unique(),
   /** Global market-cap rank. */
@@ -150,7 +150,7 @@ export const tokens = pgTable('tokens', {
   excerpt: text('excerpt').notNull(),
   tradingviewSymbol: varchar('tradingview_symbol', { length: 64 }),
   website: text('website').notNull(),
-  /** Reference to the token logo asset. */
+  /** Reference to the cryptoasset logo asset. */
   logoId: uuid('logo_id')
     .references(() => assets.id)
     .notNull(),
@@ -187,7 +187,7 @@ export const posts = pgTable('posts', {
   updatedBy: uuid('updated_by').references(() => users.id),
 });
 
-/** Tags shared by posts and crypto tokens. */
+/** Tags shared by posts and crypto assets. */
 export const tags = pgTable('tags', {
   id: primaryKeyUuid(),
   name: varchar('name', { length: 50 }).notNull().unique(),
@@ -199,19 +199,19 @@ export const tags = pgTable('tags', {
   updatedBy: uuid('updated_by').references(() => users.id),
 });
 
-/** Many-to-many relationship between tokens and tags. */
-export const tokenTags = pgTable(
-  'token_tags',
+/** Many-to-many relationship between cryptoassets and tags. */
+export const cryptoassetTags = pgTable(
+  'cryptoasset_tags',
   {
-    tokenId: uuid('token_id')
+    cryptoassetId: uuid('cryptoasset_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => cryptoassets.id, { onDelete: 'cascade' }),
     tagId: uuid('tag_id')
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
     displayOrder: integer('display_order'),
   },
-  (table) => [primaryKey({ columns: [table.tokenId, table.tagId] })],
+  (table) => [primaryKey({ columns: [table.cryptoassetId, table.tagId] })],
 );
 
 /** Many-to-many relationship between posts and tags. */

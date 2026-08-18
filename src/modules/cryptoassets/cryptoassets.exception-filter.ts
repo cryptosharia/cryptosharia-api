@@ -5,18 +5,21 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
-import { TokensError, type TokensErrorCode } from './tokens.error';
+import {
+  CryptoassetsError,
+  type CryptoassetsErrorCode,
+} from './cryptoassets.error';
 
 const STATUS_CODES = {
-  TOKEN_NOT_FOUND: HttpStatus.NOT_FOUND,
+  CRYPTOASSET_NOT_FOUND: HttpStatus.NOT_FOUND,
   SLUG_CONFLICT: HttpStatus.CONFLICT,
   TICKER_CONFLICT: HttpStatus.CONFLICT,
   QUOTES_UNAVAILABLE: HttpStatus.BAD_GATEWAY,
-} as const satisfies Record<TokensErrorCode, number>;
+} as const satisfies Record<CryptoassetsErrorCode, number>;
 
-@Catch(TokensError)
-export class TokensExceptionFilter implements ExceptionFilter {
-  catch(exception: TokensError, host: ArgumentsHost) {
+@Catch(CryptoassetsError)
+export class CryptoassetsExceptionFilter implements ExceptionFilter {
+  catch(exception: CryptoassetsError, host: ArgumentsHost) {
     return host
       .switchToHttp()
       .getResponse<FastifyReply>()

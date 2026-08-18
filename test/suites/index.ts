@@ -7,7 +7,7 @@ import { AuthSuite } from './auth.suite';
 import { AssetsSuite } from './assets.suite';
 import { TagsSuite } from './tags.suite';
 import { PostsSuite } from './posts.suite';
-import { TokensSuite } from './tokens.suite';
+import { CryptoassetsSuite } from './cryptoassets.suite';
 import { MessagesSuite } from './messages.suite';
 
 export class SuitesService {
@@ -21,7 +21,7 @@ export class SuitesService {
       new UsersSuite(ctx),
       new TagsSuite(ctx),
       new PostsSuite(ctx),
-      new TokensSuite(ctx),
+      new CryptoassetsSuite(ctx),
       new MessagesSuite(ctx),
       new AssetsSuite(ctx),
     ];

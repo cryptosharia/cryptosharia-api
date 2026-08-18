@@ -93,7 +93,7 @@ describe('TagsService', () => {
 
   it('propagates delete conflicts with usage details', async () => {
     const error = new TagsError('TAG_IN_USE', {
-      usage: { posts: 2, tokens: 1 },
+      usage: { posts: 2, cryptoassets: 1 },
     });
     repository.delete.mockRejectedValue(error);
 
