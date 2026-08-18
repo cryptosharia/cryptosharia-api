@@ -117,6 +117,20 @@ export class TagsRepository {
     return result.value;
   }
 
+  async selectByMixedIdentifiers(input: {
+    ids: Tag['id'][];
+    slugs: Tag['slug'][];
+  }): Promise<Tag[]> {
+    const filters: SQL[] = [];
+    if (input.ids.length) filters.push(inArray(tags.id, input.ids));
+    if (input.slugs.length) filters.push(inArray(tags.slug, input.slugs));
+    if (!filters.length) return [];
+    return this.drizzleService.db
+      .select()
+      .from(tags)
+      .where(or(...filters));
+  }
+
   async insert(
     data: Pick<Tag, 'name' | 'slug' | 'createdBy' | 'updatedBy'> & {
       description?: Tag['description'];

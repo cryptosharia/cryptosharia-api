@@ -25,6 +25,7 @@ describe('TagsService', () => {
     selectAll: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
     selectByIdentifier: ReturnType<typeof vi.fn>;
+    selectByMixedIdentifiers: ReturnType<typeof vi.fn>;
     insert: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
@@ -37,6 +38,7 @@ describe('TagsService', () => {
       selectAll: vi.fn(),
       count: vi.fn(),
       selectByIdentifier: vi.fn(),
+      selectByMixedIdentifiers: vi.fn(),
       insert: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -99,5 +101,33 @@ describe('TagsService', () => {
       error,
     );
     expect(audit.log).not.toHaveBeenCalled();
+  });
+
+  it('resolves mixed UUID and slug identifiers and reports missing values', async () => {
+    const matchedTag = { ...tag, id: 'aaaa1111-b27c-4a7d-a7bd-0593e79bb1ed' };
+    repository.selectByMixedIdentifiers.mockResolvedValue([matchedTag]);
+
+    const result = await service.resolveIdentifiers([
+      matchedTag.id,
+      tag.slug,
+      'missing-tag',
+    ]);
+
+    expect(repository.selectByMixedIdentifiers).toHaveBeenCalledWith({
+      ids: [matchedTag.id],
+      slugs: [tag.slug, 'missing-tag'],
+    });
+    expect(result).toEqual({
+      tagIds: [matchedTag.id],
+      missing: ['missing-tag'],
+    });
+  });
+
+  it('returns empty results for no identifiers', async () => {
+    await expect(service.resolveIdentifiers([])).resolves.toEqual({
+      tagIds: [],
+      missing: [],
+    });
+    expect(repository.selectByMixedIdentifiers).not.toHaveBeenCalled();
   });
 });

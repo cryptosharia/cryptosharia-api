@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { isUuid } from '#src/common/is-uuid';
 import type { Tag, User } from '#src/modules/drizzle/drizzle.types';
 import { AuditService } from '#src/modules/audit/audit.service';
 import type { TagResponse } from './tags.schemas';
@@ -24,6 +25,31 @@ export class TagsService {
 
   count(input: { search?: string; slugs?: string[] }) {
     return this.tagsRepository.count(input);
+  }
+
+  async resolveIdentifiers(
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+    identifiers: Tag['id'][] | Tag['slug'][],
+  ): Promise<{ tagIds: Tag['id'][]; missing: string[] }> {
+    const unique = [...new Set(identifiers)];
+    if (!unique.length) return { tagIds: [], missing: [] };
+
+    const ids = unique.filter(isUuid);
+    const slugs = unique.filter((value) => !isUuid(value));
+    const matched = await this.tagsRepository.selectByMixedIdentifiers({
+      ids,
+      slugs,
+    });
+    const missing = unique.filter((identifier) =>
+      isUuid(identifier)
+        ? !matched.some((tag) => tag.id === identifier)
+        : !matched.some((tag) => tag.slug === identifier),
+    );
+
+    return {
+      tagIds: [...new Set(matched.map((tag) => tag.id))],
+      missing,
+    };
   }
 
   async selectByIdentifier(
