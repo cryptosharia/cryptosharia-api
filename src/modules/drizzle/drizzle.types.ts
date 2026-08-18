@@ -237,7 +237,7 @@ export const Tag = createSelectSchema(tags, {
 export type Tag = z.infer<typeof Tag>;
 
 export const Token = createSelectSchema(tokens, {
-  id: (f) => f.meta({ description: 'ID token' }),
+  id: (f) => f.meta({ description: 'ID cryptoasset' }),
   slug: (f) =>
     f
       .trim()
@@ -245,7 +245,7 @@ export const Token = createSelectSchema(tokens, {
       .max(100, 'Maksimal 100 karakter')
       .regex(slugPattern, slugMessage)
       .meta({
-        description: 'Slug token',
+        description: 'Slug cryptoasset',
         example: 'bitcoin',
       }),
   rank: (f) =>
@@ -258,13 +258,13 @@ export const Token = createSelectSchema(tokens, {
       .trim()
       .min(1, 'Tidak boleh kosong')
       .max(100, 'Maksimal 100 karakter')
-      .meta({ description: 'Nama cryptocurrency', example: 'Bitcoin' }),
+      .meta({ description: 'Nama cryptoasset', example: 'Bitcoin' }),
   ticker: (f) =>
     f
       .trim()
       .min(1, 'Tidak boleh kosong')
       .max(20, 'Maksimal 20 karakter')
-      .meta({ description: 'Simbol singkat cryptocurrency', example: 'BTC' }),
+      .meta({ description: 'Simbol cryptoasset', example: 'BTC' }),
   shariaStatus: (f) =>
     f.meta({ description: 'Status syariah', example: 'halal' }),
   status: (f) =>
@@ -276,7 +276,7 @@ export const Token = createSelectSchema(tokens, {
     f
       .trim()
       .min(1, 'Tidak boleh kosong')
-      .meta({ description: 'Ringkasan token' }),
+      .meta({ description: 'Ringkasan cryptoasset' }),
   tradingviewSymbol: (f) =>
     f
       .max(64, 'Maksimal 64 karakter')
@@ -285,7 +285,7 @@ export const Token = createSelectSchema(tokens, {
     description: 'Situs resmi',
     example: 'https://bitcoin.org',
   }),
-  logoId: (f) => f.meta({ description: 'Logo token' }),
+  logoId: (f) => f.meta({ description: 'Logo cryptoasset' }),
   content: (f) =>
     f
       .trim()
@@ -294,8 +294,8 @@ export const Token = createSelectSchema(tokens, {
   publishedAt: (f) => f.meta({ description: 'Waktu publikasi' }),
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
   updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
-  createdBy: (f) => f.meta({ description: 'User yang buat token' }),
-  updatedBy: (f) => f.meta({ description: 'User yang edit token' }),
+  createdBy: (f) => f.meta({ description: 'User yang buat cryptoasset' }),
+  updatedBy: (f) => f.meta({ description: 'User yang edit cryptoasset' }),
 });
 export type Token = z.infer<typeof Token>;
 

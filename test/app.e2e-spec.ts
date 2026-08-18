@@ -10,6 +10,7 @@ import { AppModule } from '#src/app.module';
 import { MailerService } from '#src/modules/mailer/mailer.service';
 import { StorageService } from '#src/modules/storage/storage.service';
 import { ImageProviderService } from '#src/modules/image-provider/image-provider.service';
+import { MarketDataService } from '#src/modules/market-data/market-data.service';
 import type { paths } from '#test/schema';
 import type { Context } from './helpers/context.type';
 import { resetTestDatabase } from './helpers/reset-test-database';
@@ -17,6 +18,7 @@ import { SuitesService } from './suites/index';
 import { TestMailerService } from './helpers/test-mailer.service';
 import { TestStorageService } from './helpers/test-storage.service';
 import { TestImageProviderService } from './helpers/test-image-provider.service';
+import { TestMarketDataService } from './helpers/test-market-data.service';
 
 describe('App', () => {
   const ctx = {} as Context;
@@ -33,6 +35,9 @@ describe('App', () => {
       .useClass(TestStorageService)
       .overrideProvider(ImageProviderService)
       .useClass(TestImageProviderService)
+      // Fake market-data so quote tests never hit the external provider.
+      .overrideProvider(MarketDataService)
+      .useClass(TestMarketDataService)
       .compile();
 
     ctx.app = moduleRef.createNestApplication<NestFastifyApplication>(
@@ -64,6 +69,7 @@ describe('App', () => {
     mailer.clear();
     ctx.app.get<TestStorageService>(StorageService).reset();
     ctx.app.get<TestImageProviderService>(ImageProviderService).reset();
+    ctx.app.get<TestMarketDataService>(MarketDataService).reset();
   });
 
   afterAll(async () => {

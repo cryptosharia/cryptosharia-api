@@ -387,19 +387,24 @@ total-items: <number>
 | GET    | `/tokens/{identifier}` | Get token by UUID or slug                          |
 | PATCH  | `/tokens/{id}`         | Update token by UUID                               |
 | DELETE | `/tokens/{id}`         | Delete token by UUID                               |
-| GET    | `/tokens/quotes`       | Return quote/market data for requested token slugs |
 
 - Token list supports filters for statuses, sharia statuses, slugs, exclude, tags, search, page, and limit.
 - Requests without a bearer user default to published/non-restricted statuses only.
 - Requests without a bearer user cannot explicitly request restricted/non-public statuses.
 - Users with `tokens.manage` can access restricted/non-public statuses.
-- List response excludes full `content`.
-- Detail response includes full `content`.
+- List response excludes full `content` and exposes normalized `logo` metadata, `tags`, and audit users.
+- Detail response includes full `content`; a non-published token requested without `tokens.manage` returns `404`.
+- List is sorted by `COALESCE(published_at, created_at) DESC`.
+- `publishedAt` is set once on the first transition to `published` and is never cleared or reset.
 - Logo returns normalized asset metadata.
 - Tag relation uses relational junction table, not array field.
 - Create/update/delete require `tokens.manage`.
-- Duplicate slug or ticker returns conflict.
-- Quote endpoint returns quote fields for requested token slugs.
+- Duplicate slug returns `409 SLUG_CONFLICT`; duplicate ticker returns `409 TICKER_CONFLICT`.
+- Create/update resolve tag values as UUID or slug and replace tag relations when `tags` is provided.
+- Unknown tag identifiers or a missing logo return `422 VALIDATION_FAILED` with field-level `details.fields`.
+- Quote/market data is included only when requested via `quote=true` on the list or detail endpoint.
+- Quote data is fetched from the market-data provider and attached per token; a provider failure returns `502`.
+- Token ranks are refreshed on-demand from fetched quotes as a best-effort side effect.
 
 ## 13. Tags Requirements
 

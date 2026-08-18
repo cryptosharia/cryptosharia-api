@@ -1,5 +1,5 @@
 export const MARKET_DATA_ERRORS = {
-  QUOTES_FETCH_FAILED: 'Gagal mengambil data harga token',
+  QUOTES_FETCH_FAILED: 'Gagal mengambil data pasar',
 } as const;
 
 export type MarketDataErrorCode = keyof typeof MARKET_DATA_ERRORS;
