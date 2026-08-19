@@ -99,7 +99,7 @@ export class UsersRepository {
 
   /** Creates a member account with the Users table's non-privileged defaults. */
   async insert(
-    data: Pick<User, 'name' | 'email' | 'hashedPassword'>,
+    data: Pick<User, 'name' | 'email'>,
     dbExecutor: DbExecutor = this.drizzleService.db,
   ): Promise<User> {
     try {
@@ -109,7 +109,6 @@ export class UsersRepository {
           ...data,
           role: 'member',
           status: 'active',
-          isEmailVerified: false,
         })
         .returning();
 

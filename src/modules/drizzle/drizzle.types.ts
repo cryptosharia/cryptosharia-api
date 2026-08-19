@@ -5,12 +5,10 @@ import * as schema from './drizzle.schema';
 import {
   activityLogs,
   assets,
-  authTokens,
   imgbbImages,
   messages,
   postTags,
   posts,
-  refreshTokens,
   tags,
   cryptoassetTags,
   cryptoassets,
@@ -36,9 +34,6 @@ export const User = createSelectSchema(users, {
     description: 'Email untuk login',
     example: 'john@example.com',
   }),
-  hashedPassword: (f) => f.meta({ description: 'Hash password' }),
-  passwordHashingAlgorithm: (f) =>
-    f.meta({ description: 'Algoritma hashing untuk password' }),
   avatarId: (f) => f.meta({ description: 'Foto profil user' }),
   role: (f) =>
     f.meta({
@@ -46,11 +41,7 @@ export const User = createSelectSchema(users, {
       example: 'member',
     }),
   status: (f) => f.meta({ description: 'Status akun', example: 'active' }),
-  twoFactorSecret: (f) =>
-    f.meta({ description: 'Secret autentikasi sekunder (cadangan)' }),
   lastLoginAt: (f) => f.meta({ description: 'Login terakhir' }),
-  isEmailVerified: (f) =>
-    f.meta({ description: 'Apakah email sudah diverifikasi' }),
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
   updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
   updatedBy: (f) => f.meta({ description: 'User pengubah terakhir' }),
@@ -63,13 +54,12 @@ export const ActivityLog = createSelectSchema(activityLogs, {
   action: z
     .enum([
       'asset.upload',
-      'auth.password-reset.complete',
-      'auth.password-reset.request',
+      'auth.otp.request',
+      'auth.otp.verify',
       'auth.refresh',
       'auth.signin',
       'auth.signout',
-      'auth.signup',
-      'auth.verify',
+      'auth.signout-all',
       'imgbb.upload',
       'post.create',
       'post.delete',
@@ -106,37 +96,6 @@ export const ActivityLog = createSelectSchema(activityLogs, {
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
 });
 export type ActivityLog = z.infer<typeof ActivityLog>;
-
-export const RefreshToken = createSelectSchema(refreshTokens, {
-  id: (f) => f.meta({ description: 'ID refresh token' }),
-  userId: (f) => f.meta({ description: 'User pemilik refresh token' }),
-  token: (f) =>
-    f
-      .min(1, 'Refresh token tidak boleh kosong')
-      .max(64, 'Refresh token maksimal 64 karakter')
-      .meta({ description: 'Nilai refresh token opaque' }),
-  expiresAt: (f) => f.meta({ description: 'Waktu kedaluwarsa refresh token' }),
-  revokedAt: (f) =>
-    f.meta({ description: 'Waktu dicabut, atau null selama aktif' }),
-  createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
-});
-export type RefreshToken = z.infer<typeof RefreshToken>;
-
-export const AuthToken = createSelectSchema(authTokens, {
-  id: (f) => f.meta({ description: 'ID token autentikasi' }),
-  userId: (f) => f.meta({ description: 'User pemilik token' }),
-  tokenHash: (f) =>
-    f
-      .min(1, 'Hash token tidak boleh kosong')
-      .max(255, 'Hash token maksimal 255 karakter')
-      .meta({ description: 'Token opaque yang di-hash' }),
-  type: (f) => f.meta({ description: 'Tujuan token autentikasi' }),
-  expiresAt: (f) => f.meta({ description: 'Waktu kedaluwarsa token' }),
-  revokedAt: (f) =>
-    f.meta({ description: 'Waktu dicabut, atau null selama aktif' }),
-  createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
-});
-export type AuthToken = z.infer<typeof AuthToken>;
 
 export const Asset = createSelectSchema(assets, {
   id: (f) => f.meta({ description: 'ID aset' }),

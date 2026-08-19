@@ -50,8 +50,6 @@ export const postTypeEnum = pgEnum('post_type', [
   'video',
   'headline',
 ]);
-/** Password hashing algorithm used for user passwords. */
-export const hashingAlgorithmEnum = pgEnum('hashing_algorithm', ['argon2id']);
 /** Administrative status for user accounts. */
 export const userStatusEnum = pgEnum('user_status', [
   'active',
@@ -67,33 +65,19 @@ export const userRoleEnum = pgEnum('user_role', [
   'cryptoassets_manager',
   'member',
 ]);
-/** Auth token purpose categories. */
-export const authTokenTypeEnum = pgEnum('auth_token_type', [
-  'email_verification',
-  'password_reset',
-]);
-
 /** Centralized user identity and account table. */
 export const users = pgTable('users', {
   id: primaryKeyUuid(),
   name: varchar('name', { length: 120 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  hashedPassword: text('hashed_password').notNull(),
-  passwordHashingAlgorithm: hashingAlgorithmEnum('password_hashing_algorithm')
-    .notNull()
-    .default('argon2id'),
   /** Optional reference to the user's profile image. */
   avatarId: uuid('avatar_id').references((): AnyPgColumn => assets.id),
   /** System role used for permission checks. */
   role: userRoleEnum('role').notNull().default('member'),
   /** Administrative account lifecycle status. */
   status: userStatusEnum('status').notNull().default('active'),
-  /** Reserved secondary-authentication secret. */
-  twoFactorSecret: text('two_factor_secret'),
   /** Timestamp of the most recent successful login. */
   lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
-  /** Whether the user's email verification has completed. */
-  isEmailVerified: boolean('is_email_verified').notNull().default(false),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
   updatedBy: uuid('updated_by').references((): AnyPgColumn => users.id),
@@ -108,31 +92,6 @@ export const activityLogs = pgTable('activity_logs', {
   subjectId: uuid('subject_id'),
   description: text('description'),
   ipAddress: varchar('ip_address', { length: 45 }),
-  createdAt: createdAt(),
-});
-
-/** Refresh tokens used for session continuity and revocation. */
-export const refreshTokens = pgTable('refresh_tokens', {
-  id: primaryKeyUuid(),
-  userId: uuid('user_id')
-    .references(() => users.id, { onDelete: 'cascade' })
-    .notNull(),
-  token: varchar('token', { length: 64 }).notNull().unique(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  revokedAt: timestamp('revoked_at', { withTimezone: true }),
-  createdAt: createdAt(),
-});
-
-/** Temporary email-verification and password-reset tokens. */
-export const authTokens = pgTable('auth_tokens', {
-  id: primaryKeyUuid(),
-  userId: uuid('user_id')
-    .references(() => users.id, { onDelete: 'cascade' })
-    .notNull(),
-  type: authTokenTypeEnum('type').notNull(),
-  tokenHash: varchar('token_hash', { length: 255 }).notNull().unique(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  revokedAt: timestamp('revoked_at', { withTimezone: true }),
   createdAt: createdAt(),
 });
 

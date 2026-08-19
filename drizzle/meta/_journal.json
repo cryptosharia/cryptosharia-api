@@ -15,6 +15,13 @@
       "when": 1787063472138,
       "tag": "0001_misty_silk_fever",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787117600492,
+      "tag": "0002_productive_boom_boom",
+      "breakpoints": true
     }
   ]
 }

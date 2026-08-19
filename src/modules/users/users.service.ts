@@ -11,10 +11,7 @@ export class UsersService {
     return this.usersRepository.selectById(id, dbExecutor);
   }
 
-  async insert(
-    data: Pick<User, 'name' | 'email' | 'hashedPassword'>,
-    dbExecutor?: DbExecutor,
-  ) {
+  async insert(data: Pick<User, 'name' | 'email'>, dbExecutor?: DbExecutor) {
     return this.usersRepository.insert(data, dbExecutor);
   }
 

@@ -8,14 +8,12 @@ import {
   Req,
   UseFilters,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { getClientIp } from '#src/common/get-client-ip';
 import { ParseZodPipe } from '#src/common/parse-zod.pipe';
 import { CurrentUser } from '#src/modules/security/current-user.decorator';
 import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
-import { ExcludeSensitiveFieldsInterceptor } from '#src/modules/users/exclude-sensitive-fields.interceptor';
 import { AuthExceptionFilter } from './auth.exception-filter';
 import {
   ForgotPasswordBody,
@@ -30,7 +28,6 @@ import { AuthService } from './auth.service';
 
 @Controller('auth')
 @UseFilters(AuthExceptionFilter)
-@UseInterceptors(ExcludeSensitiveFieldsInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

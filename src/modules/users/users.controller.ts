@@ -8,7 +8,6 @@ import {
   Res,
   UseFilters,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { Query } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
@@ -18,7 +17,6 @@ import { AuthenticationGuard } from '#src/modules/security/authentication.guard'
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
 import { UsersExceptionFilter } from './users.exception-filter';
-import { ExcludeSensitiveFieldsInterceptor } from './exclude-sensitive-fields.interceptor';
 import {
   ProfileUpdateBody,
   RoleBody,
@@ -31,7 +29,6 @@ import { UsersService } from './users.service';
 @Controller('users')
 @UseFilters(UsersExceptionFilter)
 @UseGuards(AuthenticationGuard, PermissionGuard)
-@UseInterceptors(ExcludeSensitiveFieldsInterceptor)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
