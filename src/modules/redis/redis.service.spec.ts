@@ -118,8 +118,7 @@ describe('RedisService', () => {
 
   it('collects all keys matching a pattern via scanIterator in serverful mode', async () => {
     serverful.scanIterator.mockImplementation(function* () {
-      yield 'session:1:a';
-      yield 'session:1:b';
+      yield ['session:1:a', 'session:1:b'];
     });
     const service = new RedisService(serverfulConfig as never);
 

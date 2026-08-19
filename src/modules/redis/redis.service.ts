@@ -12,7 +12,7 @@ export class RedisService implements OnModuleDestroy {
 
   constructor(configService: ConfigService) {
     // Serverless deployments talk to Upstash over REST;
-    // everything elseuses a direct TCP client against REDIS_URL.
+    // everything else uses a direct TCP client against REDIS_URL.
     if (configService.get<boolean>('SERVERLESS') === true) {
       this.mode = 'serverless';
       this.serverlessClient = new UpstashRedis({
@@ -93,11 +93,11 @@ export class RedisService implements OnModuleDestroy {
 
     const client = await this.serverfulClient;
     const keys: string[] = [];
-    for await (const key of client.scanIterator({
+    for await (const batch of client.scanIterator({
       MATCH: pattern,
       COUNT: 100,
     })) {
-      keys.push(key.toString());
+      keys.push(...batch.map((key) => key.toString()));
     }
     return keys;
   }

@@ -1,42 +1,18 @@
 import { MailerService } from '#src/modules/mailer/mailer.service';
-import { UsersService } from '#src/modules/users/users.service';
 import { Suite } from '#test/helpers/suite.base';
+import { createSession as createSessionFor } from '#test/helpers/create-session';
 import type { TestMailerService } from '#test/helpers/test-mailer.service';
-
-function getToken(html: string) {
-  const match = html.match(/verify\/([^"<]+)/);
-  if (!match) throw new Error('Email does not contain a verification token');
-  return match[1];
-}
 
 export class MessagesSuite extends Suite {
   register() {
     const mailer = () => this.ctx.app.get<TestMailerService>(MailerService);
-    const users = () => this.ctx.app.get(UsersService);
-    const createSession = async (
+    const createSession = (
       email: string,
       role: 'member' | 'admin' = 'member',
-    ) => {
-      const password = 'secure-password';
-      await this.ctx.client.POST('/auth/signup', {
-        body: {
-          name: 'Message User',
-          email,
-          password,
-          redirectUrl: 'https://app.cryptosharia.id/verify/{token}',
-        },
-      });
-      await this.ctx.client.POST('/auth/verify', {
-        body: { token: getToken(mailer().messages.at(-1)!.html) },
-      });
-      const user = await users().selectByEmail(email);
-      if (role !== 'member') await users().update(user.id, { role });
-      const signin = await this.ctx.client.POST('/auth/signin', {
-        body: { email, password },
-      });
-      if (!signin.data) throw new Error('Signin response has no token pair');
-      return signin.data.accessToken;
-    };
+    ) =>
+      createSessionFor(this.ctx, email, role).then(
+        ({ accessToken }) => accessToken,
+      );
 
     describe('Messages', () => {
       describe('security', () => {

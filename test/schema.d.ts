@@ -41,7 +41,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/auth/signup': {
+  '/auth/otp/request': {
     parameters: {
       query?: never;
       header?: never;
@@ -51,8 +51,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Signup
-     * @description Membuat akun baru (belum terverifikasi) dan kirim email verifikasi ke redirectUrl.
+     * Request kode OTP
+     * @description Kirim kode OTP 6 digit ke email. Response selalu sama untuk email terdaftar maupun tidak.
      */
     post: {
       parameters: {
@@ -64,216 +64,17 @@ export interface paths {
       requestBody?: {
         content: {
           'application/json': {
-            /**
-             * @description Nama user
-             * @example John Doe
-             */
-            name: string;
             /**
              * Format: email
              * @description Email untuk login
              * @example john@example.com
              */
             email: string;
-            /**
-             * @description Minimal 12 karakter.
-             * @example secure-password
-             */
-            password: string;
-            /**
-             * @description URL redirect berisi satu placeholder `{token}`.
-             * @example https://app.cryptosharia.id/verify/{token}
-             */
-            redirectUrl: string;
           };
         };
       };
       responses: {
-        /** @description Akun dibuat & email verifikasi terkirim */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /**
-               * Format: uuid
-               * @description ID user
-               */
-              id: string;
-              /**
-               * @description Nama user
-               * @example John Doe
-               */
-              name: string;
-              /**
-               * Format: email
-               * @description Email untuk login
-               * @example john@example.com
-               */
-              email: string;
-              /**
-               * Format: uuid
-               * @description Foto profil user
-               */
-              avatarId: string | null;
-              /**
-               * @description Role user
-               * @example member
-               * @enum {string}
-               */
-              role:
-                | 'super_admin'
-                | 'admin'
-                | 'posts_manager'
-                | 'cryptoassets_manager'
-                | 'member';
-              /**
-               * @description Status akun
-               * @example active
-               * @enum {string}
-               */
-              status: 'active' | 'inactive' | 'suspended' | 'banned';
-              /**
-               * Format: date-time
-               * @description Login terakhir
-               */
-              lastLoginAt: string | null;
-              /** @description Apakah email sudah diverifikasi */
-              isEmailVerified: boolean;
-              /**
-               * Format: date-time
-               * @description Waktu dibuat
-               */
-              createdAt: string;
-              /**
-               * Format: date-time
-               * @description Waktu diubah
-               */
-              updatedAt: string | null;
-              /**
-               * Format: uuid
-               * @description User pengubah terakhir
-               */
-              updatedBy: string | null;
-            };
-          };
-        };
-        /** @description Tidak terautentikasi */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'UNAUTHORIZED';
-              /** @enum {string} */
-              message: 'Tidak terautentikasi';
-            };
-          };
-        };
-        /** @description Email sudah terdaftar */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              message: 'Email sudah terdaftar';
-              /** @enum {string} */
-              error: 'EMAIL_ALREADY_REGISTERED';
-            };
-          };
-        };
-        /** @description Validasi gagal */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              details: {
-                /**
-                 * @description Kesalahan validasi root
-                 * @example [
-                 *       "<error1>",
-                 *       "<error2>",
-                 *       "<error...>"
-                 *     ]
-                 */
-                root: string[];
-                /**
-                 * @description Kesalahan validasi per field
-                 * @example {
-                 *       "<field1>": [
-                 *         "<error1>",
-                 *         "<error2>",
-                 *         "<error...>"
-                 *       ],
-                 *       "<field2>": [
-                 *         "<error1>",
-                 *         "<error2>",
-                 *         "<error...>"
-                 *       ],
-                 *       "<field...>": [
-                 *         "<error...>"
-                 *       ]
-                 *     }
-                 */
-                fields: {
-                  [key: string]: string[];
-                };
-              };
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/verify': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Verifikasi email
-     * @description Verifikasi email pakai token sekali pakai.
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          'application/json': {
-            /**
-             * @description Token opaque sekali pakai.
-             * @example opaque-token
-             */
-            token: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Email terverifikasi */
+        /** @description Kode OTP terkirim */
         204: {
           headers: {
             [name: string]: unknown;
@@ -294,20 +95,6 @@ export interface paths {
             };
           };
         };
-        /** @description Token verifikasi tidak valid atau kedaluwarsa */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              message: 'Token verifikasi tidak valid atau kedaluwarsa';
-              /** @enum {string} */
-              error: 'VERIFICATION_TOKEN_INVALID';
-            };
-          };
-        };
         /** @description Validasi gagal */
         422: {
           headers: {
@@ -354,6 +141,22 @@ export interface paths {
             };
           };
         };
+        /** @description Terlalu banyak request. Coba lagi nanti. */
+        429: {
+          headers: {
+            /** @description Detik sebelum request berikutnya */
+            'Retry-After': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Terlalu banyak request. Coba lagi nanti.';
+              /** @enum {string} */
+              error: 'OTP_REQUEST_RATE_LIMITED';
+            };
+          };
+        };
       };
     };
     delete?: never;
@@ -362,7 +165,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/auth/signin': {
+  '/auth/otp/verify': {
     parameters: {
       query?: never;
       header?: never;
@@ -372,8 +175,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Signin
-     * @description Autentikasi dengan email & password, lalu dapat access token dan refresh token.
+     * Verifikasi kode OTP
+     * @description Verifikasi kode OTP dan buat sesi. User baru dibuat otomatis saat email belum terdaftar.
      */
     post: {
       parameters: {
@@ -392,15 +195,15 @@ export interface paths {
              */
             email: string;
             /**
-             * @description Minimal 12 karakter.
-             * @example secure-password
+             * @description Kode OTP 6 digit
+             * @example 123456
              */
-            password: string;
+            code: string;
           };
         };
       };
       responses: {
-        /** @description Signin berhasil */
+        /** @description Verifikasi berhasil */
         200: {
           headers: {
             [name: string]: unknown;
@@ -408,19 +211,37 @@ export interface paths {
           content: {
             'application/json': {
               /**
-               * @description Access token JWT (short-lived).
+               * @description Access token JWT (short-lived)
                * @example eyJhbGciOiJIUzI1NiIs...
                */
               accessToken: string;
               /**
-               * @description Refresh token opaque untuk rotasi sesi.
-               * @example opaque-refresh-token
+               * @description Refresh token (`{userId}:{tokenId}`)
+               * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
                */
               refreshToken: string;
             };
           };
         };
-        /** @description Email atau password salah */
+        /** @description Kode OTP tidak valid atau kedaluwarsa */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Kode OTP tidak valid atau kedaluwarsa';
+              /** @enum {string} */
+              error: 'OTP_INVALID_OR_EXPIRED';
+              details: {
+                /** @description Sisa percobaan */
+                attemptsRemaining: number;
+              };
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
         401: {
           headers: {
             [name: string]: unknown;
@@ -428,23 +249,9 @@ export interface paths {
           content: {
             'application/json': {
               /** @enum {string} */
-              message: 'Email atau password salah';
+              error: 'UNAUTHORIZED';
               /** @enum {string} */
-              error: 'INVALID_CREDENTIALS';
-            };
-          };
-        };
-        /** @description Akun tidak aktif. Hubungi support. */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              message: 'Akun tidak aktif. Hubungi support.';
-              /** @enum {string} */
-              error: 'USER_INACTIVE';
+              message: 'Tidak terautentikasi';
             };
           };
         };
@@ -491,6 +298,20 @@ export interface paths {
                   [key: string]: string[];
                 };
               };
+            };
+          };
+        };
+        /** @description Terlalu banyak percobaan. Request kode baru untuk melanjutkan. */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Terlalu banyak percobaan. Request kode baru untuk melanjutkan.';
+              /** @enum {string} */
+              error: 'OTP_MAX_ATTEMPTS_EXCEEDED';
             };
           };
         };
@@ -512,8 +333,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Refresh token
-     * @description Cabut refresh token lama dan terbitkan access token + refresh token baru.
+     * Perbarui access token
+     * @description Terbitkan access token baru.
      */
     post: {
       parameters: {
@@ -526,15 +347,15 @@ export interface paths {
         content: {
           'application/json': {
             /**
-             * @description Token opaque sekali pakai.
-             * @example opaque-token
+             * @description Refresh token (`{userId}:{tokenId}`)
+             * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
              */
             refreshToken: string;
           };
         };
       };
       responses: {
-        /** @description Refresh token berhasil */
+        /** @description Access token baru */
         200: {
           headers: {
             [name: string]: unknown;
@@ -542,15 +363,10 @@ export interface paths {
           content: {
             'application/json': {
               /**
-               * @description Access token JWT (short-lived).
+               * @description Access token JWT (short-lived)
                * @example eyJhbGciOiJIUzI1NiIs...
                */
               accessToken: string;
-              /**
-               * @description Refresh token opaque untuk rotasi sesi.
-               * @example opaque-refresh-token
-               */
-              refreshToken: string;
             };
           };
         };
@@ -647,7 +463,7 @@ export interface paths {
     put?: never;
     /**
      * Signout
-     * @description Cabut refresh token. Request yang diulang tetap sukses.
+     * @description Cabut sesi untuk refresh token ini. Request yang diulang tetap sukses.
      */
     post: {
       parameters: {
@@ -660,8 +476,8 @@ export interface paths {
         content: {
           'application/json': {
             /**
-             * @description Token opaque sekali pakai.
-             * @example opaque-token
+             * @description Refresh token (`{userId}:{tokenId}`)
+             * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
              */
             refreshToken: string;
           };
@@ -743,6 +559,71 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/auth/signout-all': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Signout semua sesi
+     * @description Mencabut semua sesi aktif user yang sedang signin.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Semua sesi dicabut */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/auth/me': {
     parameters: {
       query?: never;
@@ -752,7 +633,7 @@ export interface paths {
     };
     /**
      * User saat ini
-     * @description Mengembalikan profil user yang sedang login.
+     * @description Mengembalikan profil user yang sedang signin.
      */
     get: {
       parameters: {
@@ -813,8 +694,6 @@ export interface paths {
                * @description Login terakhir
                */
               lastLoginAt: string | null;
-              /** @description Apakah email sudah diverifikasi */
-              isEmailVerified: boolean;
               /**
                * Format: date-time
                * @description Waktu dibuat
@@ -865,245 +744,6 @@ export interface paths {
     };
     put?: never;
     post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/password/forgot': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Lupa password
-     * @description Kirim email reset password jika akun ada, tapi responsnya selalu sama.
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          'application/json': {
-            /**
-             * Format: email
-             * @description Email untuk login
-             * @example john@example.com
-             */
-            email: string;
-            /**
-             * @description URL redirect berisi satu placeholder `{token}`.
-             * @example https://app.cryptosharia.id/verify/{token}
-             */
-            redirectUrl: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Email reset password terkirim */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-        /** @description Tidak terautentikasi */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'UNAUTHORIZED';
-              /** @enum {string} */
-              message: 'Tidak terautentikasi';
-            };
-          };
-        };
-        /** @description Validasi gagal */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              details: {
-                /**
-                 * @description Kesalahan validasi root
-                 * @example [
-                 *       "<error1>",
-                 *       "<error2>",
-                 *       "<error...>"
-                 *     ]
-                 */
-                root: string[];
-                /**
-                 * @description Kesalahan validasi per field
-                 * @example {
-                 *       "<field1>": [
-                 *         "<error1>",
-                 *         "<error2>",
-                 *         "<error...>"
-                 *       ],
-                 *       "<field2>": [
-                 *         "<error1>",
-                 *         "<error2>",
-                 *         "<error...>"
-                 *       ],
-                 *       "<field...>": [
-                 *         "<error...>"
-                 *       ]
-                 *     }
-                 */
-                fields: {
-                  [key: string]: string[];
-                };
-              };
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/password/reset': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Reset password
-     * @description Pakai token reset sekali pakai untuk ganti password dan cabut sesi refresh aktif.
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          'application/json': {
-            /**
-             * @description Token opaque sekali pakai.
-             * @example opaque-token
-             */
-            token: string;
-            /**
-             * @description Minimal 12 karakter.
-             * @example secure-password
-             */
-            password: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Password berhasil direset */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-        /** @description Tidak terautentikasi */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'UNAUTHORIZED';
-              /** @enum {string} */
-              message: 'Tidak terautentikasi';
-            };
-          };
-        };
-        /** @description Token reset password tidak valid atau kedaluwarsa */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              message: 'Token reset password tidak valid atau kedaluwarsa';
-              /** @enum {string} */
-              error: 'PASSWORD_RESET_TOKEN_INVALID';
-            };
-          };
-        };
-        /** @description Validasi gagal */
-        422: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': {
-              /** @enum {string} */
-              error: 'VALIDATION_FAILED';
-              /** @enum {string} */
-              message: 'Validasi gagal';
-              details: {
-                /**
-                 * @description Kesalahan validasi root
-                 * @example [
-                 *       "<error1>",
-                 *       "<error2>",
-                 *       "<error...>"
-                 *     ]
-                 */
-                root: string[];
-                /**
-                 * @description Kesalahan validasi per field
-                 * @example {
-                 *       "<field1>": [
-                 *         "<error1>",
-                 *         "<error2>",
-                 *         "<error...>"
-                 *       ],
-                 *       "<field2>": [
-                 *         "<error1>",
-                 *         "<error2>",
-                 *         "<error...>"
-                 *       ],
-                 *       "<field...>": [
-                 *         "<error...>"
-                 *       ]
-                 *     }
-                 */
-                fields: {
-                  [key: string]: string[];
-                };
-              };
-            };
-          };
-        };
-      };
-    };
     delete?: never;
     options?: never;
     head?: never;
@@ -1199,8 +839,6 @@ export interface paths {
                * @description Login terakhir
                */
               lastLoginAt: string | null;
-              /** @description Apakah email sudah diverifikasi */
-              isEmailVerified: boolean;
               /**
                * Format: date-time
                * @description Waktu dibuat
@@ -1376,8 +1014,6 @@ export interface paths {
                * @description Login terakhir
                */
               lastLoginAt: string | null;
-              /** @description Apakah email sudah diverifikasi */
-              isEmailVerified: boolean;
               /**
                * Format: date-time
                * @description Waktu dibuat
@@ -1526,8 +1162,6 @@ export interface paths {
                * @description Login terakhir
                */
               lastLoginAt: string | null;
-              /** @description Apakah email sudah diverifikasi */
-              isEmailVerified: boolean;
               /**
                * Format: date-time
                * @description Waktu dibuat
@@ -1723,8 +1357,6 @@ export interface paths {
                * @description Login terakhir
                */
               lastLoginAt: string | null;
-              /** @description Apakah email sudah diverifikasi */
-              isEmailVerified: boolean;
               /**
                * Format: date-time
                * @description Waktu dibuat
@@ -1930,8 +1562,6 @@ export interface paths {
                * @description Login terakhir
                */
               lastLoginAt: string | null;
-              /** @description Apakah email sudah diverifikasi */
-              isEmailVerified: boolean;
               /**
                * Format: date-time
                * @description Waktu dibuat
@@ -4309,7 +3939,10 @@ export interface paths {
               status: 'draft' | 'published' | 'archived';
               /** @description Ringkasan cryptoasset */
               excerpt: string;
-              /** @description Simbol TradingView */
+              /**
+               * @description Simbol TradingView
+               * @example BINANCE:BTCUSDT
+               */
               tradingviewSymbol: string | null;
               /**
                * Format: uri
@@ -4557,7 +4190,10 @@ export interface paths {
             status: 'draft' | 'published' | 'archived';
             /** @description Ringkasan cryptoasset */
             excerpt: string;
-            /** @description Simbol TradingView */
+            /**
+             * @description Simbol TradingView
+             * @example BINANCE:BTCUSDT
+             */
             tradingviewSymbol: string | null;
             /**
              * Format: uri
@@ -4623,7 +4259,10 @@ export interface paths {
               status: 'draft' | 'published' | 'archived';
               /** @description Ringkasan cryptoasset */
               excerpt: string;
-              /** @description Simbol TradingView */
+              /**
+               * @description Simbol TradingView
+               * @example BINANCE:BTCUSDT
+               */
               tradingviewSymbol: string | null;
               /**
                * Format: uri
@@ -4919,7 +4558,10 @@ export interface paths {
               status: 'draft' | 'published' | 'archived';
               /** @description Ringkasan cryptoasset */
               excerpt: string;
-              /** @description Simbol TradingView */
+              /**
+               * @description Simbol TradingView
+               * @example BINANCE:BTCUSDT
+               */
               tradingviewSymbol: string | null;
               /**
                * Format: uri
@@ -5260,7 +4902,10 @@ export interface paths {
             status?: 'draft' | 'published' | 'archived';
             /** @description Ringkasan cryptoasset */
             excerpt?: string;
-            /** @description Simbol TradingView */
+            /**
+             * @description Simbol TradingView
+             * @example BINANCE:BTCUSDT
+             */
             tradingviewSymbol?: string | null;
             /**
              * Format: uri
@@ -5326,7 +4971,10 @@ export interface paths {
               status: 'draft' | 'published' | 'archived';
               /** @description Ringkasan cryptoasset */
               excerpt: string;
-              /** @description Simbol TradingView */
+              /**
+               * @description Simbol TradingView
+               * @example BINANCE:BTCUSDT
+               */
               tradingviewSymbol: string | null;
               /**
                * Format: uri

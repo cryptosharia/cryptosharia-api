@@ -1,45 +1,18 @@
-import { MailerService } from '#src/modules/mailer/mailer.service';
-import { UsersService } from '#src/modules/users/users.service';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
 import { assets, tags } from '#src/modules/drizzle/drizzle.schema';
 import { Suite } from '#test/helpers/suite.base';
-import type { TestMailerService } from '#test/helpers/test-mailer.service';
-
-function getToken(html: string) {
-  const match = html.match(/verify\/([^"<]+)/);
-  if (!match) throw new Error('Email does not contain a verification token');
-  return match[1];
-}
+import { createSession as createSessionFor } from '#test/helpers/create-session';
 
 export class PostsSuite extends Suite {
   register() {
-    const mailer = () => this.ctx.app.get<TestMailerService>(MailerService);
-    const users = () => this.ctx.app.get(UsersService);
     const db = () => this.ctx.app.get(DrizzleService).db;
-    const createSession = async (
+    const createSession = (
       email: string,
       role: 'member' | 'posts_manager' = 'member',
-    ) => {
-      const password = 'secure-password';
-      await this.ctx.client.POST('/auth/signup', {
-        body: {
-          name: 'Post User',
-          email,
-          password,
-          redirectUrl: 'https://app.cryptosharia.id/verify/{token}',
-        },
-      });
-      await this.ctx.client.POST('/auth/verify', {
-        body: { token: getToken(mailer().messages.at(-1)!.html) },
-      });
-      const user = await users().selectByEmail(email);
-      if (role !== 'member') await users().update(user.id, { role });
-      const signin = await this.ctx.client.POST('/auth/signin', {
-        body: { email, password },
-      });
-      if (!signin.data) throw new Error('Signin response has no token pair');
-      return signin.data.accessToken;
-    };
+    ) =>
+      createSessionFor(this.ctx, email, role).then(
+        ({ accessToken }) => accessToken,
+      );
     const createAsset = async (pathname = 'test/post-cover.png') => {
       const [asset] = await db()
         .insert(assets)

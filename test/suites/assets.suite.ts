@@ -1,20 +1,12 @@
-import { MailerService } from '#src/modules/mailer/mailer.service';
-import { UsersService } from '#src/modules/users/users.service';
 import { StorageService } from '#src/modules/storage/storage.service';
 import { ImageProviderService } from '#src/modules/image-provider/image-provider.service';
 import { StorageError } from '#src/modules/storage/storage.error';
 import { ImageProviderError } from '#src/modules/image-provider/image-provider.error';
 import type { Context } from '#test/helpers/context.type';
 import { Suite } from '#test/helpers/suite.base';
-import type { TestMailerService } from '#test/helpers/test-mailer.service';
+import { createSession as createSessionFor } from '#test/helpers/create-session';
 import { TestStorageService } from '#test/helpers/test-storage.service';
 import { TestImageProviderService } from '#test/helpers/test-image-provider.service';
-
-function getToken(html: string) {
-  const match = html.match(/verify\/([^"<]+)/);
-  if (!match) throw new Error('Email does not contain a verification token');
-  return match[1];
-}
 
 export class AssetsSuite extends Suite {
   constructor(ctx: Context) {
@@ -22,41 +14,14 @@ export class AssetsSuite extends Suite {
   }
 
   register() {
-    const mailer = () => this.ctx.app.get<TestMailerService>(MailerService);
     const storage = () => this.ctx.app.get<TestStorageService>(StorageService);
     const imageProvider = () =>
       this.ctx.app.get<TestImageProviderService>(ImageProviderService);
-    const usersService = () => this.ctx.app.get(UsersService);
 
-    const createSession = async (
+    const createSession = (
       email: string,
       role: 'posts_manager' | 'cryptoassets_manager' | 'member' = 'member',
-    ) => {
-      const password = 'secure-password';
-      const signup = await this.ctx.client.POST('/auth/signup', {
-        body: {
-          name: email.split('@')[0],
-          email,
-          password,
-          redirectUrl: 'https://app.cryptosharia.id/verify/{token}',
-        },
-      });
-      expect(signup.response.status).toBe(201);
-      const verify = await this.ctx.client.POST('/auth/verify', {
-        body: { token: getToken(mailer().messages.at(-1)!.html) },
-      });
-      expect(verify.response.status).toBe(204);
-
-      const user = await usersService().selectByEmail(email);
-      if (role !== 'member') await usersService().update(user.id, { role });
-
-      const signin = await this.ctx.client.POST('/auth/signin', {
-        body: { email, password },
-      });
-      expect(signin.response.status).toBe(200);
-      if (!signin.data) throw new Error('Signin response has no token pair');
-      return { user, accessToken: signin.data.accessToken };
-    };
+    ) => createSessionFor(this.ctx, email, role);
 
     describe('Assets', () => {
       describe('security', () => {

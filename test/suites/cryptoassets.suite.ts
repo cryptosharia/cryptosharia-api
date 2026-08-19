@@ -1,50 +1,23 @@
-import { MailerService } from '#src/modules/mailer/mailer.service';
-import { UsersService } from '#src/modules/users/users.service';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
 import { MarketDataService } from '#src/modules/market-data/market-data.service';
 import { MarketDataError } from '#src/modules/market-data/market-data.error';
 import { assets, tags } from '#src/modules/drizzle/drizzle.schema';
 import { Suite } from '#test/helpers/suite.base';
-import type { TestMailerService } from '#test/helpers/test-mailer.service';
+import { createSession as createSessionFor } from '#test/helpers/create-session';
 import type { TestMarketDataService } from '#test/helpers/test-market-data.service';
-
-function getToken(html: string) {
-  const match = html.match(/verify\/([^"<]+)/);
-  if (!match) throw new Error('Email does not contain a verification token');
-  return match[1];
-}
 
 export class CryptoassetsSuite extends Suite {
   register() {
-    const mailer = () => this.ctx.app.get<TestMailerService>(MailerService);
-    const users = () => this.ctx.app.get(UsersService);
     const db = () => this.ctx.app.get(DrizzleService).db;
     const marketData = () =>
       this.ctx.app.get<TestMarketDataService>(MarketDataService);
-    const createSession = async (
+    const createSession = (
       email: string,
       role: 'member' | 'cryptoassets_manager' = 'member',
-    ) => {
-      const password = 'secure-password';
-      await this.ctx.client.POST('/auth/signup', {
-        body: {
-          name: 'Cryptoasset User',
-          email,
-          password,
-          redirectUrl: 'https://app.cryptosharia.id/verify/{token}',
-        },
-      });
-      await this.ctx.client.POST('/auth/verify', {
-        body: { token: getToken(mailer().messages.at(-1)!.html) },
-      });
-      const user = await users().selectByEmail(email);
-      if (role !== 'member') await users().update(user.id, { role });
-      const signin = await this.ctx.client.POST('/auth/signin', {
-        body: { email, password },
-      });
-      if (!signin.data) throw new Error('Signin response has no token pair');
-      return signin.data.accessToken;
-    };
+    ) =>
+      createSessionFor(this.ctx, email, role).then(
+        ({ accessToken }) => accessToken,
+      );
     const createAsset = async (pathname = 'test/cryptoasset-logo.png') => {
       const [asset] = await db()
         .insert(assets)

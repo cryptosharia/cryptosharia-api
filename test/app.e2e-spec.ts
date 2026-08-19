@@ -14,6 +14,7 @@ import { MarketDataService } from '#src/modules/market-data/market-data.service'
 import type { paths } from '#test/schema';
 import type { Context } from './helpers/context.type';
 import { resetTestDatabase } from './helpers/reset-test-database';
+import { resetTestRedis } from './helpers/reset-test-redis';
 import { SuitesService } from './suites/index';
 import { TestMailerService } from './helpers/test-mailer.service';
 import { TestStorageService } from './helpers/test-storage.service';
@@ -65,6 +66,8 @@ describe('App', () => {
   beforeEach(async () => {
     // Suites share one application and database, so reset state to keep every case isolated.
     await resetTestDatabase();
+    // OTP codes, rate-limit counters, and sessions live in Redis and are not covered by the DB reset.
+    await resetTestRedis();
     const mailer = ctx.app.get<TestMailerService>(MailerService);
     mailer.clear();
     ctx.app.get<TestStorageService>(StorageService).reset();
