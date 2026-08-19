@@ -1,7 +1,10 @@
 import { z } from 'zod';
+import { AssetMetadata } from '#src/modules/assets/assets.schemas';
 import { User } from '#src/modules/drizzle/drizzle.types';
 
-export const UserResponse = User;
+export const UserResponse = User.omit({ avatarId: true }).extend({
+  avatar: AssetMetadata.nullable(),
+});
 export type UserResponse = z.infer<typeof UserResponse>;
 
 export const UserParam = User.pick({ id: true });

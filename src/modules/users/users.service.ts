@@ -1,14 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
+import { AssetsService } from '#src/modules/assets/assets.service';
 import { User } from '#src/modules/drizzle/drizzle.types';
 import type { DbExecutor } from '#src/modules/drizzle/drizzle.types';
+import { UsersRepository, type UserWithAvatar } from './users.repository';
+import type { UserResponse } from './users.schemas';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly assetsService: AssetsService,
+  ) {}
 
-  async selectById(id: User['id'], dbExecutor?: DbExecutor) {
-    return this.usersRepository.selectById(id, dbExecutor);
+  async selectById(
+    id: User['id'],
+    dbExecutor?: DbExecutor,
+  ): Promise<UserResponse> {
+    return this.toResponse(
+      await this.usersRepository.selectById(id, dbExecutor),
+    );
   }
 
   async insert(data: Pick<User, 'name' | 'email'>, dbExecutor?: DbExecutor) {
@@ -19,8 +29,11 @@ export class UsersService {
     return this.usersRepository.selectByEmail(email, dbExecutor);
   }
 
-  async selectAll(options: Parameters<UsersRepository['selectAll']>[0]) {
-    return this.usersRepository.selectAll(options);
+  async selectAll(
+    options: Parameters<UsersRepository['selectAll']>[0],
+  ): Promise<UserResponse[]> {
+    const records = await this.usersRepository.selectAll(options);
+    return records.map((record) => this.toResponse(record));
   }
 
   async count(options: Parameters<UsersRepository['count']>[0]) {
@@ -34,5 +47,20 @@ export class UsersService {
     dbExecutor?: DbExecutor,
   ) {
     return this.usersRepository.update(id, data, updatedBy, dbExecutor);
+  }
+
+  private toResponse(record: UserWithAvatar): UserResponse {
+    return {
+      id: record.user.id,
+      name: record.user.name,
+      email: record.user.email,
+      role: record.user.role,
+      status: record.user.status,
+      lastLoginAt: record.user.lastLoginAt,
+      createdAt: record.user.createdAt,
+      updatedAt: record.user.updatedAt,
+      updatedBy: record.user.updatedBy,
+      avatar: this.assetsService.toAssetMetadata(record.avatar),
+    };
   }
 }

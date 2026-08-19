@@ -6,6 +6,7 @@ import { CryptoService } from '#src/modules/crypto/crypto.service';
 import type { User } from '#src/modules/drizzle/drizzle.types';
 import { MailerService } from '#src/modules/mailer/mailer.service';
 import { UsersError } from '#src/modules/users/users.error';
+import type { UserResponse } from '#src/modules/users/users.schemas';
 import { UsersService } from '#src/modules/users/users.service';
 import {
   ACCESS_TOKEN_EXPIRES_IN_SECONDS,
@@ -197,7 +198,7 @@ export class AuthService {
     const session = await this.authRepository.getSession(userId, tokenHash);
     if (!session) throw new AuthError('REFRESH_TOKEN_INVALID');
 
-    let user: User;
+    let user: UserResponse;
     try {
       user = await this.usersService.selectById(userId);
     } catch (error) {
@@ -254,7 +255,7 @@ export class AuthService {
   }
 
   async me(userId: string) {
-    let user: User;
+    let user: UserResponse;
     try {
       user = await this.usersService.selectById(userId);
     } catch (error) {

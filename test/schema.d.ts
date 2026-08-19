@@ -668,11 +668,6 @@ export interface paths {
                */
               email: string;
               /**
-               * Format: uuid
-               * @description Foto profil user
-               */
-              avatarId: string | null;
-              /**
                * @description Role user
                * @example member
                * @enum {string}
@@ -709,6 +704,37 @@ export interface paths {
                * @description User pengubah terakhir
                */
               updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
             };
           };
         };
@@ -813,11 +839,6 @@ export interface paths {
                */
               email: string;
               /**
-               * Format: uuid
-               * @description Foto profil user
-               */
-              avatarId: string | null;
-              /**
                * @description Role user
                * @example member
                * @enum {string}
@@ -854,6 +875,37 @@ export interface paths {
                * @description User pengubah terakhir
                */
               updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
             }[];
           };
         };
@@ -988,11 +1040,6 @@ export interface paths {
                */
               email: string;
               /**
-               * Format: uuid
-               * @description Foto profil user
-               */
-              avatarId: string | null;
-              /**
                * @description Role user
                * @example member
                * @enum {string}
@@ -1029,6 +1076,37 @@ export interface paths {
                * @description User pengubah terakhir
                */
               updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
             };
           };
         };
@@ -1136,11 +1214,6 @@ export interface paths {
                */
               email: string;
               /**
-               * Format: uuid
-               * @description Foto profil user
-               */
-              avatarId: string | null;
-              /**
                * @description Role user
                * @example member
                * @enum {string}
@@ -1177,6 +1250,37 @@ export interface paths {
                * @description User pengubah terakhir
                */
               updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
             };
           };
         };
@@ -1331,11 +1435,6 @@ export interface paths {
                */
               email: string;
               /**
-               * Format: uuid
-               * @description Foto profil user
-               */
-              avatarId: string | null;
-              /**
                * @description Role user
                * @example member
                * @enum {string}
@@ -1372,6 +1471,37 @@ export interface paths {
                * @description User pengubah terakhir
                */
               updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
             };
           };
         };
@@ -1536,11 +1666,6 @@ export interface paths {
                */
               email: string;
               /**
-               * Format: uuid
-               * @description Foto profil user
-               */
-              avatarId: string | null;
-              /**
                * @description Role user
                * @example member
                * @enum {string}
@@ -1577,6 +1702,37 @@ export interface paths {
                * @description User pengubah terakhir
                */
               updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
             };
           };
         };

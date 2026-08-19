@@ -10,17 +10,36 @@ import {
   sql,
   SQL,
 } from 'drizzle-orm';
-import { users } from '#src/modules/drizzle/drizzle.schema';
+import { users, assets } from '#src/modules/drizzle/drizzle.schema';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
-import type { DbExecutor } from '#src/modules/drizzle/drizzle.types';
+import type { Asset, DbExecutor } from '#src/modules/drizzle/drizzle.types';
 import { User } from '#src/modules/drizzle/drizzle.types';
 import { escapeLikePattern } from '#src/common/escape-like-pattern';
 import { UsersError } from './users.error';
 import { DatabaseError } from 'pg';
 
+export type UserWithAvatar = {
+  user: User;
+  avatar: Asset | null;
+};
+
 @Injectable()
 export class UsersRepository {
   constructor(private readonly drizzleService: DrizzleService) {}
+
+  private selectWithAvatar(dbExecutor: DbExecutor) {
+    return dbExecutor
+      .select({ user: users, avatar: assets })
+      .from(users)
+      .leftJoin(assets, eq(users.avatarId, assets.id));
+  }
+
+  private normalizeAvatar(rows: { user: User; avatar: Asset | null }[]) {
+    return rows.map((row) => ({
+      user: row.user,
+      avatar: row.avatar?.id ? row.avatar : null,
+    }));
+  }
 
   private buildListWhere(options: {
     search?: string;
@@ -48,13 +67,12 @@ export class UsersRepository {
   async selectById(
     id: User['id'],
     dbExecutor: DbExecutor = this.drizzleService.db,
-  ): Promise<User> {
-    const [user] = await dbExecutor
-      .select()
-      .from(users)
-      .where(eq(users.id, id));
-    if (!user) throw new UsersError('USER_NOT_FOUND');
-    return user;
+  ): Promise<UserWithAvatar> {
+    const [row] = await this.selectWithAvatar(dbExecutor).where(
+      eq(users.id, id),
+    );
+    if (!row) throw new UsersError('USER_NOT_FOUND');
+    return this.normalizeAvatar([row])[0];
   }
 
   async selectByEmail(
@@ -75,14 +93,13 @@ export class UsersRepository {
     statuses?: User['status'][];
     page: number;
     limit: number;
-  }): Promise<User[]> {
-    return this.drizzleService.db
-      .select()
-      .from(users)
+  }): Promise<UserWithAvatar[]> {
+    const rows = await this.selectWithAvatar(this.drizzleService.db)
       .where(this.buildListWhere(options))
       .orderBy(desc(users.createdAt))
       .limit(options.limit)
       .offset((options.page - 1) * options.limit);
+    return this.normalizeAvatar(rows);
   }
 
   async count(options: {

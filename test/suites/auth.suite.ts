@@ -203,7 +203,9 @@ export class AuthSuite extends Suite {
           expect(response.status).toBe(200);
           expect(data).toMatchObject({ email, role: 'member', name: 'john' });
           expect(data).not.toHaveProperty('permissions');
-          expect(data).not.toHaveProperty('hashedPassword');
+          expect(data).not.toHaveProperty('avatarId');
+          expect(data).toHaveProperty('avatar');
+          expect(data?.avatar).toBeNull();
         });
       });
 

@@ -28,7 +28,7 @@ export class UsersSuite extends Suite {
       });
 
       describe('selectAll', () => {
-        it('lists users with pagination and redacts sensitive fields', async () => {
+        it('lists users with pagination and exposes avatar metadata', async () => {
           const admin = await createSession('admin@example.com', 'super_admin');
           await createSession('member@example.com');
 
@@ -40,8 +40,9 @@ export class UsersSuite extends Suite {
           expect(response.status).toBe(200);
           expect(response.headers.get('total-items')).toBe('2');
           expect(data).toHaveLength(1);
-          expect(data?.[0]).not.toHaveProperty('hashedPassword');
-          expect(data?.[0]).not.toHaveProperty('twoFactorSecret');
+          expect(data?.[0]).not.toHaveProperty('avatarId');
+          expect(data?.[0]).toHaveProperty('avatar');
+          expect(data?.[0]?.avatar).toBeNull();
         });
 
         it('filters users by role and search term', async () => {
@@ -81,7 +82,9 @@ export class UsersSuite extends Suite {
           expect(data).toMatchObject({
             id: member.user.id,
             email: 'member@example.com',
+            avatar: null,
           });
+          expect(data).not.toHaveProperty('avatarId');
         });
 
         it('returns not found for an unknown user', async () => {
