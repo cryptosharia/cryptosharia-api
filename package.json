@@ -6,8 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "imports": {
-    "#src/*": "./src/*",
-    "#test/*": "./test/*"
+    "#src/*": "./src/*.js",
+    "#test/*": "./test/*.js"
   },
   "scripts": {
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
