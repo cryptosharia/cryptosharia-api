@@ -42,10 +42,12 @@ export class AssetsService {
     userId: User['id'],
     input: UploadInput,
   ): Promise<AssetResponse> {
-    const pathname = createAssetPathname(
-      input.filename,
-      this.configService.get<string>('NODE_ENV') === 'production',
-    );
+    const vercelEnv = this.configService.get<string>('VERCEL_ENV');
+    const isProduction =
+      vercelEnv === 'production' ||
+      (!vercelEnv &&
+        this.configService.get<string>('NODE_ENV') === 'production');
+    const pathname = createAssetPathname(input.filename, isProduction);
     const { width, height } = getImageDimensions(
       input.buffer,
       input.contentType,

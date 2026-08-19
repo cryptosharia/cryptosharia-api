@@ -6,6 +6,7 @@ const envSchema = z
       .enum(['development', 'test', 'production'])
       .default('development'),
     SERVERLESS: z.preprocess((v) => v === 'true', z.boolean()).default(false),
+    VERCEL_ENV: z.string().optional(),
     PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.url(),
     ACCESS_TOKEN_SECRET: z.string().min(1),
