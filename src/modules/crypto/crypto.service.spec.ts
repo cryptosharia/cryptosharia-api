@@ -7,25 +7,6 @@ describe('CryptoService', () => {
     new JwtService({ secret: 'test-secret', signOptions: { issuer: 'test' } }),
   );
 
-  it('hashes and verifies a value', async () => {
-    const hash = await service.hashPassword('secret');
-
-    await expect(service.verifyPassword('secret', hash)).resolves.toBe(true);
-    await expect(service.verifyPassword('wrong', hash)).resolves.toBe(false);
-  });
-
-  it('returns false for a malformed hash', async () => {
-    await expect(service.verifyPassword('secret', 'invalid')).resolves.toBe(
-      false,
-    );
-  });
-
-  it('checks whether a password hash needs rehashing', async () => {
-    const hash = await service.hashPassword('secret');
-
-    expect(service.needsPasswordRehash(hash)).toBe(false);
-  });
-
   it('signs and verifies a JWT with caller options', async () => {
     const token = await service.signJwt(
       { userId: 'user-id', role: 'member' },

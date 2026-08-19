@@ -55,9 +55,9 @@ export class RedisService implements OnModuleDestroy {
     await (await this.serverfulClient).setEx(key, seconds, value);
   }
 
-  async del(key: string): Promise<number> {
-    if (this.mode === 'serverless') return this.serverlessClient!.del(key);
-    return (await this.serverfulClient).del(key);
+  async del(...keys: string[]): Promise<number> {
+    if (this.mode === 'serverless') return this.serverlessClient!.del(...keys);
+    return (await this.serverfulClient).del(keys);
   }
 
   async incr(key: string): Promise<number> {

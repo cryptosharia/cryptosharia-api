@@ -6,7 +6,7 @@ import { ROLE_PERMISSIONS } from './permissions';
 import type { CurrentUser } from './current-user.decorator';
 import type { User } from '#src/modules/drizzle/drizzle.types';
 
-type AccessTokenPayload = { userId: User['id']; role: User['role'] };
+type AccessTokenPayload = { sub: User['id']; role: User['role'] };
 
 @Injectable()
 export class BearerAuthMiddleware implements NestMiddleware {
@@ -32,9 +32,9 @@ export class BearerAuthMiddleware implements NestMiddleware {
         { issuer: ACCESS_TOKEN_ISSUER },
       );
       request.user =
-        payload.userId && ROLE_PERMISSIONS[payload.role]
+        payload.sub && ROLE_PERMISSIONS[payload.role]
           ? ({
-              id: payload.userId,
+              id: payload.sub,
               role: payload.role,
               permissions: ROLE_PERMISSIONS[payload.role],
             } satisfies CurrentUser)

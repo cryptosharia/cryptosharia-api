@@ -12,17 +12,14 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { getClientIp } from '#src/common/get-client-ip';
 import { ParseZodPipe } from '#src/common/parse-zod.pipe';
-import { CurrentUser } from '#src/modules/security/current-user.decorator';
 import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
+import { CurrentUser } from '#src/modules/security/current-user.decorator';
 import { AuthExceptionFilter } from './auth.exception-filter';
 import {
-  ForgotPasswordBody,
+  OtpRequestBody,
+  OtpVerifyBody,
   RefreshBody,
-  ResetPasswordBody,
-  SigninBody,
   SignoutBody,
-  SignupBody,
-  VerifyBody,
 } from './auth.schemas';
 import { AuthService } from './auth.service';
 
@@ -31,37 +28,27 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signup')
-  signup(
-    @Body(new ParseZodPipe(SignupBody)) body: SignupBody,
-    @Req() request: FastifyRequest,
-  ) {
-    return this.authService.signup({
-      ...body,
-      ipAddress: getClientIp(request),
-    });
-  }
-
-  @Post('verify')
+  @Post('otp/request')
   @HttpCode(HttpStatus.NO_CONTENT)
-  verify(
-    @Body(new ParseZodPipe(VerifyBody)) body: VerifyBody,
+  requestOtp(
+    @Body(new ParseZodPipe(OtpRequestBody)) body: OtpRequestBody,
     @Req() request: FastifyRequest,
   ) {
-    return this.authService.verify({
-      ...body,
+    return this.authService.requestOtp({
+      email: body.email,
       ipAddress: getClientIp(request),
     });
   }
 
-  @Post('signin')
+  @Post('otp/verify')
   @HttpCode(HttpStatus.OK)
-  signin(
-    @Body(new ParseZodPipe(SigninBody)) body: SigninBody,
+  verifyOtp(
+    @Body(new ParseZodPipe(OtpVerifyBody)) body: OtpVerifyBody,
     @Req() request: FastifyRequest,
   ) {
-    return this.authService.signin({
-      ...body,
+    return this.authService.verifyOtp({
+      email: body.email,
+      code: body.code,
       ipAddress: getClientIp(request),
     });
   }
@@ -73,7 +60,7 @@ export class AuthController {
     @Req() request: FastifyRequest,
   ) {
     return this.authService.refresh({
-      ...body,
+      refreshToken: body.refreshToken,
       ipAddress: getClientIp(request),
     });
   }
@@ -85,38 +72,21 @@ export class AuthController {
     @Req() request: FastifyRequest,
   ) {
     return this.authService.signout({
-      ...body,
+      refreshToken: body.refreshToken,
       ipAddress: getClientIp(request),
     });
+  }
+
+  @Post('signout-all')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthenticationGuard)
+  signoutAll(@CurrentUser() currentUser: CurrentUser) {
+    return this.authService.signoutAll(currentUser.id);
   }
 
   @Get('me')
   @UseGuards(AuthenticationGuard)
   me(@CurrentUser() currentUser: CurrentUser) {
     return this.authService.me(currentUser.id);
-  }
-
-  @Post('password/forgot')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  forgotPassword(
-    @Body(new ParseZodPipe(ForgotPasswordBody)) body: ForgotPasswordBody,
-    @Req() request: FastifyRequest,
-  ) {
-    return this.authService.forgotPassword({
-      ...body,
-      ipAddress: getClientIp(request),
-    });
-  }
-
-  @Post('password/reset')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  resetPassword(
-    @Body(new ParseZodPipe(ResetPasswordBody)) body: ResetPasswordBody,
-    @Req() request: FastifyRequest,
-  ) {
-    return this.authService.resetPassword({
-      ...body,
-      ipAddress: getClientIp(request),
-    });
   }
 }

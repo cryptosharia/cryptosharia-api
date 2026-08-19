@@ -8,7 +8,7 @@ describe('BearerAuthMiddleware', () => {
   it('resolves a valid bearer token into the current user', async () => {
     const cryptoService = {
       verifyJwt: vi.fn().mockResolvedValue({
-        userId: '33e0c558-8e44-48e9-a4ef-d7f0fd072f32',
+        sub: '33e0c558-8e44-48e9-a4ef-d7f0fd072f32',
         role: 'posts_manager',
       }),
     };
