@@ -16,16 +16,16 @@ services:
       timeout: 5s
       retries: 30
 
-  # redis-dev:
-  #   image: redis:8-alpine
-  #   container_name: cryptosharia-api-redis-dev
-  #   ports:
-  #     - '6379:6379'
-  #   healthcheck:
-  #     test: ['CMD', 'redis-cli', 'ping']
-  #     interval: 1s
-  #     timeout: 5s
-  #     retries: 30
+  redis-dev:
+    image: redis:8-alpine
+    container_name: cryptosharia-api-redis-dev
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 1s
+      timeout: 5s
+      retries: 30
 
   cryptosharia-api-dev:
     image: oven/bun:1
@@ -42,8 +42,8 @@ services:
     depends_on:
       postgres-dev:
         condition: service_healthy
-      # redis-dev:
-      #   condition: service_healthy
+      redis-dev:
+        condition: service_healthy
 
 volumes:
   db_dev:

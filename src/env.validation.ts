@@ -9,6 +9,7 @@ const envSchema = z
     VERCEL_ENV: z.string().optional(),
     PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.url(),
+    OTP_SECRET: z.string().min(1),
     ACCESS_TOKEN_SECRET: z.string().min(1),
     API_KEY: z.string().min(1),
     CMC_API_KEY: z.string().min(1).optional(),
@@ -21,6 +22,7 @@ const envSchema = z
     CONTACT_FORM_TO_EMAIL: z.email().optional(),
     KV_REST_API_URL: z.url().optional(),
     KV_REST_API_TOKEN: z.string().min(1).optional(),
+    REDIS_URL: z.url().optional(),
   })
   .superRefine((env, context) => {
     if (env.NODE_ENV !== 'test') {
@@ -32,6 +34,7 @@ const envSchema = z
         ['RESEND_API_KEY', env.RESEND_API_KEY],
         ['RESEND_FROM', env.RESEND_FROM],
         ['CONTACT_FORM_TO_EMAIL', env.CONTACT_FORM_TO_EMAIL],
+        ['OTP_SECRET', env.OTP_SECRET],
       ] as const;
 
       for (const [name, value] of requiredOutsideTest) {
@@ -43,6 +46,14 @@ const envSchema = z
           });
         }
       }
+    }
+
+    if (env.SERVERLESS !== true && env.NODE_ENV !== 'test' && !env.REDIS_URL) {
+      context.addIssue({
+        code: 'custom',
+        path: ['REDIS_URL'],
+        message: 'Required when SERVERLESS is disabled',
+      });
     }
 
     if (env.NODE_ENV !== 'production') return;
