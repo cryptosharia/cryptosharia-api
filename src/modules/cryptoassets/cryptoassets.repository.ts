@@ -173,7 +173,6 @@ export class CryptoassetsRepository {
     data: Pick<
       Cryptoasset,
       | 'slug'
-      | 'rank'
       | 'name'
       | 'ticker'
       | 'shariaStatus'
@@ -209,7 +208,6 @@ export class CryptoassetsRepository {
       Pick<
         Cryptoasset,
         | 'slug'
-        | 'rank'
         | 'name'
         | 'ticker'
         | 'shariaStatus'
@@ -246,16 +244,6 @@ export class CryptoassetsRepository {
       if (error instanceof CryptoassetsError) throw error;
       this.mapWriteError(error);
     }
-  }
-
-  async syncRank(
-    slug: Cryptoasset['slug'],
-    rank: Cryptoasset['rank'],
-  ): Promise<void> {
-    await this.drizzleService.db
-      .update(cryptoassets)
-      .set({ rank })
-      .where(eq(cryptoassets.slug, slug));
   }
 
   async delete(id: Cryptoasset['id']): Promise<Cryptoasset> {

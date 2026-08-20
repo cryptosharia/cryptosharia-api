@@ -36,11 +36,21 @@ export class TagsSuite extends Suite {
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           await this.ctx.client.POST('/tags', {
-            body: { name: 'Halal Crypto', slug: 'halal-crypto' },
+            body: {
+              name: 'Halal Crypto',
+              slug: 'halal-crypto',
+              description: null,
+              section: null,
+            },
             headers,
           });
           await this.ctx.client.POST('/tags', {
-            body: { name: 'DeFi', slug: 'defi' },
+            body: {
+              name: 'DeFi',
+              slug: 'defi',
+              description: null,
+              section: null,
+            },
             headers,
           });
 
@@ -53,7 +63,7 @@ export class TagsSuite extends Suite {
           expect(data?.[0]?.slug).toBe('halal-crypto');
         });
 
-        it('filters by content sections and navigation flag', async () => {
+        it('filters by content sections', async () => {
           const accessToken = await createSession(
             'tag-nav@example.com',
             'posts_manager',
@@ -63,22 +73,25 @@ export class TagsSuite extends Suite {
             body: {
               name: 'Crypto News',
               slug: 'crypto-news',
-              contentSection: 'news',
-              showInNavigation: true,
-              displayOrder: 1,
+              description: null,
+              section: 'news',
             },
             headers,
           });
           await this.ctx.client.POST('/tags', {
-            body: { name: 'Plain', slug: 'plain' },
+            body: {
+              name: 'Plain',
+              slug: 'plain',
+              description: null,
+              section: null,
+            },
             headers,
           });
 
           const { data, response } = await this.ctx.client.GET('/tags', {
             params: {
               query: {
-                contentSections: ['news'],
-                showInNavigation: 'true',
+                sections: ['news'],
               },
             },
           });
@@ -86,9 +99,7 @@ export class TagsSuite extends Suite {
           expect(response.headers.get('total-items')).toBe('1');
           expect(data?.[0]).toMatchObject({
             slug: 'crypto-news',
-            contentSection: 'news',
-            showInNavigation: true,
-            displayOrder: 1,
+            section: 'news',
           });
         });
 
@@ -99,15 +110,30 @@ export class TagsSuite extends Suite {
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           await this.ctx.client.POST('/tags', {
-            body: { name: 'Zeta', slug: 'zeta' },
+            body: {
+              name: 'Zeta',
+              slug: 'zeta',
+              description: null,
+              section: null,
+            },
             headers,
           });
           await this.ctx.client.POST('/tags', {
-            body: { name: 'Alpha', slug: 'alpha' },
+            body: {
+              name: 'Alpha',
+              slug: 'alpha',
+              description: null,
+              section: null,
+            },
             headers,
           });
           await this.ctx.client.POST('/tags', {
-            body: { name: 'Beta', slug: 'beta' },
+            body: {
+              name: 'Beta',
+              slug: 'beta',
+              description: null,
+              section: null,
+            },
             headers,
           });
 
@@ -142,7 +168,12 @@ export class TagsSuite extends Suite {
           const { response } = await this.ctx.clientWithoutApiKey.POST(
             '/tags',
             {
-              body: { name: 'Halal', slug: 'halal' },
+              body: {
+                name: 'Halal',
+                slug: 'halal',
+                description: null,
+                section: null,
+              },
             },
           );
           expect(response.status).toBe(401);
@@ -150,7 +181,12 @@ export class TagsSuite extends Suite {
 
         it('rejects tag creation without a bearer token', async () => {
           const { response } = await this.ctx.client.POST('/tags', {
-            body: { name: 'Halal', slug: 'halal' },
+            body: {
+              name: 'Halal',
+              slug: 'halal',
+              description: null,
+              section: null,
+            },
           });
           expect(response.status).toBe(401);
         });
@@ -158,7 +194,12 @@ export class TagsSuite extends Suite {
         it('requires tags.manage to create a tag', async () => {
           const accessToken = await createSession('tag-member@example.com');
           const { response } = await this.ctx.client.POST('/tags', {
-            body: { name: 'Halal', slug: 'halal' },
+            body: {
+              name: 'Halal',
+              slug: 'halal',
+              description: null,
+              section: null,
+            },
             headers: { authorization: `Bearer ${accessToken}` },
           });
           expect(response.status).toBe(403);
@@ -197,6 +238,7 @@ export class TagsSuite extends Suite {
               name: 'Halal Crypto',
               slug: 'halal-crypto',
               description: 'Initial',
+              section: null,
             },
             headers,
           });
@@ -231,7 +273,7 @@ export class TagsSuite extends Suite {
           expect(deleted.response.status).toBe(204);
         });
 
-        it('creates a public content category and rejects one without a content section', async () => {
+        it('creates a tag with a content section', async () => {
           const accessToken = await createSession(
             'tag-category@example.com',
             'posts_manager',
@@ -242,29 +284,15 @@ export class TagsSuite extends Suite {
             body: {
               name: 'Crypto News',
               slug: 'crypto-news',
-              contentSection: 'news',
-              showInNavigation: true,
-              displayOrder: 1,
+              description: null,
+              section: 'news',
             },
             headers,
           });
           expect(created.response.status).toBe(201);
           expect(created.data).toMatchObject({
-            contentSection: 'news',
-            showInNavigation: true,
-            displayOrder: 1,
+            section: 'news',
           });
-
-          const rejected = await this.ctx.client.POST('/tags', {
-            body: {
-              name: 'Invalid Category',
-              slug: 'invalid-category',
-              showInNavigation: true,
-            },
-            headers,
-          });
-          expect(rejected.response.status).toBe(422);
-          expect(rejected.error?.error).toBe('VALIDATION_FAILED');
         });
 
         it('returns not found for an unknown tag', async () => {
@@ -300,11 +328,21 @@ export class TagsSuite extends Suite {
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           await this.ctx.client.POST('/tags', {
-            body: { name: 'Existing', slug: 'existing' },
+            body: {
+              name: 'Existing',
+              slug: 'existing',
+              description: null,
+              section: null,
+            },
             headers,
           });
           const created = await this.ctx.client.POST('/tags', {
-            body: { name: 'Other', slug: 'other' },
+            body: {
+              name: 'Other',
+              slug: 'other',
+              description: null,
+              section: null,
+            },
             headers,
           });
           if (!created.data) throw new Error('Create tag response has no data');
@@ -327,7 +365,12 @@ export class TagsSuite extends Suite {
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const invalid = await this.ctx.client.POST('/tags', {
-            body: { name: '', slug: 'Bad Slug' },
+            body: {
+              name: '',
+              slug: 'Bad Slug',
+              description: null,
+              section: null,
+            },
             headers,
           });
           expect(invalid.response.status).toBe(422);
@@ -340,11 +383,21 @@ export class TagsSuite extends Suite {
           ).toBeDefined();
 
           await this.ctx.client.POST('/tags', {
-            body: { name: 'Unique', slug: 'unique' },
+            body: {
+              name: 'Unique',
+              slug: 'unique',
+              description: null,
+              section: null,
+            },
             headers,
           });
           const duplicate = await this.ctx.client.POST('/tags', {
-            body: { name: 'Unique', slug: 'other' },
+            body: {
+              name: 'Unique',
+              slug: 'other',
+              description: null,
+              section: null,
+            },
             headers,
           });
           expect(duplicate.response.status).toBe(409);
@@ -360,7 +413,12 @@ export class TagsSuite extends Suite {
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const created = await this.ctx.client.POST('/tags', {
-            body: { name: 'Referenced', slug: 'referenced' },
+            body: {
+              name: 'Referenced',
+              slug: 'referenced',
+              description: null,
+              section: null,
+            },
             headers,
           });
           if (!created.data) throw new Error('Create tag response has no data');
@@ -396,7 +454,6 @@ export class TagsSuite extends Suite {
             .insert(cryptoassets)
             .values({
               slug: 'referenced-cryptoasset',
-              rank: 1,
               name: 'Referenced Cryptoasset',
               ticker: 'REF',
               shariaStatus: 'halal',

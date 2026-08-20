@@ -39,7 +39,6 @@ export class CryptoassetsSuite extends Suite {
     };
     const cryptoassetBody = (input: {
       slug: string;
-      rank: number;
       name: string;
       ticker: string;
       logoId: string;
@@ -50,7 +49,6 @@ export class CryptoassetsSuite extends Suite {
       tradingviewSymbol?: string | null;
     }) => ({
       slug: input.slug,
-      rank: input.rank,
       name: input.name,
       ticker: input.ticker,
       shariaStatus: input.shariaStatus ?? 'halal',
@@ -75,7 +73,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'draft-cryptoasset',
-              rank: 1,
               name: 'Draft Cryptoasset',
               ticker: 'DRFT',
               logoId: asset.id,
@@ -86,7 +83,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'published-cryptoasset',
-              rank: 2,
               name: 'Published Cryptoasset',
               ticker: 'PUB',
               logoId: asset.id,
@@ -113,7 +109,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'halal-coin',
-              rank: 1,
               name: 'Halal Coin',
               ticker: 'HLC',
               logoId: asset.id,
@@ -125,7 +120,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'haram-coin',
-              rank: 2,
               name: 'Haram Coin',
               ticker: 'HRM',
               logoId: asset.id,
@@ -167,7 +161,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'quote-coin',
-              rank: 1,
               name: 'Quote Coin',
               ticker: 'QTC',
               logoId: asset.id,
@@ -200,7 +193,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'fail-coin',
-              rank: 1,
               name: 'Fail Coin',
               ticker: 'FAIL',
               logoId: asset.id,
@@ -232,7 +224,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'batch-one',
-              rank: 1,
               name: 'Batch One',
               ticker: 'B1',
               logoId: asset.id,
@@ -243,7 +234,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'batch-two',
-              rank: 2,
               name: 'Batch Two',
               ticker: 'B2',
               logoId: asset.id,
@@ -286,7 +276,6 @@ export class CryptoassetsSuite extends Suite {
           const { response } = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'no-auth',
-              rank: 1,
               name: 'No Auth',
               ticker: 'NOA',
               logoId: asset.id,
@@ -303,7 +292,6 @@ export class CryptoassetsSuite extends Suite {
           const { response } = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'forbidden',
-              rank: 1,
               name: 'Forbidden',
               ticker: 'FRB',
               logoId: asset.id,
@@ -329,7 +317,6 @@ export class CryptoassetsSuite extends Suite {
             {
               body: cryptoassetBody({
                 slug: 'bitcoin',
-                rank: 1,
                 name: 'Bitcoin',
                 ticker: 'BTC',
                 logoId: asset.id,
@@ -359,7 +346,6 @@ export class CryptoassetsSuite extends Suite {
             {
               body: cryptoassetBody({
                 slug: 'bad-logo',
-                rank: 1,
                 name: 'Bad Logo',
                 ticker: 'BLG',
                 logoId: crypto.randomUUID(),
@@ -391,7 +377,6 @@ export class CryptoassetsSuite extends Suite {
             {
               body: cryptoassetBody({
                 slug: 'bad-tag',
-                rank: 1,
                 name: 'Bad Tag',
                 ticker: 'BTG',
                 logoId: asset.id,
@@ -421,7 +406,6 @@ export class CryptoassetsSuite extends Suite {
           const asset = await createAsset();
           const body = cryptoassetBody({
             slug: 'duplicate',
-            rank: 1,
             name: 'Duplicate',
             ticker: 'DUP',
             logoId: asset.id,
@@ -430,7 +414,6 @@ export class CryptoassetsSuite extends Suite {
           const duplicate = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'duplicate',
-              rank: 2,
               name: 'Other',
               ticker: 'OTH',
               logoId: asset.id,
@@ -451,7 +434,6 @@ export class CryptoassetsSuite extends Suite {
           await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'first',
-              rank: 1,
               name: 'First',
               ticker: 'SAME',
               logoId: asset.id,
@@ -461,7 +443,6 @@ export class CryptoassetsSuite extends Suite {
           const duplicate = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'second',
-              rank: 2,
               name: 'Second',
               ticker: 'SAME',
               logoId: asset.id,
@@ -484,7 +465,6 @@ export class CryptoassetsSuite extends Suite {
           const created = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'detail-coin',
-              rank: 1,
               name: 'Detail Coin',
               ticker: 'DET',
               logoId: asset.id,
@@ -531,7 +511,6 @@ export class CryptoassetsSuite extends Suite {
           const created = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'quote-detail',
-              rank: 1,
               name: 'Quote Detail',
               ticker: 'QTD',
               logoId: asset.id,
@@ -575,7 +554,6 @@ export class CryptoassetsSuite extends Suite {
           const created = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'update-coin',
-              rank: 1,
               name: 'Update Coin',
               ticker: 'UPD',
               logoId: asset.id,
@@ -622,7 +600,6 @@ export class CryptoassetsSuite extends Suite {
           const created = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'empty-update',
-              rank: 1,
               name: 'Empty Update',
               ticker: 'EMP',
               logoId: asset.id,
@@ -674,7 +651,6 @@ export class CryptoassetsSuite extends Suite {
           const created = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'delete-coin',
-              rank: 1,
               name: 'Delete Coin',
               ticker: 'DEL',
               logoId: asset.id,
@@ -730,7 +706,6 @@ export class CryptoassetsSuite extends Suite {
           const created = await this.ctx.client.POST('/cryptoassets', {
             body: cryptoassetBody({
               slug: 'clear-tags',
-              rank: 1,
               name: 'Clear Tags',
               ticker: 'CLR',
               logoId: asset.id,

@@ -196,16 +196,10 @@ export const Tag = createSelectSchema(tags, {
         example: 'halal-crypto',
       }),
   description: (f) => f.meta({ description: 'Deskripsi tag' }),
-  contentSection: (f) =>
+  section: (f) =>
     f.meta({
       description: 'Seksi konten',
     }),
-  showInNavigation: (f) => f.meta({ description: 'Tampil di navigasi' }),
-  displayOrder: (f) =>
-    f
-      .int('Harus bilangan bulat')
-      .nonnegative('Tidak boleh negatif')
-      .meta({ description: 'Urutan tampil' }),
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
   updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
   createdBy: (f) => f.meta({ description: 'User yang buat tag' }),
@@ -225,11 +219,6 @@ export const Cryptoasset = createSelectSchema(cryptoassets, {
         description: 'Slug cryptoasset',
         example: 'bitcoin',
       }),
-  rank: (f) =>
-    f
-      .int('Harus berupa bilangan bulat')
-      .positive('Harus berupa bilangan bulat positif')
-      .meta({ description: 'Rank kapitalisasi pasar global', example: 1 }),
   name: (f) =>
     f
       .trim()
@@ -317,7 +306,6 @@ export const Post = createSelectSchema(posts, {
   eventDate: z.coerce
     .date({ error: 'Format tidak valid' })
     .nullable()
-    .optional()
     .meta({ description: 'Tanggal event' }),
   externalLink: z
     .url('Format tidak valid')
@@ -334,22 +322,12 @@ export type Post = z.infer<typeof Post>;
 export const CryptoassetTag = createSelectSchema(cryptoassetTags, {
   cryptoassetId: (f) => f.meta({ description: 'ID cryptoasset' }),
   tagId: (f) => f.meta({ description: 'ID tag' }),
-  displayOrder: (f) =>
-    f
-      .int('Harus berupa bilangan bulat')
-      .nonnegative('Tidak boleh negatif')
-      .meta({ description: 'Display order' }),
 });
 export type CryptoassetTag = z.infer<typeof CryptoassetTag>;
 
 export const PostTag = createSelectSchema(postTags, {
   postId: (f) => f.meta({ description: 'ID post' }),
   tagId: (f) => f.meta({ description: 'ID tag' }),
-  displayOrder: (f) =>
-    f
-      .int('Display order harus bilangan bulat')
-      .nonnegative('Display order tidak boleh negatif')
-      .meta({ description: 'Display order' }),
 });
 export type PostTag = z.infer<typeof PostTag>;
 

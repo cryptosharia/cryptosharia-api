@@ -196,9 +196,11 @@ export class AssetsService {
 
   private resolveAssetUrl(asset: Asset): string {
     if (asset.pathname.startsWith('http')) return asset.pathname;
-    if (asset.provider === 'picsum') {
-      return `https://picsum.photos/${asset.pathname.replace(/^\/+/, '')}`;
-    }
+
+    if (asset.provider === 'vercel_blob')
+      return this.storageService.getPublicUrl(asset.pathname);
+
+    // Fallback is also Vercel Blob :)
     return this.storageService.getPublicUrl(asset.pathname);
   }
 }

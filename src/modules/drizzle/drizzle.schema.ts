@@ -32,10 +32,8 @@ export const contentStatusEnum = pgEnum('content_status', [
   'archived',
 ]);
 /** Storage provider for managed assets. */
-export const assetProviderEnum = pgEnum('asset_provider', [
-  'picsum',
-  'vercel_blob',
-]);
+export const assetProviderEnum = pgEnum('asset_provider', ['vercel_blob']);
+
 /** Post section categories. */
 export const postSectionEnum = pgEnum('post_section', [
   'news',
@@ -67,10 +65,7 @@ export const userRoleEnum = pgEnum('user_role', [
 ]);
 
 /** Content section a tag can be surfaced in. */
-export const tagContentSectionEnum = pgEnum('tag_content_section', [
-  'news',
-  'education',
-]);
+export const tagSectionEnum = pgEnum('tag_section', ['news', 'education']);
 
 /** Centralized user identity and account table. */
 export const users = pgTable('users', {
@@ -106,8 +101,6 @@ export const activityLogs = pgTable('activity_logs', {
 export const cryptoassets = pgTable('cryptoassets', {
   id: primaryKeyUuid(),
   slug: varchar('slug', { length: 100 }).notNull().unique(),
-  /** Global market-cap rank. */
-  rank: integer('rank').notNull(),
   name: varchar('name', { length: 100 }).notNull(),
   ticker: varchar('ticker', { length: 20 }).notNull().unique(),
   /** Practical Sharia assessment. */
@@ -159,9 +152,7 @@ export const tags = pgTable('tags', {
   name: varchar('name', { length: 50 }).notNull().unique(),
   slug: varchar('slug', { length: 50 }).notNull().unique(),
   description: text('description'),
-  contentSection: tagContentSectionEnum('content_section'),
-  showInNavigation: boolean('show_in_navigation').notNull().default(false),
-  displayOrder: integer('display_order'),
+  section: tagSectionEnum('section'),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
   createdBy: uuid('created_by').references(() => users.id),
@@ -178,7 +169,6 @@ export const cryptoassetTags = pgTable(
     tagId: uuid('tag_id')
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
-    displayOrder: integer('display_order'),
   },
   (table) => [primaryKey({ columns: [table.cryptoassetId, table.tagId] })],
 );
@@ -193,7 +183,6 @@ export const postTags = pgTable(
     tagId: uuid('tag_id')
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
-    displayOrder: integer('display_order'),
   },
   (table) => [primaryKey({ columns: [table.postId, table.tagId] })],
 );

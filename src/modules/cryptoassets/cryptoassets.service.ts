@@ -76,7 +76,6 @@ export class CryptoassetsService {
 
     const cryptoasset = await this.cryptoassetsRepository.insert({
       slug: data.slug,
-      rank: data.rank,
       name: data.name,
       ticker: data.ticker,
       shariaStatus: data.shariaStatus,
@@ -126,7 +125,6 @@ export class CryptoassetsService {
 
     const cryptoasset = await this.cryptoassetsRepository.update(id, {
       slug: data.slug,
-      rank: data.rank,
       name: data.name,
       ticker: data.ticker,
       shariaStatus: data.shariaStatus,
@@ -186,12 +184,6 @@ export class CryptoassetsService {
       throw error;
     }
 
-    for (const quote of quotes) {
-      void this.cryptoassetsRepository
-        .syncRank(quote.slug, quote.rank)
-        .catch(() => undefined);
-    }
-
     const bySlug = new Map(quotes.map((quote) => [quote.slug, quote]));
 
     return items.map((item) => ({
@@ -204,7 +196,6 @@ export class CryptoassetsService {
     return {
       id: record.cryptoasset.id,
       slug: record.cryptoasset.slug,
-      rank: record.cryptoasset.rank,
       name: record.cryptoasset.name,
       ticker: record.cryptoasset.ticker,
       shariaStatus: record.cryptoasset.shariaStatus,
@@ -230,7 +221,6 @@ export class CryptoassetsService {
     return {
       id: record.cryptoasset.id,
       slug: record.cryptoasset.slug,
-      rank: record.cryptoasset.rank,
       name: record.cryptoasset.name,
       ticker: record.cryptoasset.ticker,
       shariaStatus: record.cryptoasset.shariaStatus,

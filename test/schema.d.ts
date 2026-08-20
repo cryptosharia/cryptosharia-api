@@ -1,6187 +1,6175 @@
 export interface paths {
-    "/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Health check
-         * @description Cek status API.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description API tersedia */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            status: "UP";
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  '/health': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/auth/otp/request": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    /**
+     * Health check
+     * @description Cek status API.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description API tersedia */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              status: 'UP';
+            };
+          };
         };
-        get?: never;
-        put?: never;
-        /**
-         * Request kode OTP
-         * @description Kirim kode OTP 6 digit ke email. Response selalu sama untuk email terdaftar maupun tidak.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * Format: email
-                         * @description Email untuk login
-                         * @example john@example.com
-                         */
-                        email: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Kode OTP terkirim */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Terlalu banyak request. Coba lagi nanti. */
-                429: {
-                    headers: {
-                        /** @description Detik sebelum request berikutnya */
-                        "Retry-After": string;
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Terlalu banyak request. Coba lagi nanti.";
-                            /** @enum {string} */
-                            error: "OTP_REQUEST_RATE_LIMITED";
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
     };
-    "/auth/otp/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Verifikasi kode OTP
-         * @description Verifikasi kode OTP dan buat sesi. User baru dibuat otomatis saat email belum terdaftar.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * Format: email
-                         * @description Email untuk login
-                         * @example john@example.com
-                         */
-                        email: string;
-                        /**
-                         * @description Kode OTP 6 digit
-                         * @example 123456
-                         */
-                        code: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Verifikasi berhasil */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * @description Access token JWT (short-lived)
-                             * @example eyJhbGciOiJIUzI1NiIs...
-                             */
-                            accessToken: string;
-                            /**
-                             * @description Refresh token (`{userId}:{tokenId}`)
-                             * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
-                             */
-                            refreshToken: string;
-                        };
-                    };
-                };
-                /** @description Kode OTP tidak valid atau kedaluwarsa */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Kode OTP tidak valid atau kedaluwarsa";
-                            /** @enum {string} */
-                            error: "OTP_INVALID_OR_EXPIRED";
-                            details: {
-                                /** @description Sisa percobaan */
-                                attemptsRemaining: number;
-                            };
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Terlalu banyak percobaan. Request kode baru untuk melanjutkan. */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Terlalu banyak percobaan. Request kode baru untuk melanjutkan.";
-                            /** @enum {string} */
-                            error: "OTP_MAX_ATTEMPTS_EXCEEDED";
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/otp/request': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Request kode OTP
+     * @description Kirim kode OTP 6 digit ke email. Response selalu sama untuk email terdaftar maupun tidak.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * Format: email
+             * @description Email untuk login
+             * @example john@example.com
+             */
+            email: string;
+          };
         };
-        get?: never;
-        put?: never;
-        /**
-         * Perbarui access token
-         * @description Terbitkan access token baru.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Refresh token (`{userId}:{tokenId}`)
-                         * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
-                         */
-                        refreshToken: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Access token baru */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * @description Access token JWT (short-lived)
-                             * @example eyJhbGciOiJIUzI1NiIs...
-                             */
-                            accessToken: string;
-                        };
-                    };
-                };
-                /** @description Refresh token tidak valid atau kedaluwarsa */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Refresh token tidak valid atau kedaluwarsa";
-                            /** @enum {string} */
-                            error: "REFRESH_TOKEN_INVALID";
-                        };
-                    };
-                };
-                /** @description Akun tidak aktif. Hubungi support. */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Akun tidak aktif. Hubungi support.";
-                            /** @enum {string} */
-                            error: "USER_INACTIVE";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+      };
+      responses: {
+        /** @description Kode OTP terkirim */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+        /** @description Terlalu banyak request. Coba lagi nanti. */
+        429: {
+          headers: {
+            /** @description Detik sebelum request berikutnya */
+            'Retry-After': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Terlalu banyak request. Coba lagi nanti.';
+              /** @enum {string} */
+              error: 'OTP_REQUEST_RATE_LIMITED';
+            };
+          };
+        };
+      };
     };
-    "/auth/signout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Signout
-         * @description Cabut sesi untuk refresh token ini. Request yang diulang tetap sukses.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Refresh token (`{userId}:{tokenId}`)
-                         * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
-                         */
-                        refreshToken: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Signout berhasil */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/otp/verify': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/auth/signout-all": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Verifikasi kode OTP
+     * @description Verifikasi kode OTP dan buat sesi. User baru dibuat otomatis saat email belum terdaftar.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * Format: email
+             * @description Email untuk login
+             * @example john@example.com
+             */
+            email: string;
+            /**
+             * @description Kode OTP 6 digit
+             * @example 123456
+             */
+            code: string;
+          };
         };
-        get?: never;
-        put?: never;
-        /**
-         * Signout semua sesi
-         * @description Mencabut semua sesi aktif user yang sedang signin.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
+      };
+      responses: {
+        /** @description Verifikasi berhasil */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * @description Access token (short-lived)
+               * @example eyJhbGciOiJIUzI1NiIs...
+               */
+              accessToken: string;
+              /**
+               * @description Refresh token (long-lived)
+               * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
+               */
+              refreshToken: string;
             };
-            requestBody?: never;
-            responses: {
-                /** @description Semua sesi dicabut */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-            };
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Kode OTP tidak valid atau kedaluwarsa */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Kode OTP tidak valid atau kedaluwarsa';
+              /** @enum {string} */
+              error: 'OTP_INVALID_OR_EXPIRED';
+              details: {
+                /** @description Sisa percobaan */
+                attemptsRemaining: number;
+              };
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+        /** @description Terlalu banyak percobaan. Request kode baru untuk melanjutkan. */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Terlalu banyak percobaan. Request kode baru untuk melanjutkan.';
+              /** @enum {string} */
+              error: 'OTP_MAX_ATTEMPTS_EXCEEDED';
+            };
+          };
+        };
+      };
     };
-    "/auth/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * User saat ini
-         * @description Mengembalikan profil user yang sedang signin.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description User saat ini */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID user
-                             */
-                            id: string;
-                            /**
-                             * @description Nama user
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email untuk login
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /**
-                             * @description Role user
-                             * @example member
-                             * @enum {string}
-                             */
-                            role: "super_admin" | "admin" | "posts_manager" | "cryptoassets_manager" | "member";
-                            /**
-                             * @description Status akun
-                             * @example active
-                             * @enum {string}
-                             */
-                            status: "active" | "inactive" | "suspended" | "banned";
-                            /**
-                             * Format: date-time
-                             * @description Login terakhir
-                             */
-                            lastLoginAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /**
-                             * Format: uuid
-                             * @description User pengubah terakhir
-                             */
-                            updatedBy: string | null;
-                            avatar: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/refresh': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/users": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Perbarui access token
+     * @description Terbitkan access token baru.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Refresh token (long-lived)
+             * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
+             */
+            refreshToken: string;
+          };
         };
-        /**
-         * List user
-         * @description Menampilkan user dengan search, filter role/status, dan pagination.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Halaman */
-                    page?: number;
-                    /** @description Item per halaman */
-                    limit?: number;
-                    /** @description Cari user berdasarkan nama atau email */
-                    search?: string;
-                    /** @description Filter berdasarkan role user */
-                    roles?: ("super_admin" | "admin" | "posts_manager" | "cryptoassets_manager" | "member")[];
-                    /** @description Filter berdasarkan status akun */
-                    statuses?: ("active" | "inactive" | "suspended" | "banned")[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
+      };
+      responses: {
+        /** @description Access token baru */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * @description Access token (short-lived)
+               * @example eyJhbGciOiJIUzI1NiIs...
+               */
+              accessToken: string;
             };
-            requestBody?: never;
-            responses: {
-                /** @description User ditampilkan */
-                200: {
-                    headers: {
-                        /** @description Total user (sebelum pagination) */
-                        "total-items": string;
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID user
-                             */
-                            id: string;
-                            /**
-                             * @description Nama user
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email untuk login
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /**
-                             * @description Role user
-                             * @example member
-                             * @enum {string}
-                             */
-                            role: "super_admin" | "admin" | "posts_manager" | "cryptoassets_manager" | "member";
-                            /**
-                             * @description Status akun
-                             * @example active
-                             * @enum {string}
-                             */
-                            status: "active" | "inactive" | "suspended" | "banned";
-                            /**
-                             * Format: date-time
-                             * @description Login terakhir
-                             */
-                            lastLoginAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /**
-                             * Format: uuid
-                             * @description User pengubah terakhir
-                             */
-                            updatedBy: string | null;
-                            avatar: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                        }[];
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+          };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Refresh token tidak valid atau kedaluwarsa */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Refresh token tidak valid atau kedaluwarsa';
+              /** @enum {string} */
+              error: 'REFRESH_TOKEN_INVALID';
+            };
+          };
+        };
+        /** @description Akun tidak aktif. Hubungi support. */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Akun tidak aktif. Hubungi support.';
+              /** @enum {string} */
+              error: 'USER_INACTIVE';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
     };
-    "/users/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Detail user
-         * @description Ambil profil user berdasarkan ID.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID user */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description User ditemukan */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID user
-                             */
-                            id: string;
-                            /**
-                             * @description Nama user
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email untuk login
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /**
-                             * @description Role user
-                             * @example member
-                             * @enum {string}
-                             */
-                            role: "super_admin" | "admin" | "posts_manager" | "cryptoassets_manager" | "member";
-                            /**
-                             * @description Status akun
-                             * @example active
-                             * @enum {string}
-                             */
-                            status: "active" | "inactive" | "suspended" | "banned";
-                            /**
-                             * Format: date-time
-                             * @description Login terakhir
-                             */
-                            lastLoginAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /**
-                             * Format: uuid
-                             * @description User pengubah terakhir
-                             */
-                            updatedBy: string | null;
-                            avatar: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description User tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "User tidak ditemukan";
-                            /** @enum {string} */
-                            error: "USER_NOT_FOUND";
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Edit profil user
-         * @description Ubah nama dan/atau avatar.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID user */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Nama user
-                         * @example John Doe
-                         */
-                        name?: string;
-                        /**
-                         * Format: uuid
-                         * @description Foto profil user
-                         */
-                        avatarId?: string | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Profil diubah */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID user
-                             */
-                            id: string;
-                            /**
-                             * @description Nama user
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email untuk login
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /**
-                             * @description Role user
-                             * @example member
-                             * @enum {string}
-                             */
-                            role: "super_admin" | "admin" | "posts_manager" | "cryptoassets_manager" | "member";
-                            /**
-                             * @description Status akun
-                             * @example active
-                             * @enum {string}
-                             */
-                            status: "active" | "inactive" | "suspended" | "banned";
-                            /**
-                             * Format: date-time
-                             * @description Login terakhir
-                             */
-                            lastLoginAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /**
-                             * Format: uuid
-                             * @description User pengubah terakhir
-                             */
-                            updatedBy: string | null;
-                            avatar: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description User tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "User tidak ditemukan";
-                            /** @enum {string} */
-                            error: "USER_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/signout': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/users/{id}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Signout
+     * @description Cabut sesi untuk refresh token ini. Request yang diulang tetap sukses.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Refresh token (long-lived)
+             * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
+             */
+            refreshToken: string;
+          };
         };
-        get?: never;
-        /**
-         * Edit status user
-         * @description Ubah status akun.
-         */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID user */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Status akun
-                         * @example active
-                         * @enum {string}
-                         */
-                        status: "active" | "inactive" | "suspended" | "banned";
-                    };
-                };
-            };
-            responses: {
-                /** @description Status diubah */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID user
-                             */
-                            id: string;
-                            /**
-                             * @description Nama user
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email untuk login
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /**
-                             * @description Role user
-                             * @example member
-                             * @enum {string}
-                             */
-                            role: "super_admin" | "admin" | "posts_manager" | "cryptoassets_manager" | "member";
-                            /**
-                             * @description Status akun
-                             * @example active
-                             * @enum {string}
-                             */
-                            status: "active" | "inactive" | "suspended" | "banned";
-                            /**
-                             * Format: date-time
-                             * @description Login terakhir
-                             */
-                            lastLoginAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /**
-                             * Format: uuid
-                             * @description User pengubah terakhir
-                             */
-                            updatedBy: string | null;
-                            avatar: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description User tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "User tidak ditemukan";
-                            /** @enum {string} */
-                            error: "USER_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+      };
+      responses: {
+        /** @description Signout berhasil */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
     };
-    "/users/{id}/role": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Edit role user
-         * @description Ubah role user.
-         */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID user */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Role user
-                         * @example member
-                         * @enum {string}
-                         */
-                        role: "super_admin" | "admin" | "posts_manager" | "cryptoassets_manager" | "member";
-                    };
-                };
-            };
-            responses: {
-                /** @description Role diubah */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID user
-                             */
-                            id: string;
-                            /**
-                             * @description Nama user
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email untuk login
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /**
-                             * @description Role user
-                             * @example member
-                             * @enum {string}
-                             */
-                            role: "super_admin" | "admin" | "posts_manager" | "cryptoassets_manager" | "member";
-                            /**
-                             * @description Status akun
-                             * @example active
-                             * @enum {string}
-                             */
-                            status: "active" | "inactive" | "suspended" | "banned";
-                            /**
-                             * Format: date-time
-                             * @description Login terakhir
-                             */
-                            lastLoginAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /**
-                             * Format: uuid
-                             * @description User pengubah terakhir
-                             */
-                            updatedBy: string | null;
-                            avatar: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description User tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "User tidak ditemukan";
-                            /** @enum {string} */
-                            error: "USER_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/signout-all': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/tags": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Signout semua sesi
+     * @description Mencabut semua sesi aktif user yang sedang signin.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Semua sesi dicabut */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
-        /**
-         * List tag
-         * @description Menampilkan tag dengan search, filter slug, seksi konten, status navigasi, sorting, dan pagination.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Halaman */
-                    page?: number;
-                    /** @description Item per halaman */
-                    limit?: number;
-                    /** @description Cari berdasarkan nama, slug, atau deskripsi tag (case-insensitive) */
-                    search?: string;
-                    /** @description Filter berdasarkan slug tag */
-                    slugs?: string[];
-                    /** @description Filter berdasarkan seksi konten publik */
-                    contentSections?: ("news" | "education")[];
-                    /** @description Filter tag yang tampil di navigasi publik */
-                    showInNavigation?: boolean;
-                    /** @description Kolom pengurutan tag */
-                    sortBy?: "name" | "slug" | "description" | "showInNavigation";
-                    /** @description Arah pengurutan */
-                    sortDirection?: "asc" | "desc";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
             };
-            requestBody?: never;
-            responses: {
-                /** @description Tag ditampilkan */
-                200: {
-                    headers: {
-                        "total-items": string;
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID tag
-                             */
-                            id: string;
-                            /**
-                             * @description Nama tag
-                             * @example Halal Crypto
-                             */
-                            name: string;
-                            /**
-                             * @description Slug tag
-                             * @example halal-crypto
-                             */
-                            slug: string;
-                            /** @description Deskripsi tag */
-                            description: string | null;
-                            /**
-                             * @description Seksi konten
-                             * @example news
-                             * @enum {string|null}
-                             */
-                            contentSection: "news" | "education" | null;
-                            /** @description Tampil di navigasi */
-                            showInNavigation: boolean;
-                            /** @description Urutan tampil */
-                            displayOrder: number | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        }[];
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+          };
         };
-        put?: never;
-        /**
-         * Buat tag
-         * @description Membuat tag baru dengan nama, slug, deskripsi opsional, dan atribut kategori navigasi publik.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
             };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Nama tag
-                         * @example Halal Crypto
-                         */
-                        name: string;
-                        /**
-                         * @description Slug tag
-                         * @example halal-crypto
-                         */
-                        slug: string;
-                        /** @description Deskripsi tag */
-                        description?: string | null;
-                        /**
-                         * @description Seksi konten publik untuk tag
-                         * @example news
-                         * @enum {string|null}
-                         */
-                        contentSection?: "news" | "education" | null;
-                        /** @description Tampil sebagai kategori navigasi publik */
-                        showInNavigation?: boolean;
-                        /** @description Urutan tampil di navigasi */
-                        displayOrder?: number | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Tag dibuat */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID tag
-                             */
-                            id: string;
-                            /**
-                             * @description Nama tag
-                             * @example Halal Crypto
-                             */
-                            name: string;
-                            /**
-                             * @description Slug tag
-                             * @example halal-crypto
-                             */
-                            slug: string;
-                            /** @description Deskripsi tag */
-                            description: string | null;
-                            /**
-                             * @description Seksi konten
-                             * @example news
-                             * @enum {string|null}
-                             */
-                            contentSection: "news" | "education" | null;
-                            /** @description Tampil di navigasi */
-                            showInNavigation: boolean;
-                            /** @description Urutan tampil */
-                            displayOrder: number | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Nama atau slug tag sudah ada */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Nama tag sudah ada" | "Slug tag sudah ada";
-                            /** @enum {string} */
-                            error: "NAME_CONFLICT" | "SLUG_CONFLICT";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
     };
-    "/tags/{identifier}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Detail tag
-         * @description Ambil tag berdasarkan ID atau slug.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID atau slug tag */
-                    identifier: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Tag ditemukan */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID tag
-                             */
-                            id: string;
-                            /**
-                             * @description Nama tag
-                             * @example Halal Crypto
-                             */
-                            name: string;
-                            /**
-                             * @description Slug tag
-                             * @example halal-crypto
-                             */
-                            slug: string;
-                            /** @description Deskripsi tag */
-                            description: string | null;
-                            /**
-                             * @description Seksi konten
-                             * @example news
-                             * @enum {string|null}
-                             */
-                            contentSection: "news" | "education" | null;
-                            /** @description Tampil di navigasi */
-                            showInNavigation: boolean;
-                            /** @description Urutan tampil */
-                            displayOrder: number | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tag tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Tag tidak ditemukan";
-                            /** @enum {string} */
-                            error: "TAG_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/tags/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    /**
+     * User saat ini
+     * @description Mengembalikan profil user yang sedang signin.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description User saat ini */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID user
+               */
+              id: string;
+              /**
+               * @description Nama user
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email untuk login
+               * @example john@example.com
+               */
+              email: string;
+              /**
+               * @description Role user
+               * @example member
+               * @enum {string}
+               */
+              role:
+                | 'super_admin'
+                | 'admin'
+                | 'posts_manager'
+                | 'cryptoassets_manager'
+                | 'member';
+              /**
+               * @description Status akun
+               * @example active
+               * @enum {string}
+               */
+              status: 'active' | 'inactive' | 'suspended' | 'banned';
+              /**
+               * Format: date-time
+               * @description Login terakhir
+               */
+              lastLoginAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /**
+               * Format: uuid
+               * @description User pengubah terakhir
+               */
+              updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+            };
+          };
         };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Hapus tag
-         * @description Hapus tag berdasarkan ID. Default 409 jika masih dipakai; gunakan force=true untuk tetap hapus.
-         */
-        delete: {
-            parameters: {
-                query?: {
-                    /** @description Hapus tag meskipun masih digunakan */
-                    force?: boolean;
-                };
-                header?: never;
-                path: {
-                    /** @description ID tag */
-                    id: string;
-                };
-                cookie?: never;
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
             };
-            requestBody?: never;
-            responses: {
-                /** @description Tag dihapus */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Tag tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Tag tidak ditemukan";
-                            /** @enum {string} */
-                            error: "TAG_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Tag masih digunakan oleh post atau cryptoasset */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Tag masih digunakan oleh post atau cryptoasset";
-                            /** @enum {string} */
-                            error: "TAG_IN_USE";
-                            details: {
-                                /** @description Referensi yang menghalangi penghapusan */
-                                usage: {
-                                    /** @description Jumlah post yang memakai tag */
-                                    posts: number;
-                                    /** @description Jumlah cryptoasset yang memakai tag */
-                                    cryptoassets: number;
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+          };
         };
-        options?: never;
-        head?: never;
-        /**
-         * Edit tag
-         * @description Edit tag berdasarkan ID, termasuk atribut kategori navigasi publik.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID tag */
-                    id: string;
-                };
-                cookie?: never;
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
             };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Nama tag
-                         * @example Halal Crypto
-                         */
-                        name?: string;
-                        /**
-                         * @description Slug tag
-                         * @example halal-crypto
-                         */
-                        slug?: string;
-                        /** @description Deskripsi tag */
-                        description?: string | null;
-                        /**
-                         * @description Seksi konten publik untuk tag
-                         * @example news
-                         * @enum {string|null}
-                         */
-                        contentSection?: "news" | "education" | null;
-                        /** @description Tampil sebagai kategori navigasi publik */
-                        showInNavigation?: boolean;
-                        /** @description Urutan tampil di navigasi */
-                        displayOrder?: number | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Tag diubah */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID tag
-                             */
-                            id: string;
-                            /**
-                             * @description Nama tag
-                             * @example Halal Crypto
-                             */
-                            name: string;
-                            /**
-                             * @description Slug tag
-                             * @example halal-crypto
-                             */
-                            slug: string;
-                            /** @description Deskripsi tag */
-                            description: string | null;
-                            /**
-                             * @description Seksi konten
-                             * @example news
-                             * @enum {string|null}
-                             */
-                            contentSection: "news" | "education" | null;
-                            /** @description Tampil di navigasi */
-                            showInNavigation: boolean;
-                            /** @description Urutan tampil */
-                            displayOrder: number | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Tag tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Tag tidak ditemukan";
-                            /** @enum {string} */
-                            error: "TAG_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Nama atau slug tag sudah ada */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Nama tag sudah ada" | "Slug tag sudah ada";
-                            /** @enum {string} */
-                            error: "NAME_CONFLICT" | "SLUG_CONFLICT";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+          };
         };
-        trace?: never;
+      };
     };
-    "/posts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List post
-         * @description Menampilkan post dengan filter status, kategori, tipe, slug, tag, sorting, dan pagination. Akun tanpa izin akses hanya post berstatus `published` yang ditampilkan.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Halaman */
-                    page?: number;
-                    /** @description Item per halaman */
-                    limit?: number;
-                    /** @description Cari berdasarkan judul, slug, ringkasan, atau konten */
-                    search?: string;
-                    /** @description Filter berdasarkan status publikasi */
-                    statuses?: ("draft" | "published" | "archived")[];
-                    /** @description Filter berdasarkan kategori post */
-                    sections?: ("news" | "education" | "research" | "activity")[];
-                    /** @description Filter berdasarkan tipe konten */
-                    types?: ("article" | "webinar" | "video" | "headline")[];
-                    /** @description Filter berdasarkan slug post */
-                    slugs?: string[];
-                    /** @description Kecualikan slug tertentu */
-                    exclude?: string[];
-                    /** @description Filter berdasarkan slug tag */
-                    tags?: string[];
-                    /** @description Urut berdasarkan.<br>`publishedAtOrCreatedAt` = publishedAt jika ada, jika tidak maka createdAt. */
-                    sortBy?: "title" | "status" | "section" | "tags" | "createdAt" | "publishedAt" | "publishedAtOrCreatedAt";
-                    /** @description Arah pengurutan */
-                    sortDirection?: "asc" | "desc";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Post berhasil ditampilkan */
-                200: {
-                    headers: {
-                        "total-items": string;
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID post
-                             */
-                            id: string;
-                            /**
-                             * @description Judul post
-                             * @example Understanding Halal Crypto
-                             */
-                            title: string;
-                            /**
-                             * @description Slug post
-                             * @example understanding-halal-crypto
-                             */
-                            slug: string;
-                            /** @description Ringkasan post */
-                            excerpt: string;
-                            /**
-                             * @description Kategori post
-                             * @example education
-                             * @enum {string}
-                             */
-                            section: "news" | "education" | "research" | "activity";
-                            /**
-                             * @description Tipe konten post
-                             * @example article
-                             * @enum {string}
-                             */
-                            type: "article" | "webinar" | "video" | "headline";
-                            /**
-                             * @description Status publikasi
-                             * @example published
-                             * @enum {string}
-                             */
-                            status: "draft" | "published" | "archived";
-                            /** @description Post unggulan (featured) */
-                            isFeatured: boolean;
-                            /**
-                             * Format: date-time
-                             * @description Tanggal event
-                             */
-                            eventDate?: string | null;
-                            /**
-                             * Format: uri
-                             * @description Link eksternal
-                             */
-                            externalLink: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu publikasi
-                             */
-                            publishedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            coverImage: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                            tags: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID tag
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama tag
-                                 * @example Halal Crypto
-                                 */
-                                name: string;
-                                /**
-                                 * @description Slug tag
-                                 * @example halal-crypto
-                                 */
-                                slug: string;
-                            }[];
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        }[];
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /**
-         * Buat post
-         * @description Membuat post baru.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Judul post
-                         * @example Understanding Halal Crypto
-                         */
-                        title: string;
-                        /**
-                         * @description Slug post
-                         * @example understanding-halal-crypto
-                         */
-                        slug: string;
-                        /** @description Ringkasan post */
-                        excerpt: string;
-                        /** @description Konten post */
-                        content: string;
-                        /**
-                         * Format: uuid
-                         * @description Gambar sampul post
-                         */
-                        coverImageId: string;
-                        /**
-                         * @description Kategori post
-                         * @example education
-                         * @enum {string}
-                         */
-                        section: "news" | "education" | "research" | "activity";
-                        /**
-                         * @description Tipe konten post
-                         * @example article
-                         * @enum {string}
-                         */
-                        type: "article" | "webinar" | "video" | "headline";
-                        /**
-                         * @description Status publikasi
-                         * @example published
-                         * @enum {string}
-                         */
-                        status: "draft" | "published" | "archived";
-                        /** @description Post unggulan (featured) */
-                        isFeatured: boolean;
-                        /**
-                         * Format: date-time
-                         * @description Tanggal event
-                         */
-                        eventDate?: string | null;
-                        /**
-                         * Format: uri
-                         * @description Link eksternal
-                         */
-                        externalLink: string | null;
-                        tags: (string)[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Post dibuat */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID post
-                             */
-                            id: string;
-                            /**
-                             * @description Judul post
-                             * @example Understanding Halal Crypto
-                             */
-                            title: string;
-                            /**
-                             * @description Slug post
-                             * @example understanding-halal-crypto
-                             */
-                            slug: string;
-                            /** @description Ringkasan post */
-                            excerpt: string;
-                            /** @description Konten post */
-                            content: string;
-                            /**
-                             * @description Kategori post
-                             * @example education
-                             * @enum {string}
-                             */
-                            section: "news" | "education" | "research" | "activity";
-                            /**
-                             * @description Tipe konten post
-                             * @example article
-                             * @enum {string}
-                             */
-                            type: "article" | "webinar" | "video" | "headline";
-                            /**
-                             * @description Status publikasi
-                             * @example published
-                             * @enum {string}
-                             */
-                            status: "draft" | "published" | "archived";
-                            /** @description Post unggulan (featured) */
-                            isFeatured: boolean;
-                            /**
-                             * Format: date-time
-                             * @description Tanggal event
-                             */
-                            eventDate?: string | null;
-                            /**
-                             * Format: uri
-                             * @description Link eksternal
-                             */
-                            externalLink: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu publikasi
-                             */
-                            publishedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            coverImage: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                            tags: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID tag
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama tag
-                                 * @example Halal Crypto
-                                 */
-                                name: string;
-                                /**
-                                 * @description Slug tag
-                                 * @example halal-crypto
-                                 */
-                                slug: string;
-                                /** @description Deskripsi tag */
-                                description: string | null;
-                            }[];
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Slug sudah ada */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Slug sudah ada";
-                            /** @enum {string} */
-                            error: "SLUG_CONFLICT";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/users': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/posts/{identifier}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    /**
+     * List user
+     * @description Menampilkan user dengan search, filter role/status, dan pagination.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Halaman */
+          page?: number;
+          /** @description Item per halaman */
+          limit?: number;
+          /** @description Cari user berdasarkan nama atau email */
+          search?: string;
+          /** @description Filter berdasarkan role user */
+          roles?: (
+            | 'super_admin'
+            | 'admin'
+            | 'posts_manager'
+            | 'cryptoassets_manager'
+            | 'member'
+          )[];
+          /** @description Filter berdasarkan status akun */
+          statuses?: ('active' | 'inactive' | 'suspended' | 'banned')[];
         };
-        /**
-         * Detail post
-         * @description Ambil post berdasarkan ID atau slug. Post non-published hanya dapat diakses dengan akun yang punya izin akses.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID atau slug post */
-                    identifier: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Post ditemukan */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID post
-                             */
-                            id: string;
-                            /**
-                             * @description Judul post
-                             * @example Understanding Halal Crypto
-                             */
-                            title: string;
-                            /**
-                             * @description Slug post
-                             * @example understanding-halal-crypto
-                             */
-                            slug: string;
-                            /** @description Ringkasan post */
-                            excerpt: string;
-                            /** @description Konten post */
-                            content: string;
-                            /**
-                             * @description Kategori post
-                             * @example education
-                             * @enum {string}
-                             */
-                            section: "news" | "education" | "research" | "activity";
-                            /**
-                             * @description Tipe konten post
-                             * @example article
-                             * @enum {string}
-                             */
-                            type: "article" | "webinar" | "video" | "headline";
-                            /**
-                             * @description Status publikasi
-                             * @example published
-                             * @enum {string}
-                             */
-                            status: "draft" | "published" | "archived";
-                            /** @description Post unggulan (featured) */
-                            isFeatured: boolean;
-                            /**
-                             * Format: date-time
-                             * @description Tanggal event
-                             */
-                            eventDate?: string | null;
-                            /**
-                             * Format: uri
-                             * @description Link eksternal
-                             */
-                            externalLink: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu publikasi
-                             */
-                            publishedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            coverImage: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                            tags: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID tag
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama tag
-                                 * @example Halal Crypto
-                                 */
-                                name: string;
-                                /**
-                                 * @description Slug tag
-                                 * @example halal-crypto
-                                 */
-                                slug: string;
-                                /** @description Deskripsi tag */
-                                description: string | null;
-                            }[];
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Post tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Post tidak ditemukan";
-                            /** @enum {string} */
-                            error: "POST_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description User ditampilkan */
+        200: {
+          headers: {
+            /** @description Total user (sebelum pagination) */
+            'total-items': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID user
+               */
+              id: string;
+              /**
+               * @description Nama user
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email untuk login
+               * @example john@example.com
+               */
+              email: string;
+              /**
+               * @description Role user
+               * @example member
+               * @enum {string}
+               */
+              role:
+                | 'super_admin'
+                | 'admin'
+                | 'posts_manager'
+                | 'cryptoassets_manager'
+                | 'member';
+              /**
+               * @description Status akun
+               * @example active
+               * @enum {string}
+               */
+              status: 'active' | 'inactive' | 'suspended' | 'banned';
+              /**
+               * Format: date-time
+               * @description Login terakhir
+               */
+              lastLoginAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /**
+               * Format: uuid
+               * @description User pengubah terakhir
+               */
+              updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+            }[];
+          };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
     };
-    "/posts/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Hapus post
-         * @description Hapus post berdasarkan ID.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID post */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Post dihapus */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Post tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Post tidak ditemukan";
-                            /** @enum {string} */
-                            error: "POST_NOT_FOUND";
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /**
-         * Edit post
-         * @description Edit post berdasarkan ID.<br>Ketika tags disertakan, seluruh tag di-replace.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID post */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Judul post
-                         * @example Understanding Halal Crypto
-                         */
-                        title?: string;
-                        /**
-                         * @description Slug post
-                         * @example understanding-halal-crypto
-                         */
-                        slug?: string;
-                        /** @description Ringkasan post */
-                        excerpt?: string;
-                        /** @description Konten post */
-                        content?: string;
-                        /**
-                         * Format: uuid
-                         * @description Gambar sampul post
-                         */
-                        coverImageId?: string;
-                        /**
-                         * @description Kategori post
-                         * @example education
-                         * @enum {string}
-                         */
-                        section?: "news" | "education" | "research" | "activity";
-                        /**
-                         * @description Tipe konten post
-                         * @example article
-                         * @enum {string}
-                         */
-                        type?: "article" | "webinar" | "video" | "headline";
-                        /**
-                         * @description Status publikasi
-                         * @example published
-                         * @enum {string}
-                         */
-                        status?: "draft" | "published" | "archived";
-                        /** @description Post unggulan (featured) */
-                        isFeatured?: boolean;
-                        /**
-                         * Format: date-time
-                         * @description Tanggal event
-                         */
-                        eventDate?: string | null;
-                        /**
-                         * Format: uri
-                         * @description Link eksternal
-                         */
-                        externalLink?: string | null;
-                        tags?: (string)[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Post diubah */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID post
-                             */
-                            id: string;
-                            /**
-                             * @description Judul post
-                             * @example Understanding Halal Crypto
-                             */
-                            title: string;
-                            /**
-                             * @description Slug post
-                             * @example understanding-halal-crypto
-                             */
-                            slug: string;
-                            /** @description Ringkasan post */
-                            excerpt: string;
-                            /** @description Konten post */
-                            content: string;
-                            /**
-                             * @description Kategori post
-                             * @example education
-                             * @enum {string}
-                             */
-                            section: "news" | "education" | "research" | "activity";
-                            /**
-                             * @description Tipe konten post
-                             * @example article
-                             * @enum {string}
-                             */
-                            type: "article" | "webinar" | "video" | "headline";
-                            /**
-                             * @description Status publikasi
-                             * @example published
-                             * @enum {string}
-                             */
-                            status: "draft" | "published" | "archived";
-                            /** @description Post unggulan (featured) */
-                            isFeatured: boolean;
-                            /**
-                             * Format: date-time
-                             * @description Tanggal event
-                             */
-                            eventDate?: string | null;
-                            /**
-                             * Format: uri
-                             * @description Link eksternal
-                             */
-                            externalLink: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu publikasi
-                             */
-                            publishedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            coverImage: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                            tags: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID tag
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama tag
-                                 * @example Halal Crypto
-                                 */
-                                name: string;
-                                /**
-                                 * @description Slug tag
-                                 * @example halal-crypto
-                                 */
-                                slug: string;
-                                /** @description Deskripsi tag */
-                                description: string | null;
-                            }[];
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Post tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Post tidak ditemukan";
-                            /** @enum {string} */
-                            error: "POST_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Slug sudah ada */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Slug sudah ada";
-                            /** @enum {string} */
-                            error: "SLUG_CONFLICT";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/users/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/cryptoassets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    /**
+     * Detail user
+     * @description Ambil profil user berdasarkan ID.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID user */
+          id: string;
         };
-        /**
-         * List cryptoasset
-         * @description Menampilkan cryptoasset dengan filter status, status syariah, slug, tag, dan pagination.<br>Akun tanpa izin akses hanya cryptoasset berstatus `published` yang ditampilkan.<br>Gunakan `quote=true` untuk menyertakan data pasar.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Halaman */
-                    page?: number;
-                    /** @description Item per halaman */
-                    limit?: number;
-                    /** @description Cari berdasarkan nama, ticker, slug, ringkasan, atau konten */
-                    search?: string;
-                    /** @description Sertakan data pasar */
-                    quote?: boolean;
-                    /** @description Filter berdasarkan status publikasi */
-                    statuses?: ("draft" | "published" | "archived")[];
-                    /** @description Filter berdasarkan status syariah */
-                    shariaStatuses?: ("halal" | "haram" | "syubhat")[];
-                    /** @description Filter berdasarkan slug cryptoasset */
-                    slugs?: string[];
-                    /** @description Kecualikan slug tertentu */
-                    exclude?: string[];
-                    /** @description Filter berdasarkan slug tag */
-                    tags?: string[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description User ditemukan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID user
+               */
+              id: string;
+              /**
+               * @description Nama user
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email untuk login
+               * @example john@example.com
+               */
+              email: string;
+              /**
+               * @description Role user
+               * @example member
+               * @enum {string}
+               */
+              role:
+                | 'super_admin'
+                | 'admin'
+                | 'posts_manager'
+                | 'cryptoassets_manager'
+                | 'member';
+              /**
+               * @description Status akun
+               * @example active
+               * @enum {string}
+               */
+              status: 'active' | 'inactive' | 'suspended' | 'banned';
+              /**
+               * Format: date-time
+               * @description Login terakhir
+               */
+              lastLoginAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /**
+               * Format: uuid
+               * @description User pengubah terakhir
+               */
+              updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
             };
-            requestBody?: never;
-            responses: {
-                /** @description Cryptoasset berhasil ditampilkan */
-                200: {
-                    headers: {
-                        "total-items": string;
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID cryptoasset
-                             */
-                            id: string;
-                            /**
-                             * @description Slug cryptoasset
-                             * @example bitcoin
-                             */
-                            slug: string;
-                            /**
-                             * @description Rank kapitalisasi pasar global
-                             * @example 1
-                             */
-                            rank: number;
-                            /**
-                             * @description Nama cryptoasset
-                             * @example Bitcoin
-                             */
-                            name: string;
-                            /**
-                             * @description Simbol cryptoasset
-                             * @example BTC
-                             */
-                            ticker: string;
-                            /**
-                             * @description Status syariah
-                             * @example halal
-                             * @enum {string}
-                             */
-                            shariaStatus: "halal" | "haram" | "syubhat";
-                            /**
-                             * @description Status publikasi
-                             * @example published
-                             * @enum {string}
-                             */
-                            status: "draft" | "published" | "archived";
-                            /** @description Ringkasan cryptoasset */
-                            excerpt: string;
-                            /**
-                             * @description Simbol TradingView
-                             * @example BINANCE:BTCUSDT
-                             */
-                            tradingviewSymbol: string | null;
-                            /**
-                             * Format: uri
-                             * @description Situs resmi
-                             * @example https://bitcoin.org
-                             */
-                            website: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu publikasi
-                             */
-                            publishedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            logo: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                            tags: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID tag
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama tag
-                                 * @example Halal Crypto
-                                 */
-                                name: string;
-                                /**
-                                 * @description Slug tag
-                                 * @example halal-crypto
-                                 */
-                                slug: string;
-                            }[];
-                            quote?: {
-                                slug: string;
-                                rank: number;
-                                infiniteSupply: boolean;
-                                maxSupply: number | null;
-                                circulatingSupply: number;
-                                priceUsd: number;
-                                marketCapUsd: number;
-                                marketCapDominance: number;
-                                percentChange24h: number;
-                            } | null;
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        }[];
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+          };
         };
-        put?: never;
-        /**
-         * Buat cryptoasset
-         * @description Membuat cryptoasset baru.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
             };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Slug cryptoasset
-                         * @example bitcoin
-                         */
-                        slug: string;
-                        /**
-                         * @description Rank kapitalisasi pasar global
-                         * @example 1
-                         */
-                        rank: number;
-                        /**
-                         * @description Nama cryptoasset
-                         * @example Bitcoin
-                         */
-                        name: string;
-                        /**
-                         * @description Simbol cryptoasset
-                         * @example BTC
-                         */
-                        ticker: string;
-                        /**
-                         * @description Status syariah
-                         * @example halal
-                         * @enum {string}
-                         */
-                        shariaStatus: "halal" | "haram" | "syubhat";
-                        /**
-                         * @description Status publikasi
-                         * @example published
-                         * @enum {string}
-                         */
-                        status: "draft" | "published" | "archived";
-                        /** @description Ringkasan cryptoasset */
-                        excerpt: string;
-                        /**
-                         * @description Simbol TradingView
-                         * @example BINANCE:BTCUSDT
-                         */
-                        tradingviewSymbol: string | null;
-                        /**
-                         * Format: uri
-                         * @description Situs resmi
-                         * @example https://bitcoin.org
-                         */
-                        website: string;
-                        /**
-                         * Format: uuid
-                         * @description Logo cryptoasset
-                         */
-                        logoId: string;
-                        /** @description Analisis syariah / deskripsi proyek */
-                        content: string;
-                        tags: (string)[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Cryptoasset dibuat */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID cryptoasset
-                             */
-                            id: string;
-                            /**
-                             * @description Slug cryptoasset
-                             * @example bitcoin
-                             */
-                            slug: string;
-                            /**
-                             * @description Rank kapitalisasi pasar global
-                             * @example 1
-                             */
-                            rank: number;
-                            /**
-                             * @description Nama cryptoasset
-                             * @example Bitcoin
-                             */
-                            name: string;
-                            /**
-                             * @description Simbol cryptoasset
-                             * @example BTC
-                             */
-                            ticker: string;
-                            /**
-                             * @description Status syariah
-                             * @example halal
-                             * @enum {string}
-                             */
-                            shariaStatus: "halal" | "haram" | "syubhat";
-                            /**
-                             * @description Status publikasi
-                             * @example published
-                             * @enum {string}
-                             */
-                            status: "draft" | "published" | "archived";
-                            /** @description Ringkasan cryptoasset */
-                            excerpt: string;
-                            /**
-                             * @description Simbol TradingView
-                             * @example BINANCE:BTCUSDT
-                             */
-                            tradingviewSymbol: string | null;
-                            /**
-                             * Format: uri
-                             * @description Situs resmi
-                             * @example https://bitcoin.org
-                             */
-                            website: string;
-                            /** @description Analisis syariah / deskripsi proyek */
-                            content: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu publikasi
-                             */
-                            publishedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            logo: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                            tags: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID tag
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama tag
-                                 * @example Halal Crypto
-                                 */
-                                name: string;
-                                /**
-                                 * @description Slug tag
-                                 * @example halal-crypto
-                                 */
-                                slug: string;
-                                /** @description Deskripsi tag */
-                                description: string | null;
-                            }[];
-                            quote?: {
-                                slug: string;
-                                rank: number;
-                                infiniteSupply: boolean;
-                                maxSupply: number | null;
-                                circulatingSupply: number;
-                                priceUsd: number;
-                                marketCapUsd: number;
-                                marketCapDominance: number;
-                                percentChange24h: number;
-                            } | null;
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Slug atau ticker cryptoasset sudah ada */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Slug cryptoasset sudah ada" | "Ticker cryptoasset sudah ada";
-                            /** @enum {string} */
-                            error: "SLUG_CONFLICT" | "TICKER_CONFLICT";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description User tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'User tidak ditemukan';
+              /** @enum {string} */
+              error: 'USER_NOT_FOUND';
+            };
+          };
+        };
+      };
     };
-    "/cryptoassets/{identifier}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Edit profil user
+     * @description Ubah nama dan/atau avatar.
+     */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID user */
+          id: string;
         };
-        /**
-         * Detail cryptoasset
-         * @description Ambil cryptoasset berdasarkan ID atau slug.<br>Cryptoasset non-published hanya dapat diakses dengan akun yang punya izin akses.<br>Gunakan quote=true untuk menyertakan data pasar.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Sertakan data pasar */
-                    quote?: boolean;
-                };
-                header?: never;
-                path: {
-                    /** @description ID atau slug cryptoasset */
-                    identifier: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Cryptoasset ditemukan */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID cryptoasset
-                             */
-                            id: string;
-                            /**
-                             * @description Slug cryptoasset
-                             * @example bitcoin
-                             */
-                            slug: string;
-                            /**
-                             * @description Rank kapitalisasi pasar global
-                             * @example 1
-                             */
-                            rank: number;
-                            /**
-                             * @description Nama cryptoasset
-                             * @example Bitcoin
-                             */
-                            name: string;
-                            /**
-                             * @description Simbol cryptoasset
-                             * @example BTC
-                             */
-                            ticker: string;
-                            /**
-                             * @description Status syariah
-                             * @example halal
-                             * @enum {string}
-                             */
-                            shariaStatus: "halal" | "haram" | "syubhat";
-                            /**
-                             * @description Status publikasi
-                             * @example published
-                             * @enum {string}
-                             */
-                            status: "draft" | "published" | "archived";
-                            /** @description Ringkasan cryptoasset */
-                            excerpt: string;
-                            /**
-                             * @description Simbol TradingView
-                             * @example BINANCE:BTCUSDT
-                             */
-                            tradingviewSymbol: string | null;
-                            /**
-                             * Format: uri
-                             * @description Situs resmi
-                             * @example https://bitcoin.org
-                             */
-                            website: string;
-                            /** @description Analisis syariah / deskripsi proyek */
-                            content: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu publikasi
-                             */
-                            publishedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            logo: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                            tags: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID tag
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama tag
-                                 * @example Halal Crypto
-                                 */
-                                name: string;
-                                /**
-                                 * @description Slug tag
-                                 * @example halal-crypto
-                                 */
-                                slug: string;
-                                /** @description Deskripsi tag */
-                                description: string | null;
-                            }[];
-                            quote?: {
-                                slug: string;
-                                rank: number;
-                                infiniteSupply: boolean;
-                                maxSupply: number | null;
-                                circulatingSupply: number;
-                                priceUsd: number;
-                                marketCapUsd: number;
-                                marketCapDominance: number;
-                                percentChange24h: number;
-                            } | null;
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Cryptoasset tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Cryptoasset tidak ditemukan";
-                            /** @enum {string} */
-                            error: "CRYPTOASSET_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Nama user
+             * @example John Doe
+             */
+            name?: string;
+            /**
+             * Format: uuid
+             * @description Foto profil user
+             */
+            avatarId?: string | null;
+          };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
+      responses: {
+        /** @description Profil diubah */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID user
+               */
+              id: string;
+              /**
+               * @description Nama user
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email untuk login
+               * @example john@example.com
+               */
+              email: string;
+              /**
+               * @description Role user
+               * @example member
+               * @enum {string}
+               */
+              role:
+                | 'super_admin'
+                | 'admin'
+                | 'posts_manager'
+                | 'cryptoassets_manager'
+                | 'member';
+              /**
+               * @description Status akun
+               * @example active
+               * @enum {string}
+               */
+              status: 'active' | 'inactive' | 'suspended' | 'banned';
+              /**
+               * Format: date-time
+               * @description Login terakhir
+               */
+              lastLoginAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /**
+               * Format: uuid
+               * @description User pengubah terakhir
+               */
+              updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description User tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'User tidak ditemukan';
+              /** @enum {string} */
+              error: 'USER_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
     };
-    "/cryptoassets/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Hapus cryptoasset
-         * @description Hapus cryptoasset berdasarkan ID.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID cryptoasset */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Cryptoasset dihapus */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Cryptoasset tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Cryptoasset tidak ditemukan";
-                            /** @enum {string} */
-                            error: "CRYPTOASSET_NOT_FOUND";
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /**
-         * Edit cryptoasset
-         * @description Edit cryptoasset berdasarkan ID.<br>Ketika tags disertakan, seluruh tag di-replace.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID cryptoasset */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Slug cryptoasset
-                         * @example bitcoin
-                         */
-                        slug?: string;
-                        /**
-                         * @description Rank kapitalisasi pasar global
-                         * @example 1
-                         */
-                        rank?: number;
-                        /**
-                         * @description Nama cryptoasset
-                         * @example Bitcoin
-                         */
-                        name?: string;
-                        /**
-                         * @description Simbol cryptoasset
-                         * @example BTC
-                         */
-                        ticker?: string;
-                        /**
-                         * @description Status syariah
-                         * @example halal
-                         * @enum {string}
-                         */
-                        shariaStatus?: "halal" | "haram" | "syubhat";
-                        /**
-                         * @description Status publikasi
-                         * @example published
-                         * @enum {string}
-                         */
-                        status?: "draft" | "published" | "archived";
-                        /** @description Ringkasan cryptoasset */
-                        excerpt?: string;
-                        /**
-                         * @description Simbol TradingView
-                         * @example BINANCE:BTCUSDT
-                         */
-                        tradingviewSymbol?: string | null;
-                        /**
-                         * Format: uri
-                         * @description Situs resmi
-                         * @example https://bitcoin.org
-                         */
-                        website?: string;
-                        /**
-                         * Format: uuid
-                         * @description Logo cryptoasset
-                         */
-                        logoId?: string;
-                        /** @description Analisis syariah / deskripsi proyek */
-                        content?: string;
-                        tags?: (string)[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Cryptoasset diubah */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID cryptoasset
-                             */
-                            id: string;
-                            /**
-                             * @description Slug cryptoasset
-                             * @example bitcoin
-                             */
-                            slug: string;
-                            /**
-                             * @description Rank kapitalisasi pasar global
-                             * @example 1
-                             */
-                            rank: number;
-                            /**
-                             * @description Nama cryptoasset
-                             * @example Bitcoin
-                             */
-                            name: string;
-                            /**
-                             * @description Simbol cryptoasset
-                             * @example BTC
-                             */
-                            ticker: string;
-                            /**
-                             * @description Status syariah
-                             * @example halal
-                             * @enum {string}
-                             */
-                            shariaStatus: "halal" | "haram" | "syubhat";
-                            /**
-                             * @description Status publikasi
-                             * @example published
-                             * @enum {string}
-                             */
-                            status: "draft" | "published" | "archived";
-                            /** @description Ringkasan cryptoasset */
-                            excerpt: string;
-                            /**
-                             * @description Simbol TradingView
-                             * @example BINANCE:BTCUSDT
-                             */
-                            tradingviewSymbol: string | null;
-                            /**
-                             * Format: uri
-                             * @description Situs resmi
-                             * @example https://bitcoin.org
-                             */
-                            website: string;
-                            /** @description Analisis syariah / deskripsi proyek */
-                            content: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu publikasi
-                             */
-                            publishedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu diubah
-                             */
-                            updatedAt: string | null;
-                            logo: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID aset
-                                 */
-                                id: string;
-                                /**
-                                 * Format: uri
-                                 * @description URL publik aset
-                                 */
-                                url: string;
-                                /**
-                                 * @description Nama file
-                                 * @example cover.png
-                                 */
-                                filename: string;
-                                /**
-                                 * @description Ukuran objek dalam byte
-                                 * @example 1024
-                                 */
-                                size: number;
-                                /**
-                                 * @description Tipe MIME objek
-                                 * @example image/png
-                                 */
-                                mimeType: string | null;
-                                /** @description Lebar gambar (piksel) */
-                                width: number | null;
-                                /** @description Tinggi gambar (piksel) */
-                                height: number | null;
-                            } | null;
-                            tags: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID tag
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama tag
-                                 * @example Halal Crypto
-                                 */
-                                name: string;
-                                /**
-                                 * @description Slug tag
-                                 * @example halal-crypto
-                                 */
-                                slug: string;
-                                /** @description Deskripsi tag */
-                                description: string | null;
-                            }[];
-                            quote?: {
-                                slug: string;
-                                rank: number;
-                                infiniteSupply: boolean;
-                                maxSupply: number | null;
-                                circulatingSupply: number;
-                                priceUsd: number;
-                                marketCapUsd: number;
-                                marketCapDominance: number;
-                                percentChange24h: number;
-                            } | null;
-                            /** @description User pembuat */
-                            createdBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                            /** @description User pengubah terakhir */
-                            updatedBy: {
-                                /**
-                                 * Format: uuid
-                                 * @description ID user
-                                 */
-                                id: string;
-                                /**
-                                 * @description Nama user
-                                 * @example John Doe
-                                 */
-                                name: string;
-                                /**
-                                 * Format: email
-                                 * @description Email untuk login
-                                 * @example john@example.com
-                                 */
-                                email: string;
-                            } | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Cryptoasset tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Cryptoasset tidak ditemukan";
-                            /** @enum {string} */
-                            error: "CRYPTOASSET_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Slug atau ticker cryptoasset sudah ada */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Slug cryptoasset sudah ada" | "Ticker cryptoasset sudah ada";
-                            /** @enum {string} */
-                            error: "SLUG_CONFLICT" | "TICKER_CONFLICT";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
+    trace?: never;
+  };
+  '/users/{id}/status': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    /**
+     * Edit status user
+     * @description Ubah status akun.
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID user */
+          id: string;
         };
-        /**
-         * List pesan
-         * @description Menampilkan pesan dengan search, filter pengirim, dan pagination.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Halaman */
-                    page?: number;
-                    /** @description Item per halaman */
-                    limit?: number;
-                    /** @description Cari berdasarkan nama, email, atau isi pesan */
-                    search?: string;
-                    /** @description Filter berdasarkan email pengirim */
-                    senders?: string[];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Pesan berhasil ditampilkan */
-                200: {
-                    headers: {
-                        "total-items": string;
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID pesan
-                             */
-                            id: string;
-                            /**
-                             * @description Nama pengirim
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email pengirim
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /** @description Isi pesan */
-                            message: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                        }[];
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Status akun
+             * @example active
+             * @enum {string}
+             */
+            status: 'active' | 'inactive' | 'suspended' | 'banned';
+          };
         };
-        put?: never;
-        /**
-         * Kirim pesan
-         * @description Menyimpan pesan contact form dan mengirim notifikasi email.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
+      };
+      responses: {
+        /** @description Status diubah */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID user
+               */
+              id: string;
+              /**
+               * @description Nama user
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email untuk login
+               * @example john@example.com
+               */
+              email: string;
+              /**
+               * @description Role user
+               * @example member
+               * @enum {string}
+               */
+              role:
+                | 'super_admin'
+                | 'admin'
+                | 'posts_manager'
+                | 'cryptoassets_manager'
+                | 'member';
+              /**
+               * @description Status akun
+               * @example active
+               * @enum {string}
+               */
+              status: 'active' | 'inactive' | 'suspended' | 'banned';
+              /**
+               * Format: date-time
+               * @description Login terakhir
+               */
+              lastLoginAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /**
+               * Format: uuid
+               * @description User pengubah terakhir
+               */
+              updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
             };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        /**
-                         * @description Nama pengirim
-                         * @example John Doe
-                         */
-                        name: string;
-                        /**
-                         * Format: email
-                         * @description Email pengirim
-                         * @example john@example.com
-                         */
-                        email: string;
-                        /** @description Isi pesan */
-                        message: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Pesan terkirim */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID pesan
-                             */
-                            id: string;
-                            /**
-                             * @description Nama pengirim
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email pengirim
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /** @description Isi pesan */
-                            message: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description User tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'User tidak ditemukan';
+              /** @enum {string} */
+              error: 'USER_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
     };
-    "/messages/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Detail pesan
-         * @description Menampilkan detail pesan berdasarkan ID.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description ID pesan */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Pesan ditemukan */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID pesan
-                             */
-                            id: string;
-                            /**
-                             * @description Nama pengirim
-                             * @example John Doe
-                             */
-                            name: string;
-                            /**
-                             * Format: email
-                             * @description Email pengirim
-                             * @example john@example.com
-                             */
-                            email: string;
-                            /** @description Isi pesan */
-                            message: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Pesan tidak ditemukan */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Pesan tidak ditemukan";
-                            /** @enum {string} */
-                            error: "MESSAGE_NOT_FOUND";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/users/{id}/role': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/assets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    get?: never;
+    /**
+     * Edit role user
+     * @description Ubah role user.
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID user */
+          id: string;
         };
-        get?: never;
-        put?: never;
-        /**
-         * Upload file, dapatkan id
-         * @description Upload file dan dapatkan id-nya.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "multipart/form-data": unknown;
-                };
-            };
-            responses: {
-                /** @description Upload berhasil */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID aset
-                             */
-                            id: string;
-                            /** @description Path objek di storage provider */
-                            pathname: string;
-                            /**
-                             * @description Nama file
-                             * @example cover.png
-                             */
-                            filename: string;
-                            /**
-                             * @description Ukuran objek dalam byte
-                             * @example 1024
-                             */
-                            size: number;
-                            /**
-                             * @description Tipe MIME objek
-                             * @example image/png
-                             */
-                            mimeType: string | null;
-                            /** @description Lebar gambar (piksel) */
-                            width: number | null;
-                            /** @description Tinggi gambar (piksel) */
-                            height: number | null;
-                            /**
-                             * @description Storage provider pemilik objek
-                             * @example vercel_blob
-                             * @enum {string}
-                             */
-                            provider: "picsum" | "vercel_blob";
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: uuid
-                             * @description User yang upload aset
-                             */
-                            createdBy: string | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Upload file gagal */
-                502: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Upload file gagal";
-                            /** @enum {string} */
-                            error: "STORAGE_UPLOAD_FAILED";
-                        };
-                    };
-                };
-            };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Role user
+             * @example member
+             * @enum {string}
+             */
+            role:
+              | 'super_admin'
+              | 'admin'
+              | 'posts_manager'
+              | 'cryptoassets_manager'
+              | 'member';
+          };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+      };
+      responses: {
+        /** @description Role diubah */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID user
+               */
+              id: string;
+              /**
+               * @description Nama user
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email untuk login
+               * @example john@example.com
+               */
+              email: string;
+              /**
+               * @description Role user
+               * @example member
+               * @enum {string}
+               */
+              role:
+                | 'super_admin'
+                | 'admin'
+                | 'posts_manager'
+                | 'cryptoassets_manager'
+                | 'member';
+              /**
+               * @description Status akun
+               * @example active
+               * @enum {string}
+               */
+              status: 'active' | 'inactive' | 'suspended' | 'banned';
+              /**
+               * Format: date-time
+               * @description Login terakhir
+               */
+              lastLoginAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /**
+               * Format: uuid
+               * @description User pengubah terakhir
+               */
+              updatedBy: string | null;
+              avatar: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description User tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'User tidak ditemukan';
+              /** @enum {string} */
+              error: 'USER_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
     };
-    "/imgbb": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Upload gambar, dapatkan url
-         * @description Upload gambar dan dapatkan url-nya.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "multipart/form-data": unknown;
-                };
-            };
-            responses: {
-                /** @description Upload berhasil */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /**
-                             * Format: uuid
-                             * @description ID gambar ImgBB
-                             */
-                            id: string;
-                            /** @description ID aset di ImgBB */
-                            imgbbId: string;
-                            /**
-                             * @description Judul aset ImgBB
-                             * @example CryptoSharia cover
-                             */
-                            title: string;
-                            /**
-                             * Format: uri
-                             * @description URL aset ImgBB
-                             */
-                            url: string;
-                            /** @description Lebar gambar (piksel) */
-                            width: number;
-                            /** @description Tinggi gambar (piksel) */
-                            height: number;
-                            /** @description Ukuran objek dalam byte */
-                            size: number;
-                            /**
-                             * @description Nama file
-                             * @example cover.png
-                             */
-                            fileName: string;
-                            /**
-                             * @description Tipe MIME
-                             * @example image/png
-                             */
-                            mimeType: string;
-                            /**
-                             * Format: uri
-                             * @description URL untuk menghapus aset
-                             */
-                            deleteUrl: string;
-                            /**
-                             * Format: date-time
-                             * @description Waktu dibuat
-                             */
-                            createdAt: string;
-                            /**
-                             * Format: uuid
-                             * @description User yang upload gambar
-                             */
-                            createdBy: string | null;
-                        };
-                    };
-                };
-                /** @description Tidak terautentikasi */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "UNAUTHORIZED";
-                            /** @enum {string} */
-                            message: "Tidak terautentikasi";
-                        };
-                    };
-                };
-                /** @description Akses ditolak */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "FORBIDDEN";
-                            /** @enum {string} */
-                            message: "Akses ditolak";
-                        };
-                    };
-                };
-                /** @description Validasi gagal */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            error: "VALIDATION_FAILED";
-                            /** @enum {string} */
-                            message: "Validasi gagal";
-                            details: {
-                                /**
-                                 * @description Kesalahan validasi root
-                                 * @example [
-                                 *       "<error1>",
-                                 *       "<error2>",
-                                 *       "<error...>"
-                                 *     ]
-                                 */
-                                root: string[];
-                                /**
-                                 * @description Kesalahan validasi per field
-                                 * @example {
-                                 *       "<field1>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field2>": [
-                                 *         "<error1>",
-                                 *         "<error2>",
-                                 *         "<error...>"
-                                 *       ],
-                                 *       "<field...>": [
-                                 *         "<error...>"
-                                 *       ]
-                                 *     }
-                                 */
-                                fields: {
-                                    [key: string]: string[];
-                                };
-                            };
-                        };
-                    };
-                };
-                /** @description Upload gambar gagal */
-                502: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            message: "Upload gambar gagal";
-                            /** @enum {string} */
-                            error: "IMAGE_UPLOAD_FAILED";
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/tags': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    /**
+     * List tag
+     * @description Menampilkan tag dengan search, filter slug, seksi konten, status navigasi, sorting, dan pagination.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Halaman */
+          page?: number;
+          /** @description Item per halaman */
+          limit?: number;
+          /** @description Cari berdasarkan nama, slug, atau deskripsi tag (case-insensitive) */
+          search?: string;
+          /** @description Filter berdasarkan slug tag */
+          slugs?: string[];
+          /** @description Filter berdasarkan seksi konten publik */
+          sections?: ('news' | 'education')[];
+          /** @description Kolom pengurutan tag */
+          sortBy?: 'name' | 'slug' | 'description';
+          /** @description Arah pengurutan */
+          sortDirection?: 'asc' | 'desc';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Tag ditampilkan */
+        200: {
+          headers: {
+            'total-items': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID tag
+               */
+              id: string;
+              /**
+               * @description Nama tag
+               * @example Halal Crypto
+               */
+              name: string;
+              /**
+               * @description Slug tag
+               * @example halal-crypto
+               */
+              slug: string;
+              /** @description Deskripsi tag */
+              description: string | null;
+              /**
+               * @description Seksi konten
+               * @enum {string|null}
+               */
+              section: 'news' | 'education' | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            }[];
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * Buat tag
+     * @description Membuat tag baru dengan nama, slug, dan deskripsi.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Nama tag
+             * @example Halal Crypto
+             */
+            name: string;
+            /**
+             * @description Slug tag
+             * @example halal-crypto
+             */
+            slug: string;
+            /** @description Deskripsi tag */
+            description: string | null;
+            /**
+             * @description Seksi konten
+             * @enum {string|null}
+             */
+            section: 'news' | 'education' | null;
+          };
+        };
+      };
+      responses: {
+        /** @description Tag dibuat */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID tag
+               */
+              id: string;
+              /**
+               * @description Nama tag
+               * @example Halal Crypto
+               */
+              name: string;
+              /**
+               * @description Slug tag
+               * @example halal-crypto
+               */
+              slug: string;
+              /** @description Deskripsi tag */
+              description: string | null;
+              /**
+               * @description Seksi konten
+               * @enum {string|null}
+               */
+              section: 'news' | 'education' | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Nama atau slug tag sudah ada */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Nama tag sudah ada' | 'Slug tag sudah ada';
+              /** @enum {string} */
+              error: 'NAME_CONFLICT' | 'SLUG_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/tags/{identifier}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Detail tag
+     * @description Ambil tag berdasarkan ID atau slug.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID atau slug tag */
+          identifier: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Tag ditemukan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID tag
+               */
+              id: string;
+              /**
+               * @description Nama tag
+               * @example Halal Crypto
+               */
+              name: string;
+              /**
+               * @description Slug tag
+               * @example halal-crypto
+               */
+              slug: string;
+              /** @description Deskripsi tag */
+              description: string | null;
+              /**
+               * @description Seksi konten
+               * @enum {string|null}
+               */
+              section: 'news' | 'education' | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tag tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Tag tidak ditemukan';
+              /** @enum {string} */
+              error: 'TAG_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/tags/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Hapus tag
+     * @description Hapus tag berdasarkan ID. Default 409 jika masih dipakai; gunakan force=true untuk tetap hapus.
+     */
+    delete: {
+      parameters: {
+        query?: {
+          /** @description Hapus tag meskipun masih digunakan */
+          force?: boolean;
+        };
+        header?: never;
+        path: {
+          /** @description ID tag */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Tag dihapus */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Tag tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Tag tidak ditemukan';
+              /** @enum {string} */
+              error: 'TAG_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Tag masih digunakan oleh post atau cryptoasset */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Tag masih digunakan oleh post atau cryptoasset';
+              /** @enum {string} */
+              error: 'TAG_IN_USE';
+              details: {
+                /** @description Referensi yang menghalangi penghapusan */
+                usage: {
+                  /** @description Jumlah post yang memakai tag */
+                  posts: number;
+                  /** @description Jumlah cryptoasset yang memakai tag */
+                  cryptoassets: number;
+                };
+              };
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /**
+     * Edit tag
+     * @description Edit tag berdasarkan ID.
+     */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID tag */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Nama tag
+             * @example Halal Crypto
+             */
+            name?: string;
+            /**
+             * @description Slug tag
+             * @example halal-crypto
+             */
+            slug?: string;
+            /** @description Deskripsi tag */
+            description?: string | null;
+            /**
+             * @description Seksi konten
+             * @enum {string|null}
+             */
+            section?: 'news' | 'education' | null;
+          };
+        };
+      };
+      responses: {
+        /** @description Tag diubah */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID tag
+               */
+              id: string;
+              /**
+               * @description Nama tag
+               * @example Halal Crypto
+               */
+              name: string;
+              /**
+               * @description Slug tag
+               * @example halal-crypto
+               */
+              slug: string;
+              /** @description Deskripsi tag */
+              description: string | null;
+              /**
+               * @description Seksi konten
+               * @enum {string|null}
+               */
+              section: 'news' | 'education' | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Tag tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Tag tidak ditemukan';
+              /** @enum {string} */
+              error: 'TAG_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Nama atau slug tag sudah ada */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Nama tag sudah ada' | 'Slug tag sudah ada';
+              /** @enum {string} */
+              error: 'NAME_CONFLICT' | 'SLUG_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List post
+     * @description Menampilkan post dengan filter status, kategori, tipe, slug, tag, sorting, dan pagination. Akun tanpa izin akses hanya post berstatus `published` yang ditampilkan.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Halaman */
+          page?: number;
+          /** @description Item per halaman */
+          limit?: number;
+          /** @description Cari berdasarkan judul, slug, ringkasan, atau konten */
+          search?: string;
+          /** @description Filter berdasarkan status publikasi */
+          statuses?: ('draft' | 'published' | 'archived')[];
+          /** @description Filter berdasarkan kategori post */
+          sections?: ('news' | 'education' | 'research' | 'activity')[];
+          /** @description Filter berdasarkan tipe konten */
+          types?: ('article' | 'webinar' | 'video' | 'headline')[];
+          /** @description Filter berdasarkan slug post */
+          slugs?: string[];
+          /** @description Kecualikan slug tertentu */
+          exclude?: string[];
+          /** @description Filter berdasarkan slug tag */
+          tags?: string[];
+          /** @description Urut berdasarkan.<br>`publishedAtOrCreatedAt` = `publishedAt` jika ada, jika tidak maka `createdAt`. */
+          sortBy?:
+            | 'title'
+            | 'status'
+            | 'section'
+            | 'tags'
+            | 'createdAt'
+            | 'publishedAt'
+            | 'publishedAtOrCreatedAt';
+          /** @description Arah pengurutan */
+          sortDirection?: 'asc' | 'desc';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Post berhasil ditampilkan */
+        200: {
+          headers: {
+            'total-items': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID post
+               */
+              id: string;
+              /**
+               * @description Judul post
+               * @example Understanding Halal Crypto
+               */
+              title: string;
+              /**
+               * @description Slug post
+               * @example understanding-halal-crypto
+               */
+              slug: string;
+              /** @description Ringkasan post */
+              excerpt: string;
+              /**
+               * @description Kategori post
+               * @example education
+               * @enum {string}
+               */
+              section: 'news' | 'education' | 'research' | 'activity';
+              /**
+               * @description Tipe konten post
+               * @example article
+               * @enum {string}
+               */
+              type: 'article' | 'webinar' | 'video' | 'headline';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Post unggulan (featured) */
+              isFeatured: boolean;
+              /**
+               * Format: date-time
+               * @description Tanggal event
+               */
+              eventDate: string | null;
+              /**
+               * Format: uri
+               * @description Link eksternal
+               */
+              externalLink: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              coverImage: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+              }[];
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            }[];
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * Buat post
+     * @description Membuat post baru.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Judul post
+             * @example Understanding Halal Crypto
+             */
+            title: string;
+            /**
+             * @description Slug post
+             * @example understanding-halal-crypto
+             */
+            slug: string;
+            /** @description Ringkasan post */
+            excerpt: string;
+            /** @description Konten post */
+            content: string;
+            /**
+             * Format: uuid
+             * @description Gambar sampul post
+             */
+            coverImageId: string;
+            /**
+             * @description Kategori post
+             * @example education
+             * @enum {string}
+             */
+            section: 'news' | 'education' | 'research' | 'activity';
+            /**
+             * @description Tipe konten post
+             * @example article
+             * @enum {string}
+             */
+            type: 'article' | 'webinar' | 'video' | 'headline';
+            /**
+             * @description Status publikasi
+             * @example published
+             * @enum {string}
+             */
+            status: 'draft' | 'published' | 'archived';
+            /** @description Post unggulan (featured) */
+            isFeatured: boolean;
+            /**
+             * Format: date-time
+             * @description Tanggal event
+             */
+            eventDate: string | null;
+            /**
+             * Format: uri
+             * @description Link eksternal
+             */
+            externalLink: string | null;
+            tags: string[];
+          };
+        };
+      };
+      responses: {
+        /** @description Post dibuat */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID post
+               */
+              id: string;
+              /**
+               * @description Judul post
+               * @example Understanding Halal Crypto
+               */
+              title: string;
+              /**
+               * @description Slug post
+               * @example understanding-halal-crypto
+               */
+              slug: string;
+              /** @description Ringkasan post */
+              excerpt: string;
+              /** @description Konten post */
+              content: string;
+              /**
+               * @description Kategori post
+               * @example education
+               * @enum {string}
+               */
+              section: 'news' | 'education' | 'research' | 'activity';
+              /**
+               * @description Tipe konten post
+               * @example article
+               * @enum {string}
+               */
+              type: 'article' | 'webinar' | 'video' | 'headline';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Post unggulan (featured) */
+              isFeatured: boolean;
+              /**
+               * Format: date-time
+               * @description Tanggal event
+               */
+              eventDate: string | null;
+              /**
+               * Format: uri
+               * @description Link eksternal
+               */
+              externalLink: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              coverImage: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Slug sudah ada */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Slug sudah ada';
+              /** @enum {string} */
+              error: 'SLUG_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/posts/{identifier}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Detail post
+     * @description Ambil post berdasarkan ID atau slug. Post non-published hanya dapat diakses dengan akun yang punya izin akses.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID atau slug post */
+          identifier: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Post ditemukan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID post
+               */
+              id: string;
+              /**
+               * @description Judul post
+               * @example Understanding Halal Crypto
+               */
+              title: string;
+              /**
+               * @description Slug post
+               * @example understanding-halal-crypto
+               */
+              slug: string;
+              /** @description Ringkasan post */
+              excerpt: string;
+              /** @description Konten post */
+              content: string;
+              /**
+               * @description Kategori post
+               * @example education
+               * @enum {string}
+               */
+              section: 'news' | 'education' | 'research' | 'activity';
+              /**
+               * @description Tipe konten post
+               * @example article
+               * @enum {string}
+               */
+              type: 'article' | 'webinar' | 'video' | 'headline';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Post unggulan (featured) */
+              isFeatured: boolean;
+              /**
+               * Format: date-time
+               * @description Tanggal event
+               */
+              eventDate: string | null;
+              /**
+               * Format: uri
+               * @description Link eksternal
+               */
+              externalLink: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              coverImage: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Post tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Post tidak ditemukan';
+              /** @enum {string} */
+              error: 'POST_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/posts/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Hapus post
+     * @description Hapus post berdasarkan ID.
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID post */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Post dihapus */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Post tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Post tidak ditemukan';
+              /** @enum {string} */
+              error: 'POST_NOT_FOUND';
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /**
+     * Edit post
+     * @description Edit post berdasarkan ID.<br>Ketika tags disertakan, seluruh tag di-replace.
+     */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID post */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Judul post
+             * @example Understanding Halal Crypto
+             */
+            title?: string;
+            /**
+             * @description Slug post
+             * @example understanding-halal-crypto
+             */
+            slug?: string;
+            /** @description Ringkasan post */
+            excerpt?: string;
+            /** @description Konten post */
+            content?: string;
+            /**
+             * Format: uuid
+             * @description Gambar sampul post
+             */
+            coverImageId?: string;
+            /**
+             * @description Kategori post
+             * @example education
+             * @enum {string}
+             */
+            section?: 'news' | 'education' | 'research' | 'activity';
+            /**
+             * @description Tipe konten post
+             * @example article
+             * @enum {string}
+             */
+            type?: 'article' | 'webinar' | 'video' | 'headline';
+            /**
+             * @description Status publikasi
+             * @example published
+             * @enum {string}
+             */
+            status?: 'draft' | 'published' | 'archived';
+            /** @description Post unggulan (featured) */
+            isFeatured?: boolean;
+            /**
+             * Format: date-time
+             * @description Tanggal event
+             */
+            eventDate?: string | null;
+            /**
+             * Format: uri
+             * @description Link eksternal
+             */
+            externalLink?: string | null;
+            tags?: string[];
+          };
+        };
+      };
+      responses: {
+        /** @description Post diubah */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID post
+               */
+              id: string;
+              /**
+               * @description Judul post
+               * @example Understanding Halal Crypto
+               */
+              title: string;
+              /**
+               * @description Slug post
+               * @example understanding-halal-crypto
+               */
+              slug: string;
+              /** @description Ringkasan post */
+              excerpt: string;
+              /** @description Konten post */
+              content: string;
+              /**
+               * @description Kategori post
+               * @example education
+               * @enum {string}
+               */
+              section: 'news' | 'education' | 'research' | 'activity';
+              /**
+               * @description Tipe konten post
+               * @example article
+               * @enum {string}
+               */
+              type: 'article' | 'webinar' | 'video' | 'headline';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Post unggulan (featured) */
+              isFeatured: boolean;
+              /**
+               * Format: date-time
+               * @description Tanggal event
+               */
+              eventDate: string | null;
+              /**
+               * Format: uri
+               * @description Link eksternal
+               */
+              externalLink: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              coverImage: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Post tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Post tidak ditemukan';
+              /** @enum {string} */
+              error: 'POST_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Slug sudah ada */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Slug sudah ada';
+              /** @enum {string} */
+              error: 'SLUG_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/cryptoassets': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List cryptoasset
+     * @description Menampilkan cryptoasset dengan filter status, status syariah, slug, tag, dan pagination.<br>Akun tanpa izin akses hanya cryptoasset berstatus `published` yang ditampilkan.<br>Gunakan `quote=true` untuk menyertakan data pasar.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Halaman */
+          page?: number;
+          /** @description Item per halaman */
+          limit?: number;
+          /** @description Cari berdasarkan nama, ticker, slug, ringkasan, atau konten */
+          search?: string;
+          /** @description Sertakan data pasar */
+          quote?: boolean;
+          /** @description Filter berdasarkan status publikasi */
+          statuses?: ('draft' | 'published' | 'archived')[];
+          /** @description Filter berdasarkan status syariah */
+          shariaStatuses?: ('halal' | 'haram' | 'syubhat')[];
+          /** @description Filter berdasarkan slug cryptoasset */
+          slugs?: string[];
+          /** @description Kecualikan slug tertentu */
+          exclude?: string[];
+          /** @description Filter berdasarkan slug tag */
+          tags?: string[];
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Cryptoasset berhasil ditampilkan */
+        200: {
+          headers: {
+            'total-items': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID cryptoasset
+               */
+              id: string;
+              /**
+               * @description Slug cryptoasset
+               * @example bitcoin
+               */
+              slug: string;
+              /**
+               * @description Nama cryptoasset
+               * @example Bitcoin
+               */
+              name: string;
+              /**
+               * @description Simbol cryptoasset
+               * @example BTC
+               */
+              ticker: string;
+              /**
+               * @description Status syariah
+               * @example halal
+               * @enum {string}
+               */
+              shariaStatus: 'halal' | 'haram' | 'syubhat';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Ringkasan cryptoasset */
+              excerpt: string;
+              /**
+               * @description Simbol TradingView
+               * @example BINANCE:BTCUSDT
+               */
+              tradingviewSymbol: string | null;
+              /**
+               * Format: uri
+               * @description Situs resmi
+               * @example https://bitcoin.org
+               */
+              website: string;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              logo: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+              }[];
+              quote?: {
+                slug: string;
+                rank: number;
+                infiniteSupply: boolean;
+                maxSupply: number | null;
+                circulatingSupply: number;
+                priceUsd: number;
+                marketCapUsd: number;
+                marketCapDominance: number;
+                percentChange24h: number;
+              } | null;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            }[];
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * Buat cryptoasset
+     * @description Membuat cryptoasset baru.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Slug cryptoasset
+             * @example bitcoin
+             */
+            slug: string;
+            /**
+             * @description Nama cryptoasset
+             * @example Bitcoin
+             */
+            name: string;
+            /**
+             * @description Simbol cryptoasset
+             * @example BTC
+             */
+            ticker: string;
+            /**
+             * @description Status syariah
+             * @example halal
+             * @enum {string}
+             */
+            shariaStatus: 'halal' | 'haram' | 'syubhat';
+            /**
+             * @description Status publikasi
+             * @example published
+             * @enum {string}
+             */
+            status: 'draft' | 'published' | 'archived';
+            /** @description Ringkasan cryptoasset */
+            excerpt: string;
+            /**
+             * @description Simbol TradingView
+             * @example BINANCE:BTCUSDT
+             */
+            tradingviewSymbol: string | null;
+            /**
+             * Format: uri
+             * @description Situs resmi
+             * @example https://bitcoin.org
+             */
+            website: string;
+            /**
+             * Format: uuid
+             * @description Logo cryptoasset
+             */
+            logoId: string;
+            /** @description Analisis syariah / deskripsi proyek */
+            content: string;
+            tags: string[];
+          };
+        };
+      };
+      responses: {
+        /** @description Cryptoasset dibuat */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID cryptoasset
+               */
+              id: string;
+              /**
+               * @description Slug cryptoasset
+               * @example bitcoin
+               */
+              slug: string;
+              /**
+               * @description Nama cryptoasset
+               * @example Bitcoin
+               */
+              name: string;
+              /**
+               * @description Simbol cryptoasset
+               * @example BTC
+               */
+              ticker: string;
+              /**
+               * @description Status syariah
+               * @example halal
+               * @enum {string}
+               */
+              shariaStatus: 'halal' | 'haram' | 'syubhat';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Ringkasan cryptoasset */
+              excerpt: string;
+              /**
+               * @description Simbol TradingView
+               * @example BINANCE:BTCUSDT
+               */
+              tradingviewSymbol: string | null;
+              /**
+               * Format: uri
+               * @description Situs resmi
+               * @example https://bitcoin.org
+               */
+              website: string;
+              /** @description Analisis syariah / deskripsi proyek */
+              content: string;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              logo: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              quote?: {
+                slug: string;
+                rank: number;
+                infiniteSupply: boolean;
+                maxSupply: number | null;
+                circulatingSupply: number;
+                priceUsd: number;
+                marketCapUsd: number;
+                marketCapDominance: number;
+                percentChange24h: number;
+              } | null;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Slug atau ticker cryptoasset sudah ada */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message:
+                'Slug cryptoasset sudah ada' | 'Ticker cryptoasset sudah ada';
+              /** @enum {string} */
+              error: 'SLUG_CONFLICT' | 'TICKER_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/cryptoassets/{identifier}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Detail cryptoasset
+     * @description Ambil cryptoasset berdasarkan ID atau slug.<br>Cryptoasset non-published hanya dapat diakses dengan akun yang punya izin akses.<br>Gunakan quote=true untuk menyertakan data pasar.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Sertakan data pasar */
+          quote?: boolean;
+        };
+        header?: never;
+        path: {
+          /** @description ID atau slug cryptoasset */
+          identifier: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Cryptoasset ditemukan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID cryptoasset
+               */
+              id: string;
+              /**
+               * @description Slug cryptoasset
+               * @example bitcoin
+               */
+              slug: string;
+              /**
+               * @description Nama cryptoasset
+               * @example Bitcoin
+               */
+              name: string;
+              /**
+               * @description Simbol cryptoasset
+               * @example BTC
+               */
+              ticker: string;
+              /**
+               * @description Status syariah
+               * @example halal
+               * @enum {string}
+               */
+              shariaStatus: 'halal' | 'haram' | 'syubhat';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Ringkasan cryptoasset */
+              excerpt: string;
+              /**
+               * @description Simbol TradingView
+               * @example BINANCE:BTCUSDT
+               */
+              tradingviewSymbol: string | null;
+              /**
+               * Format: uri
+               * @description Situs resmi
+               * @example https://bitcoin.org
+               */
+              website: string;
+              /** @description Analisis syariah / deskripsi proyek */
+              content: string;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              logo: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              quote?: {
+                slug: string;
+                rank: number;
+                infiniteSupply: boolean;
+                maxSupply: number | null;
+                circulatingSupply: number;
+                priceUsd: number;
+                marketCapUsd: number;
+                marketCapDominance: number;
+                percentChange24h: number;
+              } | null;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Cryptoasset tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Cryptoasset tidak ditemukan';
+              /** @enum {string} */
+              error: 'CRYPTOASSET_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/cryptoassets/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Hapus cryptoasset
+     * @description Hapus cryptoasset berdasarkan ID.
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID cryptoasset */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Cryptoasset dihapus */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Cryptoasset tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Cryptoasset tidak ditemukan';
+              /** @enum {string} */
+              error: 'CRYPTOASSET_NOT_FOUND';
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /**
+     * Edit cryptoasset
+     * @description Edit cryptoasset berdasarkan ID.<br>Ketika tags disertakan, seluruh tag di-replace.
+     */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID cryptoasset */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Slug cryptoasset
+             * @example bitcoin
+             */
+            slug?: string;
+            /**
+             * @description Nama cryptoasset
+             * @example Bitcoin
+             */
+            name?: string;
+            /**
+             * @description Simbol cryptoasset
+             * @example BTC
+             */
+            ticker?: string;
+            /**
+             * @description Status syariah
+             * @example halal
+             * @enum {string}
+             */
+            shariaStatus?: 'halal' | 'haram' | 'syubhat';
+            /**
+             * @description Status publikasi
+             * @example published
+             * @enum {string}
+             */
+            status?: 'draft' | 'published' | 'archived';
+            /** @description Ringkasan cryptoasset */
+            excerpt?: string;
+            /**
+             * @description Simbol TradingView
+             * @example BINANCE:BTCUSDT
+             */
+            tradingviewSymbol?: string | null;
+            /**
+             * Format: uri
+             * @description Situs resmi
+             * @example https://bitcoin.org
+             */
+            website?: string;
+            /**
+             * Format: uuid
+             * @description Logo cryptoasset
+             */
+            logoId?: string;
+            /** @description Analisis syariah / deskripsi proyek */
+            content?: string;
+            tags?: string[];
+          };
+        };
+      };
+      responses: {
+        /** @description Cryptoasset diubah */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID cryptoasset
+               */
+              id: string;
+              /**
+               * @description Slug cryptoasset
+               * @example bitcoin
+               */
+              slug: string;
+              /**
+               * @description Nama cryptoasset
+               * @example Bitcoin
+               */
+              name: string;
+              /**
+               * @description Simbol cryptoasset
+               * @example BTC
+               */
+              ticker: string;
+              /**
+               * @description Status syariah
+               * @example halal
+               * @enum {string}
+               */
+              shariaStatus: 'halal' | 'haram' | 'syubhat';
+              /**
+               * @description Status publikasi
+               * @example published
+               * @enum {string}
+               */
+              status: 'draft' | 'published' | 'archived';
+              /** @description Ringkasan cryptoasset */
+              excerpt: string;
+              /**
+               * @description Simbol TradingView
+               * @example BINANCE:BTCUSDT
+               */
+              tradingviewSymbol: string | null;
+              /**
+               * Format: uri
+               * @description Situs resmi
+               * @example https://bitcoin.org
+               */
+              website: string;
+              /** @description Analisis syariah / deskripsi proyek */
+              content: string;
+              /**
+               * Format: date-time
+               * @description Waktu publikasi
+               */
+              publishedAt: string | null;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              logo: {
+                /**
+                 * Format: uuid
+                 * @description ID aset
+                 */
+                id: string;
+                /**
+                 * Format: uri
+                 * @description URL publik aset
+                 */
+                url: string;
+                /**
+                 * @description Nama file
+                 * @example cover.png
+                 */
+                filename: string;
+                /**
+                 * @description Ukuran objek dalam byte
+                 * @example 1024
+                 */
+                size: number;
+                /**
+                 * @description Tipe MIME objek
+                 * @example image/png
+                 */
+                mimeType: string | null;
+                /** @description Lebar gambar (piksel) */
+                width: number | null;
+                /** @description Tinggi gambar (piksel) */
+                height: number | null;
+              } | null;
+              tags: {
+                /**
+                 * Format: uuid
+                 * @description ID tag
+                 */
+                id: string;
+                /**
+                 * @description Nama tag
+                 * @example Halal Crypto
+                 */
+                name: string;
+                /**
+                 * @description Slug tag
+                 * @example halal-crypto
+                 */
+                slug: string;
+                /** @description Deskripsi tag */
+                description: string | null;
+              }[];
+              quote?: {
+                slug: string;
+                rank: number;
+                infiniteSupply: boolean;
+                maxSupply: number | null;
+                circulatingSupply: number;
+                priceUsd: number;
+                marketCapUsd: number;
+                marketCapDominance: number;
+                percentChange24h: number;
+              } | null;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Cryptoasset tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Cryptoasset tidak ditemukan';
+              /** @enum {string} */
+              error: 'CRYPTOASSET_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Slug atau ticker cryptoasset sudah ada */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message:
+                'Slug cryptoasset sudah ada' | 'Ticker cryptoasset sudah ada';
+              /** @enum {string} */
+              error: 'SLUG_CONFLICT' | 'TICKER_CONFLICT';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List pesan
+     * @description Menampilkan pesan dengan search, filter pengirim, dan pagination.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Halaman */
+          page?: number;
+          /** @description Item per halaman */
+          limit?: number;
+          /** @description Cari berdasarkan nama, email, atau isi pesan */
+          search?: string;
+          /** @description Filter berdasarkan email pengirim */
+          senders?: string[];
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Pesan berhasil ditampilkan */
+        200: {
+          headers: {
+            'total-items': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID pesan
+               */
+              id: string;
+              /**
+               * @description Nama pengirim
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email pengirim
+               * @example john@example.com
+               */
+              email: string;
+              /** @description Isi pesan */
+              message: string;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+            }[];
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * Kirim pesan
+     * @description Menyimpan pesan contact form dan mengirim notifikasi email.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Nama pengirim
+             * @example John Doe
+             */
+            name: string;
+            /**
+             * Format: email
+             * @description Email pengirim
+             * @example john@example.com
+             */
+            email: string;
+            /** @description Isi pesan */
+            message: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Pesan terkirim */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID pesan
+               */
+              id: string;
+              /**
+               * @description Nama pengirim
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email pengirim
+               * @example john@example.com
+               */
+              email: string;
+              /** @description Isi pesan */
+              message: string;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/messages/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Detail pesan
+     * @description Menampilkan detail pesan berdasarkan ID.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID pesan */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Pesan ditemukan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID pesan
+               */
+              id: string;
+              /**
+               * @description Nama pengirim
+               * @example John Doe
+               */
+              name: string;
+              /**
+               * Format: email
+               * @description Email pengirim
+               * @example john@example.com
+               */
+              email: string;
+              /** @description Isi pesan */
+              message: string;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Pesan tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Pesan tidak ditemukan';
+              /** @enum {string} */
+              error: 'MESSAGE_NOT_FOUND';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/assets': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Upload file, dapatkan id
+     * @description Upload file dan dapatkan id-nya.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'multipart/form-data': unknown;
+        };
+      };
+      responses: {
+        /** @description Upload berhasil */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID aset
+               */
+              id: string;
+              /** @description Path objek di storage provider */
+              pathname: string;
+              /**
+               * @description Nama file
+               * @example cover.png
+               */
+              filename: string;
+              /**
+               * @description Ukuran objek dalam byte
+               * @example 1024
+               */
+              size: number;
+              /**
+               * @description Tipe MIME objek
+               * @example image/png
+               */
+              mimeType: string | null;
+              /** @description Lebar gambar (piksel) */
+              width: number | null;
+              /** @description Tinggi gambar (piksel) */
+              height: number | null;
+              /**
+               * @description Storage provider pemilik objek
+               * @example vercel_blob
+               * @enum {string}
+               */
+              provider: 'vercel_blob';
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: uuid
+               * @description User yang upload aset
+               */
+              createdBy: string | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+        /** @description Upload file gagal */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Upload file gagal';
+              /** @enum {string} */
+              error: 'STORAGE_UPLOAD_FAILED';
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/imgbb': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Upload gambar, dapatkan url
+     * @description Upload gambar dan dapatkan url-nya.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'multipart/form-data': unknown;
+        };
+      };
+      responses: {
+        /** @description Upload berhasil */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID gambar ImgBB
+               */
+              id: string;
+              /** @description ID aset di ImgBB */
+              imgbbId: string;
+              /**
+               * @description Judul aset ImgBB
+               * @example CryptoSharia cover
+               */
+              title: string;
+              /**
+               * Format: uri
+               * @description URL aset ImgBB
+               */
+              url: string;
+              /** @description Lebar gambar (piksel) */
+              width: number;
+              /** @description Tinggi gambar (piksel) */
+              height: number;
+              /** @description Ukuran objek dalam byte */
+              size: number;
+              /**
+               * @description Nama file
+               * @example cover.png
+               */
+              fileName: string;
+              /**
+               * @description Tipe MIME
+               * @example image/png
+               */
+              mimeType: string;
+              /**
+               * Format: uri
+               * @description URL untuk menghapus aset
+               */
+              deleteUrl: string;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: uuid
+               * @description User yang upload gambar
+               */
+              createdBy: string | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+        /** @description Upload gambar gagal */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Upload gambar gagal';
+              /** @enum {string} */
+              error: 'IMAGE_UPLOAD_FAILED';
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+  schemas: never;
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

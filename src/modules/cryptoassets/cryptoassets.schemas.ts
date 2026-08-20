@@ -143,7 +143,6 @@ export const CryptoassetWriteTags = z
 
 export const CryptoassetCreateBody = Cryptoasset.pick({
   slug: true,
-  rank: true,
   name: true,
   ticker: true,
   shariaStatus: true,

@@ -28,10 +28,7 @@ import type { TagsQuery } from './tags.schemas';
 import { TagsError } from './tags.error';
 
 type TagListInput = TagsQuery;
-type TagFilterInput = Pick<
-  TagsQuery,
-  'search' | 'slugs' | 'contentSections' | 'showInNavigation'
->;
+type TagFilterInput = Pick<TagsQuery, 'search' | 'slugs' | 'sections'>;
 
 export type TagWithAudit = {
   tag: Tag;
@@ -80,10 +77,8 @@ export class TagsRepository {
   async selectAll(input: TagListInput): Promise<TagWithAudit[]> {
     const filters: SQL[] = [];
     if (input.slugs?.length) filters.push(inArray(tags.slug, input.slugs));
-    if (input.contentSections?.length)
-      filters.push(inArray(tags.contentSection, input.contentSections));
-    if (input.showInNavigation !== undefined)
-      filters.push(eq(tags.showInNavigation, input.showInNavigation));
+    if (input.sections?.length)
+      filters.push(inArray(tags.section, input.sections));
     if (input.search) {
       const pattern = `%${escapeLikePattern(input.search)}%`;
       filters.push(
@@ -100,7 +95,6 @@ export class TagsRepository {
       name: tags.name,
       slug: tags.slug,
       description: tags.description,
-      showInNavigation: tags.showInNavigation,
     }[input.sortBy];
     const order = input.sortDirection === 'desc' ? desc : asc;
 
@@ -115,10 +109,8 @@ export class TagsRepository {
   async count(input: TagFilterInput): Promise<number> {
     const filters: SQL[] = [];
     if (input.slugs?.length) filters.push(inArray(tags.slug, input.slugs));
-    if (input.contentSections?.length)
-      filters.push(inArray(tags.contentSection, input.contentSections));
-    if (input.showInNavigation !== undefined)
-      filters.push(eq(tags.showInNavigation, input.showInNavigation));
+    if (input.sections?.length)
+      filters.push(inArray(tags.section, input.sections));
     if (input.search) {
       const pattern = `%${escapeLikePattern(input.search)}%`;
       filters.push(
@@ -154,16 +146,8 @@ export class TagsRepository {
   async insert(
     data: Pick<
       Tag,
-      | 'name'
-      | 'slug'
-      | 'contentSection'
-      | 'showInNavigation'
-      | 'createdBy'
-      | 'updatedBy'
-    > & {
-      description?: Tag['description'];
-      displayOrder?: Tag['displayOrder'];
-    },
+      'name' | 'slug' | 'description' | 'section' | 'createdBy' | 'updatedBy'
+    >,
   ): Promise<Tag> {
     try {
       const [tag] = await this.drizzleService.db
@@ -179,15 +163,7 @@ export class TagsRepository {
   async update(
     id: Tag['id'],
     data: Partial<
-      Pick<
-        Tag,
-        | 'name'
-        | 'slug'
-        | 'description'
-        | 'contentSection'
-        | 'showInNavigation'
-        | 'updatedBy'
-      > & { displayOrder?: Tag['displayOrder'] }
+      Pick<Tag, 'name' | 'slug' | 'description' | 'section' | 'updatedBy'>
     >,
   ): Promise<Tag> {
     try {

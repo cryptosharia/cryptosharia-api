@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AuditMetadata } from '#src/modules/audit/audit.schemas';
-import { tagContentSectionEnum } from '#src/modules/drizzle/drizzle.schema';
+import { tagSectionEnum } from '#src/modules/drizzle/drizzle.schema';
 import { Tag } from '#src/modules/drizzle/drizzle.types';
 
 export const TagIdentifier = z
@@ -55,30 +55,23 @@ export const TagsQuery = z.object({
         example: ['halal-crypto'],
       }),
   ),
-  contentSections: z.preprocess(
+  sections: z.preprocess(
     (value) =>
       value === undefined ? undefined : Array.isArray(value) ? value : [value],
     z
-      .array(z.enum(tagContentSectionEnum.enumValues))
+      .array(z.enum(tagSectionEnum.enumValues))
       .optional()
       .meta({
         description: 'Filter berdasarkan seksi konten publik',
         example: ['news'],
       }),
   ),
-  showInNavigation: z.preprocess(
-    (value) => (value === 'true' ? true : value === 'false' ? false : value),
-    z
-      .boolean()
-      .optional()
-      .meta({ description: 'Filter tag yang tampil di navigasi publik' }),
-  ),
   sortBy: z
-    .enum(['name', 'slug', 'description', 'showInNavigation'])
+    .enum(['name', 'slug', 'description'])
     .optional()
     .default('name')
     .meta({
-      description: 'Kolom pengurutan tag',
+      description: 'Urut berdasarkan',
       example: 'name',
     }),
   sortDirection: z
@@ -93,9 +86,7 @@ export const TagCreateBody = Tag.pick({
   name: true,
   slug: true,
   description: true,
-  contentSection: true,
-  showInNavigation: true,
-  displayOrder: true,
+  section: true,
 });
 export type TagCreateBody = z.infer<typeof TagCreateBody>;
 
