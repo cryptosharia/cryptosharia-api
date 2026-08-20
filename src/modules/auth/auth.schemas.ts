@@ -2,12 +2,12 @@ import { z } from 'zod';
 import { User } from '#src/modules/drizzle/drizzle.types';
 
 const RefreshToken = z.string().min(1, 'Tidak boleh kosong').meta({
-  description: 'Refresh token (`{userId}:{tokenId}`)',
+  description: 'Refresh token (long-lived)',
   example: '0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...',
 });
 
 const AccessToken = z.string().meta({
-  description: 'Access token JWT (short-lived)',
+  description: 'Access token (short-lived)',
   example: 'eyJhbGciOiJIUzI1NiIs...',
 });
 
