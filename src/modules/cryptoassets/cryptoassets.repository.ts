@@ -33,6 +33,7 @@ import type {
   DbExecutor,
   Tag,
 } from '#src/modules/drizzle/drizzle.types';
+import type { CryptoassetsQuery } from './cryptoassets.schemas';
 import { CryptoassetsError } from './cryptoassets.error';
 
 export type CryptoassetWithRelation = {
@@ -45,17 +46,6 @@ export type CryptoassetWithRelation = {
 
 const createdByUser = alias(users, 'cryptoasset_created_by');
 const updatedByUser = alias(users, 'cryptoasset_updated_by');
-
-type CryptoassetListInput = {
-  page: number;
-  limit: number;
-  search?: string;
-  statuses?: Cryptoasset['status'][];
-  shariaStatuses?: Cryptoasset['shariaStatus'][];
-  slugs?: string[];
-  exclude?: string[];
-  tags?: string[];
-};
 
 @Injectable()
 export class CryptoassetsRepository {
@@ -83,7 +73,7 @@ export class CryptoassetsRepository {
       .leftJoin(updatedByUser, eq(cryptoassets.updatedBy, updatedByUser.id));
   }
 
-  private buildFilters(input: CryptoassetListInput): SQL | undefined {
+  private buildFilters(input: CryptoassetsQuery): SQL | undefined {
     const filters: SQL[] = [];
     if (input.statuses?.length)
       filters.push(inArray(cryptoassets.status, input.statuses));
@@ -141,7 +131,7 @@ export class CryptoassetsRepository {
   }
 
   async selectAll(
-    input: CryptoassetListInput,
+    input: CryptoassetsQuery,
   ): Promise<CryptoassetWithRelation[]> {
     const where = this.buildFilters(input);
     const rows = await this.selectBase(this.drizzleService.db)
@@ -156,7 +146,7 @@ export class CryptoassetsRepository {
     return this.withRelations(rows);
   }
 
-  async count(input: CryptoassetListInput): Promise<number> {
+  async count(input: CryptoassetsQuery): Promise<number> {
     const where = this.buildFilters(input);
     const [result] = await this.drizzleService.db
       .select({ value: count() })
