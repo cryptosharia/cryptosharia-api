@@ -175,10 +175,10 @@ export class AuthService {
     }
     if (user.status !== 'active') throw new AuthError('USER_INACTIVE');
 
-    await this.usersService.update(user.id, { lastLoginAt: new Date() });
+    await this.usersService.updateLastLoginAt(user.id);
     await this.auditService.log({
       userId: user.id,
-      action: 'auth.otp.verify',
+      action: 'auth.signin',
       subjectType: 'auth',
       description: `Login OTP: ${email}`,
       ipAddress: input.ipAddress,

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AuditService } from '#src/modules/audit/audit.service';
 import { AssetsService } from '#src/modules/assets/assets.service';
 import { User } from '#src/modules/drizzle/drizzle.types';
 import type { DbExecutor } from '#src/modules/drizzle/drizzle.types';
@@ -10,6 +11,7 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly assetsService: AssetsService,
+    private readonly auditService: AuditService,
   ) {}
 
   async selectById(
@@ -43,10 +45,39 @@ export class UsersService {
   async update(
     id: User['id'],
     data: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>,
-    updatedBy?: User['id'],
+    actor: { id: User['id']; ipAddress?: string },
     dbExecutor?: DbExecutor,
   ) {
-    return this.usersRepository.update(id, data, updatedBy, dbExecutor);
+    const user = await this.usersRepository.update(
+      id,
+      data,
+      actor.id,
+      dbExecutor,
+    );
+
+    await this.auditService.log({
+      userId: actor.id,
+      action: 'user.update',
+      subjectType: 'user',
+      subjectId: user.id,
+      description: `Update user fields: ${Object.keys(data).join(', ')}`,
+      ipAddress: actor.ipAddress,
+    });
+
+    return user;
+  }
+
+  async updateLastLoginAt(
+    id: User['id'],
+    lastLoginAt = new Date(),
+    dbExecutor?: DbExecutor,
+  ) {
+    return this.usersRepository.update(
+      id,
+      { lastLoginAt },
+      undefined,
+      dbExecutor,
+    );
   }
 
   private toResponse(record: UserWithAvatar): UserResponse {

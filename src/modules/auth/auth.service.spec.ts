@@ -56,6 +56,7 @@ describe('AuthService', () => {
       selectById: vi.fn(),
       insert: vi.fn(),
       update: vi.fn(),
+      updateLastLoginAt: vi.fn(),
     };
     crypto = {
       generateToken: vi.fn().mockReturnValue('raw-token'),
@@ -161,11 +162,9 @@ describe('AuthService', () => {
         15 * 24 * 60 * 60,
         expect.any(String),
       );
-      expect(users.update).toHaveBeenCalledWith(user.id, {
-        lastLoginAt: expect.any(Date) as Date,
-      });
+      expect(users.updateLastLoginAt).toHaveBeenCalledWith(user.id);
       expect(audit.log).toHaveBeenCalledWith(
-        expect.objectContaining({ action: 'auth.otp.verify' }),
+        expect.objectContaining({ action: 'auth.signin' }),
       );
     });
 

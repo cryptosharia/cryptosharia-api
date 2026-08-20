@@ -212,7 +212,11 @@ export class AuthSuite extends Suite {
       describe('inactive user', () => {
         const setInactive = async () => {
           const user = await usersService().selectByEmail(email);
-          await usersService().update(user.id, { status: 'inactive' });
+          await usersService().update(
+            user.id,
+            { status: 'inactive' },
+            { id: user.id },
+          );
         };
 
         it('rejects OTP verification with 403', async () => {

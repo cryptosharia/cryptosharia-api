@@ -1,6 +1,9 @@
 import type { Context } from '#test/helpers/context.type';
+import { activityLogs } from '#src/modules/drizzle/drizzle.schema';
+import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
 import { Suite } from '#test/helpers/suite.base';
 import { createSession as createSessionFor } from '#test/helpers/create-session';
+import { and, eq } from 'drizzle-orm';
 
 export class UsersSuite extends Suite {
   constructor(ctx: Context) {
@@ -8,9 +11,10 @@ export class UsersSuite extends Suite {
   }
 
   register() {
+    const db = () => this.ctx.app.get(DrizzleService).db;
     const createSession = (
       email: string,
-      role: 'member' | 'super_admin' = 'member',
+      role: 'admin' | 'member' | 'super_admin' = 'member',
     ) => createSessionFor(this.ctx, email, role);
 
     describe('Users', () => {
@@ -97,7 +101,7 @@ export class UsersSuite extends Suite {
         });
       });
 
-      describe('updateProfile', () => {
+      describe('update', () => {
         it('allows a member to update their own profile', async () => {
           const member = await createSession('member@example.com');
           const { data, response } = await this.ctx.client.PATCH(
@@ -113,7 +117,76 @@ export class UsersSuite extends Suite {
           expect(data).toMatchObject({ name: 'Updated Member' });
         });
 
-        it('rejects an empty profile update', async () => {
+        it('rejects a member from changing status or role', async () => {
+          const member = await createSession('member@example.com');
+          const status = await this.ctx.client.PATCH('/users/{id}', {
+            params: { path: { id: member.user.id } },
+            body: { status: 'suspended' },
+            headers: { authorization: `Bearer ${member.accessToken}` },
+          });
+          expect(status.response.status).toBe(403);
+
+          const role = await this.ctx.client.PATCH('/users/{id}', {
+            params: { path: { id: member.user.id } },
+            body: { role: 'posts_manager' },
+            headers: { authorization: `Bearer ${member.accessToken}` },
+          });
+          expect(role.response.status).toBe(403);
+        });
+
+        it('rejects an admin from changing status or role', async () => {
+          const admin = await createSession('admin@example.com', 'admin');
+          const member = await createSession('member@example.com');
+          const status = await this.ctx.client.PATCH('/users/{id}', {
+            params: { path: { id: member.user.id } },
+            body: { status: 'suspended' },
+            headers: { authorization: `Bearer ${admin.accessToken}` },
+          });
+          expect(status.response.status).toBe(403);
+
+          const role = await this.ctx.client.PATCH('/users/{id}', {
+            params: { path: { id: member.user.id } },
+            body: { role: 'posts_manager' },
+            headers: { authorization: `Bearer ${admin.accessToken}` },
+          });
+          expect(role.response.status).toBe(403);
+        });
+
+        it('allows a super admin to change status and role', async () => {
+          const admin = await createSession('admin@example.com', 'super_admin');
+          const member = await createSession('member@example.com');
+          const { data, response } = await this.ctx.client.PATCH(
+            '/users/{id}',
+            {
+              params: { path: { id: member.user.id } },
+              body: { status: 'suspended', role: 'posts_manager' },
+              headers: { authorization: `Bearer ${admin.accessToken}` },
+            },
+          );
+          expect(response.status).toBe(200);
+          expect(data).toMatchObject({
+            status: 'suspended',
+            role: 'posts_manager',
+          });
+
+          const logs = await db()
+            .select({
+              action: activityLogs.action,
+              description: activityLogs.description,
+            })
+            .from(activityLogs)
+            .where(
+              and(
+                eq(activityLogs.userId, admin.user.id),
+                eq(activityLogs.subjectId, member.user.id),
+                eq(activityLogs.action, 'user.update'),
+              ),
+            );
+          expect(logs).toHaveLength(1);
+          expect(logs[0]?.description).toBe('Update user fields: status, role');
+        });
+
+        it('rejects an empty update', async () => {
           const member = await createSession('member@example.com');
           const { error, response } = await this.ctx.client.PATCH(
             '/users/{id}',
@@ -129,50 +202,6 @@ export class UsersSuite extends Suite {
             (error as { details?: { root?: string[] } } | undefined)?.details
               ?.root,
           ).toContain('Minimal satu field wajib diisi');
-        });
-      });
-
-      describe('updateStatus', () => {
-        it('allows a super admin to change account status', async () => {
-          const admin = await createSession('admin@example.com', 'super_admin');
-          const member = await createSession('member@example.com');
-          const { data, response } = await this.ctx.client.PUT(
-            '/users/{id}/status',
-            {
-              params: { path: { id: member.user.id } },
-              body: { status: 'suspended' },
-              headers: { authorization: `Bearer ${admin.accessToken}` },
-            },
-          );
-          expect(response.status).toBe(200);
-          expect(data).toMatchObject({ status: 'suspended' });
-        });
-
-        it('rejects status changes by a member', async () => {
-          const member = await createSession('member@example.com');
-          const { response } = await this.ctx.client.PUT('/users/{id}/status', {
-            params: { path: { id: member.user.id } },
-            body: { status: 'suspended' },
-            headers: { authorization: `Bearer ${member.accessToken}` },
-          });
-          expect(response.status).toBe(403);
-        });
-      });
-
-      describe('updateRole', () => {
-        it('allows a super admin to change account role', async () => {
-          const admin = await createSession('admin@example.com', 'super_admin');
-          const member = await createSession('member@example.com');
-          const { data, response } = await this.ctx.client.PUT(
-            '/users/{id}/role',
-            {
-              params: { path: { id: member.user.id } },
-              body: { role: 'posts_manager' },
-              headers: { authorization: `Bearer ${admin.accessToken}` },
-            },
-          );
-          expect(response.status).toBe(200);
-          expect(data).toMatchObject({ role: 'posts_manager' });
         });
       });
     });

@@ -30,7 +30,8 @@ export async function createSession(
   if (!verify.data) throw new Error('Verify response has no session');
 
   const user = await usersService.selectByEmail(email);
-  if (role !== 'member') await usersService.update(user.id, { role });
+  if (role !== 'member')
+    await usersService.update(user.id, { role }, { id: user.id });
 
   // The verify response signs the JWT with the original role, so a promoted
   // session must refresh to embed the new role before the token is used.

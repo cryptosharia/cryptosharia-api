@@ -1,14 +1,17 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Patch,
-  Put,
+  Req,
   Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
+import { getClientIp } from '#src/common/get-client-ip';
 import { Query } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 import { CurrentUser } from '#src/modules/security/current-user.decorator';
@@ -17,13 +20,7 @@ import { AuthenticationGuard } from '#src/modules/security/authentication.guard'
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
 import { UsersExceptionFilter } from './users.exception-filter';
-import {
-  ProfileUpdateBody,
-  RoleBody,
-  StatusBody,
-  UserParam,
-  UsersQuery,
-} from './users.schemas';
+import { UserParam, UserUpdateBody, UsersQuery } from './users.schemas';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -54,31 +51,28 @@ export class UsersController {
 
   @Patch(':id')
   @RequirePermissions({ permissions: ['users.update'], allowOwner: true })
-  async updateProfile(
+  async update(
     @Param(new ParseZodPipe(UserParam)) { id }: UserParam,
-    @Body(new ParseZodPipe(ProfileUpdateBody)) body: ProfileUpdateBody,
+    @Body(new ParseZodPipe(UserUpdateBody)) body: UserUpdateBody,
     @CurrentUser() currentUser: CurrentUser,
+    @Req() request: FastifyRequest,
   ) {
-    return this.usersService.update(id, body, currentUser.id);
-  }
+    if (
+      body.status !== undefined &&
+      !currentUser.permissions.includes('users.manage_status')
+    ) {
+      throw new ForbiddenException();
+    }
+    if (
+      body.role !== undefined &&
+      !currentUser.permissions.includes('users.manage_role')
+    ) {
+      throw new ForbiddenException();
+    }
 
-  @Put(':id/status')
-  @RequirePermissions('users.manage_status')
-  async updateStatus(
-    @Param(new ParseZodPipe(UserParam)) { id }: UserParam,
-    @Body(new ParseZodPipe(StatusBody)) body: StatusBody,
-    @CurrentUser() currentUser: CurrentUser,
-  ) {
-    return this.usersService.update(id, body, currentUser.id);
-  }
-
-  @Put(':id/role')
-  @RequirePermissions('users.manage_role')
-  async updateRole(
-    @Param(new ParseZodPipe(UserParam)) { id }: UserParam,
-    @Body(new ParseZodPipe(RoleBody)) body: RoleBody,
-    @CurrentUser() currentUser: CurrentUser,
-  ) {
-    return this.usersService.update(id, body, currentUser.id);
+    return this.usersService.update(id, body, {
+      id: currentUser.id,
+      ipAddress: getClientIp(request),
+    });
   }
 }

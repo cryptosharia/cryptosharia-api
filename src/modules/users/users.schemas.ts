@@ -65,15 +65,14 @@ export const UsersQuery = z.object({
 });
 export type UsersQuery = z.infer<typeof UsersQuery>;
 
-export const ProfileUpdateBody = User.pick({ name: true, avatarId: true })
+export const UserUpdateBody = User.pick({
+  name: true,
+  avatarId: true,
+  status: true,
+  role: true,
+})
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
     error: 'Minimal satu field wajib diisi',
   });
-export type ProfileUpdateBody = z.infer<typeof ProfileUpdateBody>;
-
-export const StatusBody = User.pick({ status: true });
-export type StatusBody = z.infer<typeof StatusBody>;
-
-export const RoleBody = User.pick({ role: true });
-export type RoleBody = z.infer<typeof RoleBody>;
+export type UserUpdateBody = z.infer<typeof UserUpdateBody>;

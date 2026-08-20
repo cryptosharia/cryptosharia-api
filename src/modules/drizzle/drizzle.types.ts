@@ -54,13 +54,12 @@ export const ActivityLog = createSelectSchema(activityLogs, {
   action: z
     .enum([
       'asset.upload',
+      'imgbb.upload',
       'auth.otp.request',
-      'auth.otp.verify',
       'auth.refresh',
       'auth.signin',
       'auth.signout',
       'auth.signout-all',
-      'imgbb.upload',
       'post.create',
       'post.delete',
       'post.update',
@@ -70,8 +69,6 @@ export const ActivityLog = createSelectSchema(activityLogs, {
       'cryptoasset.create',
       'cryptoasset.delete',
       'cryptoasset.update',
-      'user.role.update',
-      'user.status.update',
       'user.update',
     ])
     .meta({
