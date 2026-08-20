@@ -72,13 +72,12 @@ export const TagsQuery = z.object({
     .default('name')
     .meta({
       description: 'Urut berdasarkan',
-      example: 'name',
     }),
   sortDirection: z
     .enum(['asc', 'desc'])
     .optional()
     .default('asc')
-    .meta({ description: 'Arah pengurutan', example: 'asc' }),
+    .meta({ description: 'Arah pengurutan' }),
 });
 export type TagsQuery = z.infer<typeof TagsQuery>;
 
