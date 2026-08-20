@@ -45,7 +45,7 @@ export function generateOpenApiDocument() {
   return new OpenApiGeneratorV32(registry.definitions).generateDocument({
     openapi: '3.2.0',
     info: {
-      version: '1.1.0',
+      version: '2.0.0',
       title: 'Cryptosharia API',
       description:
         'Spesifikasi OpenAPI untuk Cryptosharia API.<br>Buka <a href="/openapi.json">openapi.json</a> atau <a href="/openapi.yaml">openapi.yaml</a> untuk spesifikasi mentah.',

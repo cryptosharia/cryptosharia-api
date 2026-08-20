@@ -1,4 +1,4 @@
-# CryptoSharia API v1.1.0 - Project Requirements Document
+# CryptoSharia API v2.0.0 - Project Requirements Document
 
 ## 1. Executive Summary
 
@@ -328,13 +328,13 @@ total-items: <number>
 
 ### 9.3 Role Mapping
 
-| Role             | Permissions                                                          |
-| ---------------- | -------------------------------------------------------------------- |
-| `super_admin`    | All permissions                                                      |
-| `admin`          | All permissions except `users.manage_role` and `users.manage_status` |
-| `posts_manager`  | `posts.manage`, `tags.manage`                                        |
-| `cryptoassets_manager` | `cryptoassets.manage`, `tags.manage`                                       |
-| `member`         | No admin permissions                                                 |
+| Role                   | Permissions                                                          |
+| ---------------------- | -------------------------------------------------------------------- |
+| `super_admin`          | All permissions                                                      |
+| `admin`                | All permissions except `users.manage_role` and `users.manage_status` |
+| `posts_manager`        | `posts.manage`, `tags.manage`                                        |
+| `cryptoassets_manager` | `cryptoassets.manage`, `tags.manage`                                 |
+| `member`               | No admin permissions                                                 |
 
 ## 10. Users Requirements
 
@@ -355,13 +355,13 @@ total-items: <number>
 
 ## 11. Posts Requirements
 
-| Method | Endpoint               | Requirement                 |
-| ------ | ---------------------- | --------------------------- |
-| GET    | `/posts`               | List posts                  |
-| POST   | `/posts`               | Create post                 |
-| GET    | `/posts/{identifier}`  | Get post by UUID or slug    |
-| PATCH  | `/posts/{id}`          | Update post by UUID         |
-| DELETE | `/posts/{id}`          | Delete post by UUID         |
+| Method | Endpoint              | Requirement              |
+| ------ | --------------------- | ------------------------ |
+| GET    | `/posts`              | List posts               |
+| POST   | `/posts`              | Create post              |
+| GET    | `/posts/{identifier}` | Get post by UUID or slug |
+| PATCH  | `/posts/{id}`         | Update post by UUID      |
+| DELETE | `/posts/{id}`         | Delete post by UUID      |
 
 - Post list supports filters for statuses, sections, types, slugs, exclude, tags, search, page, and limit.
 - Requests without a bearer user default to published posts only.
@@ -380,13 +380,13 @@ total-items: <number>
 
 ## 12. Cryptoassets Requirements
 
-| Method | Endpoint               | Requirement                                        |
-| ------ | ---------------------- | -------------------------------------------------- |
-| GET    | `/cryptoassets`              | List cryptoassets                                 |
-| POST   | `/cryptoassets`              | Create cryptoasset                                       |
-| GET    | `/cryptoassets/{identifier}` | Get cryptoasset by UUID or slug                          |
-| PATCH  | `/cryptoassets/{id}`         | Update cryptoasset by UUID                               |
-| DELETE | `/cryptoassets/{id}`         | Delete cryptoasset by UUID                               |
+| Method | Endpoint                     | Requirement                     |
+| ------ | ---------------------------- | ------------------------------- |
+| GET    | `/cryptoassets`              | List cryptoassets               |
+| POST   | `/cryptoassets`              | Create cryptoasset              |
+| GET    | `/cryptoassets/{identifier}` | Get cryptoasset by UUID or slug |
+| PATCH  | `/cryptoassets/{id}`         | Update cryptoasset by UUID      |
+| DELETE | `/cryptoassets/{id}`         | Delete cryptoasset by UUID      |
 
 - Token list supports filters for statuses, sharia statuses, slugs, exclude, tags, search, page, and limit.
 - Requests without a bearer user default to published/non-restricted statuses only.
@@ -408,13 +408,13 @@ total-items: <number>
 
 ## 13. Tags Requirements
 
-| Method | Endpoint     | Requirement                |
-| ------ | ------------ | -------------------------- |
-| GET    | `/tags`      | List tags                  |
-| POST   | `/tags`      | Create tag                 |
-| GET    | `/tags/{identifier}` | Get tag by UUID or slug    |
-| PATCH  | `/tags/{id}` | Update tag by UUID         |
-| DELETE | `/tags/{id}` | Delete tag by UUID         |
+| Method | Endpoint             | Requirement             |
+| ------ | -------------------- | ----------------------- |
+| GET    | `/tags`              | List tags               |
+| POST   | `/tags`              | Create tag              |
+| GET    | `/tags/{identifier}` | Get tag by UUID or slug |
+| PATCH  | `/tags/{id}`         | Update tag by UUID      |
+| DELETE | `/tags/{id}`         | Delete tag by UUID      |
 
 - Tag list supports search, slug filter, page, and limit.
 - `slugs` accepts one or more repeated query values, consistent with user role/status filters.
