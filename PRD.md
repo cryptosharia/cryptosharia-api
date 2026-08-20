@@ -2,11 +2,11 @@
 
 ## 1. Executive Summary
 
-CryptoSharia API v1.1.0 adalah perbaikan fondasi backend CryptoSharia agar siap digunakan di production dengan struktur yang lebih stabil, konsisten, terdokumentasi, dan mudah dikembangkan.
+CryptoSharia API v2.0.0 adalah perbaikan fondasi backend CryptoSharia agar siap digunakan di production dengan struktur yang lebih stabil, konsisten, terdokumentasi, dan mudah dikembangkan.
 
 Fokus project ini bukan menambah fitur produk besar baru, melainkan membangun ulang backend API berdasarkan requirements fitur yang sudah ada dengan standar arsitektur baru. API harus mempertahankan behavior domain yang sudah berjalan, sambil menyelaraskan contract response, dokumentasi OpenAPI, testing, rate limiting, storage, dan deployment agar siap untuk penggunaan production.
 
-Keberhasilan project diukur dari tersedianya seluruh endpoint v1.1.0, konsistensi API contract, dokumentasi OpenAPI yang lengkap, test coverage untuk behavior penting, rate limiting production-grade, dan deployment production menggunakan platform yang sudah ditentukan.
+Keberhasilan project diukur dari tersedianya seluruh endpoint v2.0.0, konsistensi API contract, dokumentasi OpenAPI yang lengkap, test coverage untuk behavior penting, rate limiting production-grade, dan deployment production menggunakan platform yang sudah ditentukan.
 
 ## 2. Goals
 
@@ -26,7 +26,7 @@ Keberhasilan project diukur dari tersedianya seluruh endpoint v1.1.0, konsistens
 
 ## 4. Product Scope
 
-CryptoSharia API v1.1.0 mencakup module berikut:
+CryptoSharia API v2.0.0 mencakup module berikut:
 
 - Authentication dan session management.
 - User management.
@@ -476,7 +476,7 @@ total-items: <number>
 - A missing object in Vercel Blob is treated as already deleted, allowing its
   database metadata to be removed safely.
 - Seed/demo routes and other development-only HTTP endpoints are outside the
-  v1.1.0 API scope.
+  v2.0.0 API scope.
 
 ## 17. Rate Limiting Requirements
 
