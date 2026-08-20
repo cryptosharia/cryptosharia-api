@@ -52,6 +52,89 @@ export class TagsSuite extends Suite {
           expect(data).toHaveLength(1);
           expect(data?.[0]?.slug).toBe('halal-crypto');
         });
+
+        it('filters by content sections and navigation flag', async () => {
+          const accessToken = await createSession(
+            'tag-nav@example.com',
+            'posts_manager',
+          );
+          const headers = { authorization: `Bearer ${accessToken}` };
+          await this.ctx.client.POST('/tags', {
+            body: {
+              name: 'Crypto News',
+              slug: 'crypto-news',
+              contentSection: 'news',
+              showInNavigation: true,
+              displayOrder: 1,
+            },
+            headers,
+          });
+          await this.ctx.client.POST('/tags', {
+            body: { name: 'Plain', slug: 'plain' },
+            headers,
+          });
+
+          const { data, response } = await this.ctx.client.GET('/tags', {
+            params: {
+              query: {
+                contentSections: ['news'],
+                showInNavigation: 'true',
+              },
+            },
+          });
+          expect(response.status).toBe(200);
+          expect(response.headers.get('total-items')).toBe('1');
+          expect(data?.[0]).toMatchObject({
+            slug: 'crypto-news',
+            contentSection: 'news',
+            showInNavigation: true,
+            displayOrder: 1,
+          });
+        });
+
+        it('sorts tags by name and slug in both directions', async () => {
+          const accessToken = await createSession(
+            'tag-sort@example.com',
+            'posts_manager',
+          );
+          const headers = { authorization: `Bearer ${accessToken}` };
+          await this.ctx.client.POST('/tags', {
+            body: { name: 'Zeta', slug: 'zeta' },
+            headers,
+          });
+          await this.ctx.client.POST('/tags', {
+            body: { name: 'Alpha', slug: 'alpha' },
+            headers,
+          });
+          await this.ctx.client.POST('/tags', {
+            body: { name: 'Beta', slug: 'beta' },
+            headers,
+          });
+
+          const ascending = await this.ctx.client.GET('/tags', {
+            params: {
+              query: { sortBy: 'name', sortDirection: 'asc' },
+            },
+          });
+          expect(ascending.response.status).toBe(200);
+          expect(ascending.data?.map((tag) => tag.slug)).toEqual([
+            'alpha',
+            'beta',
+            'zeta',
+          ]);
+
+          const descending = await this.ctx.client.GET('/tags', {
+            params: {
+              query: { sortBy: 'name', sortDirection: 'desc' },
+            },
+          });
+          expect(descending.response.status).toBe(200);
+          expect(descending.data?.map((tag) => tag.slug)).toEqual([
+            'zeta',
+            'beta',
+            'alpha',
+          ]);
+        });
       });
 
       describe('security', () => {
@@ -146,6 +229,42 @@ export class TagsSuite extends Suite {
             headers,
           });
           expect(deleted.response.status).toBe(204);
+        });
+
+        it('creates a public content category and rejects one without a content section', async () => {
+          const accessToken = await createSession(
+            'tag-category@example.com',
+            'posts_manager',
+          );
+          const headers = { authorization: `Bearer ${accessToken}` };
+
+          const created = await this.ctx.client.POST('/tags', {
+            body: {
+              name: 'Crypto News',
+              slug: 'crypto-news',
+              contentSection: 'news',
+              showInNavigation: true,
+              displayOrder: 1,
+            },
+            headers,
+          });
+          expect(created.response.status).toBe(201);
+          expect(created.data).toMatchObject({
+            contentSection: 'news',
+            showInNavigation: true,
+            displayOrder: 1,
+          });
+
+          const rejected = await this.ctx.client.POST('/tags', {
+            body: {
+              name: 'Invalid Category',
+              slug: 'invalid-category',
+              showInNavigation: true,
+            },
+            headers,
+          });
+          expect(rejected.response.status).toBe(422);
+          expect(rejected.error?.error).toBe('VALIDATION_FAILED');
         });
 
         it('returns not found for an unknown tag', async () => {

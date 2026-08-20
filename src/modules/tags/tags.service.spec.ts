@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { Tag } from '#src/modules/drizzle/drizzle.types';
 import { AuditService } from '#src/modules/audit/audit.service';
 import { TagsError } from './tags.error';
@@ -14,6 +15,9 @@ const tag: Tag = {
   name: 'Halal Crypto',
   slug: 'halal-crypto',
   description: null,
+  contentSection: null,
+  showInNavigation: false,
+  displayOrder: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   createdBy: user.id,
@@ -89,6 +93,29 @@ describe('TagsService', () => {
     expect(audit.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'tag.create', subjectId: tag.id }),
     );
+  });
+
+  it('rejects a navigation category without a content section on create', async () => {
+    await expect(
+      service.create(
+        { name: tag.name, slug: tag.slug, showInNavigation: true },
+        { id: user.id },
+      ),
+    ).rejects.toBeInstanceOf(z.ZodError);
+    expect(repository.insert).not.toHaveBeenCalled();
+  });
+
+  it('rejects a navigation category without a content section on update', async () => {
+    repository.selectByIdentifier.mockResolvedValue({
+      tag: { ...tag, showInNavigation: false, contentSection: null },
+      createdBy: user,
+      updatedBy: user,
+    });
+
+    await expect(
+      service.update(tag.id, { showInNavigation: true }, { id: user.id }),
+    ).rejects.toBeInstanceOf(z.ZodError);
+    expect(repository.update).not.toHaveBeenCalled();
   });
 
   it('propagates delete conflicts with usage details', async () => {

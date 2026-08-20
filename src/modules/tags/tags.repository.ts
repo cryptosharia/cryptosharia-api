@@ -3,6 +3,7 @@ import {
   and,
   asc,
   count,
+  desc,
   DrizzleQueryError,
   eq,
   ilike,
@@ -23,7 +24,14 @@ import {
 } from '#src/modules/drizzle/drizzle.schema';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
 import type { DbExecutor, Tag } from '#src/modules/drizzle/drizzle.types';
+import type { TagsQuery } from './tags.schemas';
 import { TagsError } from './tags.error';
+
+type TagListInput = TagsQuery;
+type TagFilterInput = Pick<
+  TagsQuery,
+  'search' | 'slugs' | 'contentSections' | 'showInNavigation'
+>;
 
 export type TagWithAudit = {
   tag: Tag;
@@ -69,14 +77,13 @@ export class TagsRepository {
     return result;
   }
 
-  async selectAll(input: {
-    page: number;
-    limit: number;
-    search?: string;
-    slugs?: string[];
-  }): Promise<TagWithAudit[]> {
+  async selectAll(input: TagListInput): Promise<TagWithAudit[]> {
     const filters: SQL[] = [];
     if (input.slugs?.length) filters.push(inArray(tags.slug, input.slugs));
+    if (input.contentSections?.length)
+      filters.push(inArray(tags.contentSection, input.contentSections));
+    if (input.showInNavigation !== undefined)
+      filters.push(eq(tags.showInNavigation, input.showInNavigation));
     if (input.search) {
       const pattern = `%${escapeLikePattern(input.search)}%`;
       filters.push(
@@ -88,17 +95,30 @@ export class TagsRepository {
       );
     }
     const where = filters.length ? and(...filters) : undefined;
+
+    const orderColumn = {
+      name: tags.name,
+      slug: tags.slug,
+      description: tags.description,
+      showInNavigation: tags.showInNavigation,
+    }[input.sortBy];
+    const order = input.sortDirection === 'desc' ? desc : asc;
+
     const rows = await this.selectWithAudit(this.drizzleService.db)
       .where(where)
-      .orderBy(asc(tags.name))
+      .orderBy(order(orderColumn), asc(tags.name))
       .limit(input.limit)
       .offset((input.page - 1) * input.limit);
     return rows;
   }
 
-  async count(input: { search?: string; slugs?: string[] }): Promise<number> {
+  async count(input: TagFilterInput): Promise<number> {
     const filters: SQL[] = [];
     if (input.slugs?.length) filters.push(inArray(tags.slug, input.slugs));
+    if (input.contentSections?.length)
+      filters.push(inArray(tags.contentSection, input.contentSections));
+    if (input.showInNavigation !== undefined)
+      filters.push(eq(tags.showInNavigation, input.showInNavigation));
     if (input.search) {
       const pattern = `%${escapeLikePattern(input.search)}%`;
       filters.push(
@@ -132,8 +152,17 @@ export class TagsRepository {
   }
 
   async insert(
-    data: Pick<Tag, 'name' | 'slug' | 'createdBy' | 'updatedBy'> & {
+    data: Pick<
+      Tag,
+      | 'name'
+      | 'slug'
+      | 'contentSection'
+      | 'showInNavigation'
+      | 'createdBy'
+      | 'updatedBy'
+    > & {
       description?: Tag['description'];
+      displayOrder?: Tag['displayOrder'];
     },
   ): Promise<Tag> {
     try {
@@ -149,7 +178,17 @@ export class TagsRepository {
 
   async update(
     id: Tag['id'],
-    data: Partial<Pick<Tag, 'name' | 'slug' | 'description' | 'updatedBy'>>,
+    data: Partial<
+      Pick<
+        Tag,
+        | 'name'
+        | 'slug'
+        | 'description'
+        | 'contentSection'
+        | 'showInNavigation'
+        | 'updatedBy'
+      > & { displayOrder?: Tag['displayOrder'] }
+    >,
   ): Promise<Tag> {
     try {
       const [tag] = await this.drizzleService.db

@@ -196,6 +196,16 @@ export const Tag = createSelectSchema(tags, {
         example: 'halal-crypto',
       }),
   description: (f) => f.meta({ description: 'Deskripsi tag' }),
+  contentSection: (f) =>
+    f.meta({
+      description: 'Seksi konten',
+    }),
+  showInNavigation: (f) => f.meta({ description: 'Tampil di navigasi' }),
+  displayOrder: (f) =>
+    f
+      .int('Harus bilangan bulat')
+      .nonnegative('Tidak boleh negatif')
+      .meta({ description: 'Urutan tampil' }),
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
   updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
   createdBy: (f) => f.meta({ description: 'User yang buat tag' }),

@@ -37,7 +37,8 @@ export const tagsRouteConfig: RouteConfig[] = [
     method: 'get',
     path: '/tags',
     summary: 'List tag',
-    description: 'Menampilkan tag dengan search, filter slug, dan pagination.',
+    description:
+      'Menampilkan tag dengan search, filter slug, seksi konten, status navigasi, sorting, dan pagination.',
     request: { query: TagsQuery },
     responses: createResponsesConfig({
       200: {
@@ -55,7 +56,7 @@ export const tagsRouteConfig: RouteConfig[] = [
     method: 'post',
     path: '/tags',
     summary: 'Buat tag',
-    description: 'Membuat tag baru dengan nama, slug, dan deskripsi opsional.',
+    description: 'Membuat tag baru dengan nama, slug, dan deskripsi.',
     security: protectedSecurity,
     request: {
       body: { content: { 'application/json': { schema: TagCreateBody } } },

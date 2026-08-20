@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { createValidationError } from '#src/common/create-validation-error';
 import { isUuid } from '#src/common/is-uuid';
 import type { Tag, User } from '#src/modules/drizzle/drizzle.types';
 import { AuditService } from '#src/modules/audit/audit.service';
-import type { TagResponse } from './tags.schemas';
+import type { TagsQuery, TagResponse } from './tags.schemas';
 import { TagsRepository, type TagWithAudit } from './tags.repository';
+
+type TagFilterInput = Pick<
+  TagsQuery,
+  'search' | 'slugs' | 'contentSections' | 'showInNavigation'
+>;
 
 @Injectable()
 export class TagsService {
@@ -12,18 +18,13 @@ export class TagsService {
     private readonly auditService: AuditService,
   ) {}
 
-  async selectAll(input: {
-    page: number;
-    limit: number;
-    search?: string;
-    slugs?: string[];
-  }) {
+  async selectAll(input: TagsQuery) {
     return (await this.tagsRepository.selectAll(input)).map((record) =>
       this.toResponse(record),
     );
   }
 
-  count(input: { search?: string; slugs?: string[] }) {
+  count(input: TagFilterInput) {
     return this.tagsRepository.count(input);
   }
 
@@ -62,9 +63,15 @@ export class TagsService {
   }
 
   async create(
-    data: Pick<Tag, 'name' | 'slug'> & { description?: Tag['description'] },
+    data: Pick<Tag, 'name' | 'slug'> & {
+      description?: Tag['description'];
+      contentSection?: Tag['contentSection'];
+      showInNavigation?: Tag['showInNavigation'];
+      displayOrder?: Tag['displayOrder'];
+    },
     actor: { id: User['id']; ipAddress?: string },
   ): Promise<TagResponse> {
+    this.assertNavigationCategory(data.showInNavigation, data.contentSection);
     const tag = await this.tagsRepository.insert({
       ...data,
       createdBy: actor.id,
@@ -83,9 +90,25 @@ export class TagsService {
 
   async update(
     id: Tag['id'],
-    data: Partial<Pick<Tag, 'name' | 'slug' | 'description'>>,
+    data: Partial<
+      Pick<
+        Tag,
+        'name' | 'slug' | 'description' | 'contentSection' | 'showInNavigation'
+      > & { displayOrder?: Tag['displayOrder'] }
+    >,
     actor: { id: User['id']; ipAddress?: string },
   ): Promise<TagResponse> {
+    const existing = await this.tagsRepository.selectByIdentifier(id);
+    const nextContentSection =
+      data.contentSection === undefined
+        ? existing.tag.contentSection
+        : data.contentSection;
+    const nextShowInNavigation =
+      data.showInNavigation === undefined
+        ? existing.tag.showInNavigation
+        : data.showInNavigation;
+    this.assertNavigationCategory(nextShowInNavigation, nextContentSection);
+
     const tag = await this.tagsRepository.update(id, {
       ...data,
       updatedBy: actor.id,
@@ -123,5 +146,18 @@ export class TagsService {
       createdBy: record.createdBy,
       updatedBy: record.updatedBy,
     };
+  }
+
+  private assertNavigationCategory(
+    showInNavigation: boolean | undefined,
+    contentSection: Tag['contentSection'],
+  ): void {
+    if (showInNavigation && !contentSection) {
+      throw createValidationError({
+        fields: {
+          contentSection: ['Wajib diisi untuk kategori navigasi publik'],
+        },
+      });
+    }
   }
 }
