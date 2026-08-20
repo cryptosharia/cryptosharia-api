@@ -7,23 +7,12 @@ import { TagsService } from '#src/modules/tags/tags.service';
 import { PostsError } from './posts.error';
 import { PostsRepository, type PostWithRelation } from './posts.repository';
 import type {
+  PostsQuery,
   PostCreateBody,
   PostDetail,
   PostListItem,
   PostUpdateBody,
 } from './posts.schemas';
-
-type PostQuery = {
-  page: number;
-  limit: number;
-  search?: string;
-  statuses?: Post['status'][];
-  sections?: Post['section'][];
-  types?: Post['type'][];
-  slugs?: string[];
-  exclude?: string[];
-  tags?: string[];
-};
 
 @Injectable()
 export class PostsService {
@@ -34,12 +23,12 @@ export class PostsService {
     private readonly auditService: AuditService,
   ) {}
 
-  async selectAll(input: PostQuery): Promise<PostListItem[]> {
+  async selectAll(input: PostsQuery): Promise<PostListItem[]> {
     const records = await this.postsRepository.selectAll(input);
     return records.map((record) => this.toListItem(record));
   }
 
-  count(input: PostQuery) {
+  count(input: PostsQuery) {
     return this.postsRepository.count(input);
   }
 

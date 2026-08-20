@@ -137,6 +137,64 @@ export class PostsSuite extends Suite {
           });
           expect(response.status).toBe(403);
         });
+
+        it('sorts posts by title in both directions before pagination', async () => {
+          const accessToken = await createSession(
+            'post-sort@example.com',
+            'posts_manager',
+          );
+          const headers = { authorization: `Bearer ${accessToken}` };
+          const asset = await createAsset();
+          await this.ctx.client.POST('/posts', {
+            body: postBody({
+              title: 'Zulu post',
+              slug: 'sorted-zulu-post',
+              coverImageId: asset.id,
+              status: 'published',
+            }),
+            headers,
+          });
+          await this.ctx.client.POST('/posts', {
+            body: postBody({
+              title: 'Alpha post',
+              slug: 'sorted-alpha-post',
+              coverImageId: asset.id,
+              status: 'published',
+            }),
+            headers,
+          });
+          await this.ctx.client.POST('/posts', {
+            body: postBody({
+              title: 'Middle post',
+              slug: 'sorted-middle-post',
+              coverImageId: asset.id,
+              status: 'published',
+            }),
+            headers,
+          });
+
+          const ascending = await this.ctx.client.GET('/posts', {
+            params: {
+              query: { sortBy: 'title', sortDirection: 'asc', limit: 2 },
+            },
+          });
+          expect(ascending.response.status).toBe(200);
+          expect(ascending.data?.map((post) => post.title)).toEqual([
+            'Alpha post',
+            'Middle post',
+          ]);
+
+          const descending = await this.ctx.client.GET('/posts', {
+            params: {
+              query: { sortBy: 'title', sortDirection: 'desc', limit: 2 },
+            },
+          });
+          expect(descending.response.status).toBe(200);
+          expect(descending.data?.map((post) => post.title)).toEqual([
+            'Zulu post',
+            'Middle post',
+          ]);
+        });
       });
 
       describe('security', () => {

@@ -111,6 +111,27 @@ export const PostsQuery = z.object({
       description: 'Filter berdasarkan slug tag',
     }),
   ),
+  sortBy: z
+    .enum([
+      'title',
+      'status',
+      'section',
+      'tags',
+      'createdAt',
+      'publishedAt',
+      'publishedAtOrCreatedAt',
+    ])
+    .optional()
+    .default('publishedAtOrCreatedAt')
+    .meta({
+      description:
+        'Urut berdasarkan.<br>`publishedAtOrCreatedAt` = `publishedAt` jika ada, jika tidak maka `createdAt`.',
+    }),
+  sortDirection: z
+    .enum(['asc', 'desc'])
+    .optional()
+    .default('desc')
+    .meta({ description: 'Arah pengurutan' }),
 });
 export type PostsQuery = z.infer<typeof PostsQuery>;
 

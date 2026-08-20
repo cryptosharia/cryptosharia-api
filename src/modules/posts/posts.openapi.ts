@@ -38,7 +38,7 @@ export const postsRouteConfig: RouteConfig[] = [
     path: '/posts',
     summary: 'List post',
     description:
-      'Menampilkan post dengan filter status, kategori, tipe, slug, tag, dan pagination. Akun tanpa izin akses hanya post berstatus `published` yang ditampilkan.',
+      'Menampilkan post dengan filter status, kategori, tipe, slug, tag, sorting, dan pagination. Akun tanpa izin akses hanya post berstatus `published` yang ditampilkan.',
     security: publicReadSecurity,
     request: { query: PostsQuery },
     responses: createResponsesConfig({

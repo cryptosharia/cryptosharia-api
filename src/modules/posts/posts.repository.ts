@@ -33,6 +33,7 @@ import type {
   Post,
   Tag,
 } from '#src/modules/drizzle/drizzle.types';
+import type { PostsQuery } from './posts.schemas';
 import { PostsError } from './posts.error';
 
 export type PostWithRelation = {
@@ -45,18 +46,6 @@ export type PostWithRelation = {
 
 const createdByUser = alias(users, 'post_created_by');
 const updatedByUser = alias(users, 'post_updated_by');
-
-type PostListInput = {
-  page: number;
-  limit: number;
-  search?: string;
-  statuses?: Post['status'][];
-  sections?: Post['section'][];
-  types?: Post['type'][];
-  slugs?: string[];
-  exclude?: string[];
-  tags?: string[];
-};
 
 @Injectable()
 export class PostsRepository {
@@ -84,7 +73,7 @@ export class PostsRepository {
       .leftJoin(updatedByUser, eq(posts.updatedBy, updatedByUser.id));
   }
 
-  private buildFilters(input: PostListInput): SQL | undefined {
+  private buildFilters(input: PostsQuery): SQL | undefined {
     const filters: SQL[] = [];
     if (input.statuses?.length)
       filters.push(inArray(posts.status, input.statuses));
@@ -153,17 +142,47 @@ export class PostsRepository {
     }
   }
 
-  async selectAll(input: PostListInput): Promise<PostWithRelation[]> {
+  private buildOrderBy(input: Pick<PostsQuery, 'sortBy' | 'sortDirection'>) {
+    const { sortBy, sortDirection } = input;
+    const order = sortDirection === 'asc' ? asc : desc;
+    const tieBreaker = desc(posts.createdAt);
+
+    switch (sortBy) {
+      case 'publishedAtOrCreatedAt':
+        return [order(sql`COALESCE(${posts.publishedAt}, ${posts.createdAt})`)];
+      case 'publishedAt':
+        return [
+          sortDirection === 'asc'
+            ? sql`${posts.publishedAt} ASC NULLS LAST`
+            : sql`${posts.publishedAt} DESC NULLS LAST`,
+          tieBreaker,
+        ];
+      case 'tags': {
+        const firstTagName = sql<string>`COALESCE((SELECT MIN(${tags.name}) FROM ${postTags} INNER JOIN ${tags} ON ${postTags.tagId} = ${tags.id} WHERE ${postTags.postId} = ${posts.id}), '')`;
+        return [order(firstTagName), tieBreaker];
+      }
+      case 'title':
+        return [order(posts.title), tieBreaker];
+      case 'status':
+        return [order(posts.status), tieBreaker];
+      case 'section':
+        return [order(posts.section), tieBreaker];
+      case 'createdAt':
+        return [order(posts.createdAt), tieBreaker];
+    }
+  }
+
+  async selectAll(input: PostsQuery): Promise<PostWithRelation[]> {
     const where = this.buildFilters(input);
     const rows = await this.selectBase(this.drizzleService.db)
       .where(where)
-      .orderBy(desc(sql`COALESCE(${posts.publishedAt}, ${posts.createdAt})`))
+      .orderBy(...this.buildOrderBy(input))
       .limit(input.limit)
       .offset((input.page - 1) * input.limit);
     return this.withRelations(rows);
   }
 
-  async count(input: PostListInput): Promise<number> {
+  async count(input: PostsQuery): Promise<number> {
     const where = this.buildFilters(input);
     const [result] = await this.drizzleService.db
       .select({ value: count() })
