@@ -65,6 +65,13 @@ export const userRoleEnum = pgEnum('user_role', [
   'cryptoassets_manager',
   'member',
 ]);
+
+/** Content section a tag can be surfaced in. */
+export const tagContentSectionEnum = pgEnum('tag_content_section', [
+  'news',
+  'education',
+]);
+
 /** Centralized user identity and account table. */
 export const users = pgTable('users', {
   id: primaryKeyUuid(),
@@ -152,6 +159,9 @@ export const tags = pgTable('tags', {
   name: varchar('name', { length: 50 }).notNull().unique(),
   slug: varchar('slug', { length: 50 }).notNull().unique(),
   description: text('description'),
+  contentSection: tagContentSectionEnum('content_section'),
+  showInNavigation: boolean('show_in_navigation').notNull().default(false),
+  displayOrder: integer('display_order'),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
   createdBy: uuid('created_by').references(() => users.id),

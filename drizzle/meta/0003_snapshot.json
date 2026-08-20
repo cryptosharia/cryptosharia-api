@@ -1,6 +1,6 @@
 {
-  "id": "ae6dd8e3-cbc7-4592-b09d-5f06cfb9c389",
-  "prevId": "b9395daa-8ece-4c6e-9597-cf3376ed0c80",
+  "id": "6c2212a0-e868-421f-9915-792093edc612",
+  "prevId": "eb80fcf3-52ea-43e6-b6b7-1255ebc55cca",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -179,8 +179,74 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.auth_tokens": {
-      "name": "auth_tokens",
+    "public.cryptoasset_tags": {
+      "name": "cryptoasset_tags",
+      "schema": "",
+      "columns": {
+        "cryptoasset_id": {
+          "name": "cryptoasset_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tag_id": {
+          "name": "tag_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_order": {
+          "name": "display_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cryptoasset_tags_cryptoasset_id_cryptoassets_id_fk": {
+          "name": "cryptoasset_tags_cryptoasset_id_cryptoassets_id_fk",
+          "tableFrom": "cryptoasset_tags",
+          "tableTo": "cryptoassets",
+          "columnsFrom": [
+            "cryptoasset_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "cryptoasset_tags_tag_id_tags_id_fk": {
+          "name": "cryptoasset_tags_tag_id_tags_id_fk",
+          "tableFrom": "cryptoasset_tags",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cryptoasset_tags_cryptoasset_id_tag_id_pk": {
+          "name": "cryptoasset_tags_cryptoasset_id_tag_id_pk",
+          "columns": [
+            "cryptoasset_id",
+            "tag_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cryptoassets": {
+      "name": "cryptoassets",
       "schema": "",
       "columns": {
         "id": {
@@ -190,33 +256,77 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
+        "slug": {
+          "name": "slug",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
-        "type": {
-          "name": "type",
-          "type": "auth_token_type",
+        "rank": {
+          "name": "rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ticker": {
+          "name": "ticker",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sharia_status": {
+          "name": "sharia_status",
+          "type": "sharia_status",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
-        "token_hash": {
-          "name": "token_hash",
-          "type": "varchar(255)",
+        "status": {
+          "name": "status",
+          "type": "content_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "excerpt": {
+          "name": "excerpt",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
+        "tradingview_symbol": {
+          "name": "tradingview_symbol",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "website": {
+          "name": "website",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "revoked_at": {
-          "name": "revoked_at",
+        "logo_id": {
+          "name": "logo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published_at": {
+          "name": "published_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
@@ -227,31 +337,82 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "auth_tokens_user_id_users_id_fk": {
-          "name": "auth_tokens_user_id_users_id_fk",
-          "tableFrom": "auth_tokens",
-          "tableTo": "users",
+        "cryptoassets_logo_id_assets_id_fk": {
+          "name": "cryptoassets_logo_id_assets_id_fk",
+          "tableFrom": "cryptoassets",
+          "tableTo": "assets",
           "columnsFrom": [
-            "user_id"
+            "logo_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cryptoassets_created_by_users_id_fk": {
+          "name": "cryptoassets_created_by_users_id_fk",
+          "tableFrom": "cryptoassets",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cryptoassets_updated_by_users_id_fk": {
+          "name": "cryptoassets_updated_by_users_id_fk",
+          "tableFrom": "cryptoassets",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "auth_tokens_token_hash_unique": {
-          "name": "auth_tokens_token_hash_unique",
+        "cryptoassets_slug_unique": {
+          "name": "cryptoassets_slug_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "token_hash"
+            "slug"
+          ]
+        },
+        "cryptoassets_ticker_unique": {
+          "name": "cryptoassets_ticker_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ticker"
           ]
         }
       },
@@ -649,79 +810,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.refresh_tokens": {
-      "name": "refresh_tokens",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "token": {
-          "name": "token",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "revoked_at": {
-          "name": "revoked_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "refresh_tokens_user_id_users_id_fk": {
-          "name": "refresh_tokens_user_id_users_id_fk",
-          "tableFrom": "refresh_tokens",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "refresh_tokens_token_unique": {
-          "name": "refresh_tokens_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.tags": {
       "name": "tags",
       "schema": "",
@@ -847,247 +935,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.token_tags": {
-      "name": "token_tags",
-      "schema": "",
-      "columns": {
-        "token_id": {
-          "name": "token_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tag_id": {
-          "name": "tag_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "display_order": {
-          "name": "display_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "token_tags_token_id_tokens_id_fk": {
-          "name": "token_tags_token_id_tokens_id_fk",
-          "tableFrom": "token_tags",
-          "tableTo": "tokens",
-          "columnsFrom": [
-            "token_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "token_tags_tag_id_tags_id_fk": {
-          "name": "token_tags_tag_id_tags_id_fk",
-          "tableFrom": "token_tags",
-          "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "token_tags_token_id_tag_id_pk": {
-          "name": "token_tags_token_id_tag_id_pk",
-          "columns": [
-            "token_id",
-            "tag_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.tokens": {
-      "name": "tokens",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "slug": {
-          "name": "slug",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rank": {
-          "name": "rank",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ticker": {
-          "name": "ticker",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sharia_status": {
-          "name": "sharia_status",
-          "type": "sharia_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "content_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'draft'"
-        },
-        "excerpt": {
-          "name": "excerpt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tradingview_symbol": {
-          "name": "tradingview_symbol",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "website": {
-          "name": "website",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "logo_id": {
-          "name": "logo_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "published_at": {
-          "name": "published_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_by": {
-          "name": "created_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_by": {
-          "name": "updated_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "tokens_logo_id_assets_id_fk": {
-          "name": "tokens_logo_id_assets_id_fk",
-          "tableFrom": "tokens",
-          "tableTo": "assets",
-          "columnsFrom": [
-            "logo_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "tokens_created_by_users_id_fk": {
-          "name": "tokens_created_by_users_id_fk",
-          "tableFrom": "tokens",
-          "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "tokens_updated_by_users_id_fk": {
-          "name": "tokens_updated_by_users_id_fk",
-          "tableFrom": "tokens",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updated_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "tokens_slug_unique": {
-          "name": "tokens_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
-        },
-        "tokens_ticker_unique": {
-          "name": "tokens_ticker_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "ticker"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -1111,20 +958,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "hashed_password": {
-          "name": "hashed_password",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "password_hashing_algorithm": {
-          "name": "password_hashing_algorithm",
-          "type": "hashing_algorithm",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'argon2id'"
-        },
         "avatar_id": {
           "name": "avatar_id",
           "type": "uuid",
@@ -1147,24 +980,11 @@
           "notNull": true,
           "default": "'active'"
         },
-        "two_factor_secret": {
-          "name": "two_factor_secret",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "last_login_at": {
           "name": "last_login_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "is_email_verified": {
-          "name": "is_email_verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -1239,14 +1059,6 @@
         "vercel_blob"
       ]
     },
-    "public.auth_token_type": {
-      "name": "auth_token_type",
-      "schema": "public",
-      "values": [
-        "email_verification",
-        "password_reset"
-      ]
-    },
     "public.content_status": {
       "name": "content_status",
       "schema": "public",
@@ -1254,13 +1066,6 @@
         "draft",
         "published",
         "archived"
-      ]
-    },
-    "public.hashing_algorithm": {
-      "name": "hashing_algorithm",
-      "schema": "public",
-      "values": [
-        "argon2id"
       ]
     },
     "public.post_section": {
@@ -1292,14 +1097,6 @@
         "syubhat"
       ]
     },
-    "public.tag_content_section": {
-      "name": "tag_content_section",
-      "schema": "public",
-      "values": [
-        "news",
-        "education"
-      ]
-    },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
@@ -1307,7 +1104,7 @@
         "super_admin",
         "admin",
         "posts_manager",
-        "tokens_manager",
+        "cryptoassets_manager",
         "member"
       ]
     },
@@ -1319,6 +1116,14 @@
         "inactive",
         "suspended",
         "banned"
+      ]
+    },
+    "public.tag_content_section": {
+      "name": "tag_content_section",
+      "schema": "public",
+      "values": [
+        "news",
+        "education"
       ]
     }
   },
