@@ -20,9 +20,6 @@ CREATE TABLE "team_members" (
 	CONSTRAINT "team_members_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
-ALTER TABLE "team_members" ADD CONSTRAINT "team_members_image_id_assets_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."assets"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "team_members" ADD CONSTRAINT "team_members_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "team_members" ADD CONSTRAINT "team_members_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 INSERT INTO "team_members" ("slug", "name", "credentials", "role", "image_url", "description", "focus", "contribution", "joined", "expertise", "order_index", "is_active")
 VALUES
 ('devin', 'Ust. Devin Halim Wijaya', 'B.B.A., M.Sc.', 'Board of Commissioners', '/team/board-devin-halim-wijaya.webp', 'Mendukung penguatan perspektif syariah CryptoSharia melalui kajian fikih muamalah, fatwa aset kripto, dan screening aset digital.', 'Fikih Muamalah & Screening Syariah', 'Pemateri MasterClass CryptoSharia 2026 pada sesi Fikih Muamalah & Fatwa Crypto serta Screening Koin & Bedah Kasus.', NULL, '[{"title":"Fikih Muamalah","description":"Prinsip transaksi dalam Islam"},{"title":"Fatwa Crypto","description":"Kajian hukum aset digital"},{"title":"Screening Syariah","description":"Penilaian aset dari aspek syariah"},{"title":"Aset Digital","description":"Kajian produk dan transaksi crypto"}]'::jsonb, 0, true),
