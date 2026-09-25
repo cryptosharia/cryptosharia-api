@@ -12,6 +12,7 @@ import {
   tags,
   cryptoassetTags,
   cryptoassets,
+  teamMembers,
   users,
 } from './drizzle.schema';
 
@@ -348,3 +349,46 @@ export const Message = createSelectSchema(messages, {
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
 });
 export type Message = z.infer<typeof Message>;
+
+export const TeamExpertiseItem = z.object({
+  title: z.string().min(1, 'Judul keahlian tidak boleh kosong'),
+  description: z.string().min(1, 'Deskripsi keahlian tidak boleh kosong'),
+});
+export type TeamExpertiseItem = z.infer<typeof TeamExpertiseItem>;
+
+export const TeamMember = createSelectSchema(teamMembers, {
+  id: (f) => f.meta({ description: 'ID anggota tim' }),
+  slug: (f) => f.nullable().meta({ description: 'Slug anggota tim' }),
+  name: (f) =>
+    f
+      .trim()
+      .min(2, 'Minimal 2 karakter')
+      .max(150, 'Maksimal 150 karakter')
+      .meta({ description: 'Nama anggota tim', example: 'Sholahuddin Al Ayyubi' }),
+  credentials: (f) =>
+    f.nullable().meta({ description: 'Gelar/kredensial', example: 'B.B.A., M.Sc.' }),
+  role: (f) =>
+    f
+      .trim()
+      .min(2, 'Minimal 2 karakter')
+      .max(150, 'Maksimal 150 karakter')
+      .meta({ description: 'Jabatan', example: 'Chief Executive Officer' }),
+  imageId: (f) => f.nullable().meta({ description: 'ID foto profil' }),
+  imageUrl: (f) => f.nullable().meta({ description: 'URL foto profil' }),
+  description: (f) => f.meta({ description: 'Deskripsi profil/peran' }),
+  focus: (f) => f.meta({ description: 'Fokus bidang', example: 'Strategi Perusahaan & Partnership' }),
+  contribution: (f) => f.nullable().meta({ description: 'Kontribusi' }),
+  joined: (f) => f.nullable().meta({ description: 'Waktu bergabung', example: '25 Mei 2025' }),
+  expertise: () =>
+    z
+      .array(TeamExpertiseItem)
+      .default([])
+      .meta({ description: 'Daftar area keahlian' }),
+  orderIndex: (f) => f.meta({ description: 'Urutan tampilan' }),
+  isActive: (f) => f.meta({ description: 'Status aktif' }),
+  createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
+  updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
+  createdBy: (f) => f.meta({ description: 'User pembuat' }),
+  updatedBy: (f) => f.meta({ description: 'User pengubah' }),
+});
+export type TeamMember = z.infer<typeof TeamMember>;

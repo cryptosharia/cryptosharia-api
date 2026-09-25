@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -226,4 +227,29 @@ export const imgbbImages = pgTable('imgbb_images', {
   deleteUrl: text('delete_url').notNull(),
   createdAt: createdAt(),
   createdBy: uuid('created_by').references(() => users.id),
+});
+
+/** Team members showcased in About Us / Pengurus. */
+export const teamMembers = pgTable('team_members', {
+  id: primaryKeyUuid(),
+  slug: varchar('slug', { length: 100 }).unique(),
+  name: varchar('name', { length: 150 }).notNull(),
+  credentials: varchar('credentials', { length: 150 }),
+  role: varchar('role', { length: 150 }).notNull(),
+  imageId: uuid('image_id').references((): AnyPgColumn => assets.id),
+  imageUrl: text('image_url'),
+  description: text('description').notNull(),
+  focus: varchar('focus', { length: 255 }).notNull(),
+  contribution: text('contribution'),
+  joined: varchar('joined', { length: 100 }),
+  expertise: jsonb('expertise')
+    .$type<Array<{ title: string; description: string }>>()
+    .notNull()
+    .default([]),
+  orderIndex: integer('order_index').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+  createdBy: uuid('created_by').references((): AnyPgColumn => users.id),
+  updatedBy: uuid('updated_by').references((): AnyPgColumn => users.id),
 });

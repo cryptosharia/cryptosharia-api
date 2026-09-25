@@ -26,6 +26,7 @@ import { TagsModule } from './modules/tags/tags.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CryptoassetsModule } from './modules/cryptoassets/cryptoassets.module';
+import { TeamMembersModule } from './modules/team-members/team-members.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { CryptoassetsModule } from './modules/cryptoassets/cryptoassets.module';
     MessagesModule,
     PostsModule,
     CryptoassetsModule,
+    TeamMembersModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },
