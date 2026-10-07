@@ -13,7 +13,7 @@ export class CryptoassetsSuite extends Suite {
       this.ctx.app.get<TestMarketDataService>(MarketDataService);
     const createSession = (
       email: string,
-      role: 'member' | 'cryptoassets_manager' = 'member',
+      role: 'member' | 'cryptoassets_manager' | 'posts_manager' = 'member',
     ) =>
       createSessionFor(this.ctx, email, role).then(
         ({ accessToken }) => accessToken,
@@ -45,6 +45,8 @@ export class CryptoassetsSuite extends Suite {
       shariaStatus?: 'halal' | 'haram' | 'syubhat';
       status?: 'draft' | 'published' | 'archived';
       content?: string;
+      excerpt?: string;
+      website?: string;
       tags?: string[];
       tradingviewSymbol?: string | null;
     }) => ({
@@ -53,9 +55,9 @@ export class CryptoassetsSuite extends Suite {
       ticker: input.ticker,
       shariaStatus: input.shariaStatus ?? 'halal',
       status: input.status ?? 'draft',
-      excerpt: 'Excerpt',
+      excerpt: input.excerpt ?? 'Excerpt',
       tradingviewSymbol: input.tradingviewSymbol ?? null,
-      website: 'https://example.com',
+      website: input.website ?? 'https://example.com',
       logoId: input.logoId,
       content: input.content ?? 'Content',
       tags: input.tags ?? [],
@@ -300,9 +302,83 @@ export class CryptoassetsSuite extends Suite {
           });
           expect(response.status).toBe(403);
         });
+
+        it('does not grant token creation to posts_manager', async () => {
+          const accessToken = await createSession(
+            'cryptoasset-posts-manager@example.com',
+            'posts_manager',
+          );
+          const asset = await createAsset();
+          const { response } = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
+              slug: 'posts-manager-forbidden',
+              name: 'Posts Manager Forbidden',
+              ticker: 'PMF',
+              logoId: asset.id,
+            }),
+            headers: { authorization: `Bearer ${accessToken}` },
+          });
+
+          expect(response.status).toBe(403);
+        });
       });
 
       describe('create', () => {
+        it('rejects missing required fields', async () => {
+          const accessToken = await createSession(
+            'cryptoasset-create-missing-fields@example.com',
+            'cryptoassets_manager',
+          );
+          const { error, response } = await this.ctx.client.POST(
+            '/cryptoassets',
+            {
+              body: {} as never,
+              headers: { authorization: `Bearer ${accessToken}` },
+            },
+          );
+
+          expect(response.status).toBe(422);
+          expect(error?.error).toBe('VALIDATION_FAILED');
+        });
+
+        it('rejects an invalid Sharia status', async () => {
+          const accessToken = await createSession(
+            'cryptoasset-create-invalid-enum@example.com',
+            'cryptoassets_manager',
+          );
+          const { error, response } = await this.ctx.client.POST(
+            '/cryptoassets',
+            {
+              body: {
+                slug: 'invalid-sharia-status',
+                name: 'Invalid Sharia Status',
+                ticker: 'INVSH',
+                shariaStatus: 'unknown',
+                status: 'draft',
+                excerpt: 'Excerpt',
+                tradingviewSymbol: null,
+                website: 'https://example.com',
+                logoId: crypto.randomUUID(),
+                content: 'Content',
+                tags: [],
+              } as never,
+              headers: { authorization: `Bearer ${accessToken}` },
+            },
+          );
+
+          expect(response.status).toBe(422);
+          expect(error?.error).toBe('VALIDATION_FAILED');
+          expect(
+            (
+              error as
+                | {
+                    details?: { fields?: Record<string, string[]> };
+                  }
+                | undefined
+            )?.details?.fields?.shariaStatus,
+          ).toBeDefined();
+        });
+
         it('creates a cryptoasset with tags and normalized logo', async () => {
           const accessToken = await createSession(
             'cryptoasset-create@example.com',
@@ -310,30 +386,69 @@ export class CryptoassetsSuite extends Suite {
           );
           const headers = { authorization: `Bearer ${accessToken}` };
           const asset = await createAsset('test/cryptoasset-create.png');
-          const tag = await createTag('DeFi', 'defi');
+          const tag = await createTag('Bitcoin', 'bitcoin');
 
           const { data, response } = await this.ctx.client.POST(
             '/cryptoassets',
             {
               body: cryptoassetBody({
-                slug: 'bitcoin',
+                slug: 'bitcoin-e2e',
                 name: 'Bitcoin',
                 ticker: 'BTC',
                 logoId: asset.id,
-                status: 'published',
+                excerpt: 'Bitcoin network token',
+                content: 'Bitcoin token detail content',
+                website: 'https://bitcoin.org/bitcoin.pdf',
+                tradingviewSymbol: 'BINANCE:BTCUSDT',
+                shariaStatus: 'halal',
+                status: 'draft',
                 tags: [tag.slug],
               }),
               headers,
             },
           );
           expect(response.status).toBe(201);
-          expect(data?.slug).toBe('bitcoin');
-          expect(data?.status).toBe('published');
-          expect(data?.publishedAt).not.toBeNull();
+          expect(data?.slug).toBe('bitcoin-e2e');
+          expect(data?.status).toBe('draft');
+          expect(data?.shariaStatus).toBe('halal');
+          expect(data?.excerpt).toBe('Bitcoin network token');
+          expect(data?.content).toBe('Bitcoin token detail content');
+          expect(data?.website).toBe('https://bitcoin.org/bitcoin.pdf');
+          expect(data?.tradingviewSymbol).toBe('BINANCE:BTCUSDT');
           expect(data?.logo).toMatchObject({ id: asset.id });
           expect(data?.tags).toEqual([
-            expect.objectContaining({ slug: 'defi' }),
+            expect.objectContaining({ name: 'Bitcoin', slug: 'bitcoin' }),
           ]);
+
+          const readback = await this.ctx.client.GET(
+            '/cryptoassets/{identifier}',
+            {
+              params: { path: { identifier: 'bitcoin-e2e' } },
+              headers,
+            },
+          );
+          expect(readback.response.status).toBe(200);
+          expect(readback.data).toMatchObject({
+            id: data?.id,
+            slug: 'bitcoin-e2e',
+            status: 'draft',
+            shariaStatus: 'halal',
+            excerpt: 'Bitcoin network token',
+            content: 'Bitcoin token detail content',
+            website: 'https://bitcoin.org/bitcoin.pdf',
+            tradingviewSymbol: 'BINANCE:BTCUSDT',
+            logo: { id: asset.id },
+            tags: [expect.objectContaining({ slug: 'bitcoin' })],
+          });
+
+          const listed = await this.ctx.client.GET('/cryptoassets', {
+            params: { query: { statuses: ['draft'] } },
+            headers,
+          });
+          expect(listed.response.status).toBe(200);
+          expect(
+            listed.data?.some((cryptoasset) => cryptoasset.id === data?.id),
+          ).toBe(true);
         });
 
         it('returns validation details for an unknown logo', async () => {
