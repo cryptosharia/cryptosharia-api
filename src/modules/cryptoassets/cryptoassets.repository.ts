@@ -4,7 +4,6 @@ import {
   asc,
   count,
   desc,
-  DrizzleQueryError,
   eq,
   ilike,
   inArray,
@@ -14,7 +13,6 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
-import { DatabaseError } from 'pg';
 import { isUuid } from '#src/common/is-uuid';
 import { escapeLikePattern } from '#src/common/escape-like-pattern';
 import { createValidationError } from '#src/common/create-validation-error';
@@ -46,6 +44,37 @@ export type CryptoassetWithRelation = {
 
 const createdByUser = alias(users, 'cryptoasset_created_by');
 const updatedByUser = alias(users, 'cryptoasset_updated_by');
+
+type DatabaseErrorDetails = { code: string; constraint?: string };
+
+function getDatabaseErrorDetails(
+  error: unknown,
+): DatabaseErrorDetails | undefined {
+  const seen = new Set<object>();
+  let current: unknown = error;
+
+  while (
+    typeof current === 'object' &&
+    current !== null &&
+    !seen.has(current)
+  ) {
+    seen.add(current);
+
+    if ('code' in current && typeof current.code === 'string') {
+      return {
+        code: current.code,
+        constraint:
+          'constraint' in current && typeof current.constraint === 'string'
+            ? current.constraint
+            : undefined,
+      };
+    }
+
+    current = 'cause' in current ? current.cause : undefined;
+  }
+
+  return undefined;
+}
 
 @Injectable()
 export class CryptoassetsRepository {
@@ -271,25 +300,22 @@ export class CryptoassetsRepository {
   }
 
   private mapWriteError(error: unknown): never {
+    const databaseError = getDatabaseErrorDetails(error);
+
     if (
-      error instanceof DrizzleQueryError &&
-      error.cause instanceof DatabaseError
+      databaseError?.code === '23503' &&
+      databaseError.constraint?.includes('logo_id')
     ) {
-      if (
-        error.cause.code === '23503' &&
-        error.cause.constraint?.includes('logo_id')
-      ) {
-        throw createValidationError({
-          fields: { logoId: ['Tidak ditemukan'] },
-        });
+      throw createValidationError({
+        fields: { logoId: ['Tidak ditemukan'] },
+      });
+    }
+    if (databaseError?.code === '23505') {
+      if (databaseError.constraint === 'cryptoassets_slug_unique') {
+        throw new CryptoassetsError('SLUG_CONFLICT');
       }
-      if (error.cause.code === '23505') {
-        if (error.cause.constraint === 'cryptoassets_slug_unique') {
-          throw new CryptoassetsError('SLUG_CONFLICT');
-        }
-        if (error.cause.constraint === 'cryptoassets_ticker_unique') {
-          throw new CryptoassetsError('TICKER_CONFLICT');
-        }
+      if (databaseError.constraint === 'cryptoassets_ticker_unique') {
+        throw new CryptoassetsError('TICKER_CONFLICT');
       }
     }
     throw error;
