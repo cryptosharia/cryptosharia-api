@@ -185,7 +185,7 @@ export class CryptoassetsSuite extends Suite {
           });
         });
 
-        it('returns 502 when market data fails while quotes are requested', async () => {
+        it('degrades gracefully with quote: null when market data fails while quotes are requested', async () => {
           const accessToken = await createSession(
             'cryptoasset-quote-fail@example.com',
             'cryptoassets_manager',
@@ -206,14 +206,15 @@ export class CryptoassetsSuite extends Suite {
             new MarketDataError('QUOTES_FETCH_FAILED'),
           );
 
-          const { error, response } = await this.ctx.client.GET(
+          const { data, response } = await this.ctx.client.GET(
             '/cryptoassets',
             {
               params: { query: { quote: true } },
             },
           );
-          expect(response.status).toBe(502);
-          expect(error?.error).toBe('QUOTES_UNAVAILABLE');
+          expect(response.status).toBe(200);
+          expect(data?.[0]?.slug).toBe('fail-coin');
+          expect(data?.[0]?.quote).toBeNull();
         });
 
         it('includes quotes for a page of multiple cryptoassets', async () => {
@@ -647,6 +648,44 @@ export class CryptoassetsSuite extends Suite {
           );
           expect(quoted.response.status).toBe(200);
           expect(quoted.data?.quote).toMatchObject({ priceUsd: 100 });
+        });
+
+        it('degrades gracefully with quote: null on detail when market data fails while quote is requested', async () => {
+          const accessToken = await createSession(
+            'cryptoasset-detail-quote-fail@example.com',
+            'cryptoassets_manager',
+          );
+          const headers = { authorization: `Bearer ${accessToken}` };
+          const asset = await createAsset();
+          const created = await this.ctx.client.POST('/cryptoassets', {
+            body: cryptoassetBody({
+              slug: 'fail-detail-coin',
+              name: 'Fail Detail Coin',
+              ticker: 'FDTC',
+              logoId: asset.id,
+              status: 'published',
+            }),
+            headers,
+          });
+          if (!created.data)
+            throw new Error('Create cryptoasset response has no data');
+
+          marketData().getQuotes.mockRejectedValue(
+            new MarketDataError('QUOTES_FETCH_FAILED'),
+          );
+
+          const quoted = await this.ctx.client.GET(
+            '/cryptoassets/{identifier}',
+            {
+              params: {
+                path: { identifier: 'fail-detail-coin' },
+                query: { quote: true },
+              },
+            },
+          );
+          expect(quoted.response.status).toBe(200);
+          expect(quoted.data?.slug).toBe('fail-detail-coin');
+          expect(quoted.data?.quote).toBeNull();
         });
       });
 

@@ -57,8 +57,25 @@ export class CryptoassetsService {
     }
     const detail = this.toDetail(record);
     if (!withQuote) return detail;
-    const [quoted] = await this.withQuotes([detail]);
-    return quoted;
+    try {
+      const [quoted] = await this.withQuotes([detail]);
+      return quoted;
+    } catch (error) {
+      if (error instanceof MarketDataError) {
+        console.warn(
+          '[CryptoassetsService] selectByIdentifier: degrading gracefully to null quote for single asset',
+          {
+            identifier,
+            code: error.code,
+            statusCode: error.statusCode,
+            category: error.category,
+            diagnostics: error.diagnostics,
+          },
+        );
+        return { ...detail, quote: null };
+      }
+      throw error;
+    }
   }
 
   async create(
@@ -171,17 +188,26 @@ export class CryptoassetsService {
       return items as Array<T & { quote: CryptoassetQuote | null }>;
     }
 
-    let quotes: CryptoassetQuote[];
+    let quotes: CryptoassetQuote[] = [];
     try {
       quotes = await this.marketDataService.getQuotes({ slugs });
     } catch (error) {
-      if (
-        error instanceof MarketDataError &&
-        error.code === 'QUOTES_FETCH_FAILED'
-      ) {
-        throw new CryptoassetsError('QUOTES_UNAVAILABLE');
+      // ONLY degrade gracefully when error is an instance of MarketDataError
+      // Programming errors, database issues, or unexpected integrity problems must NOT be masked!
+      if (error instanceof MarketDataError) {
+        console.warn(
+          '[CryptoassetsService] Market data provider unavailable, degrading gracefully to null quotes',
+          {
+            code: error.code,
+            statusCode: error.statusCode,
+            category: error.category,
+            diagnostics: error.diagnostics,
+            slugCount: slugs.length,
+          },
+        );
+      } else {
+        throw error;
       }
-      throw error;
     }
 
     const bySlug = new Map(quotes.map((quote) => [quote.slug, quote]));
