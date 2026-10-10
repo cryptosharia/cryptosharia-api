@@ -38,7 +38,10 @@ const REDIS_KEY_PREFIX = 'market:quote:';
 export class MarketDataAdapter {
   private readonly apiKey: string;
   private readonly quoteCache = new Map<string, CachedQuoteEntry>();
-  private readonly inFlightChunks = new Map<string, Promise<MarketDataQuote[]>>();
+  private readonly inFlightChunks = new Map<
+    string,
+    Promise<MarketDataQuote[]>
+  >();
 
   constructor(
     configService: ConfigService,
@@ -69,24 +72,76 @@ export class MarketDataAdapter {
       if (cached && now - cached.cachedAt < CACHE_TTL_MS) {
         resultsBySlug.set(slug, cached.quote);
       } else {
-        missingSlugs.push(slug);
+        const cmcAlias = SLUG_TO_CMC_ALIAS[slug];
+        const aliasCached = cmcAlias
+          ? this.quoteCache.get(cmcAlias)
+          : undefined;
+        if (aliasCached && now - aliasCached.cachedAt < CACHE_TTL_MS) {
+          const aliasQuote = { ...aliasCached.quote, slug };
+          resultsBySlug.set(slug, aliasQuote);
+          this.quoteCache.set(slug, {
+            quote: aliasQuote,
+            cachedAt: aliasCached.cachedAt,
+          });
+        } else {
+          missingSlugs.push(slug);
+        }
       }
     }
 
-    // 2. Check Upstash Redis cache (if configured) for missing slugs across Vercel instances
-    if (missingSlugs.length > 0 && this.redisService) {
+    // 2. Check Redis cache (if configured) for missing slugs across instances
+    if (
+      missingSlugs.length > 0 &&
+      this.redisService &&
+      this.redisService.isConfigured !== false
+    ) {
       const remainingMissing: string[] = [];
       await Promise.all(
         missingSlugs.map(async (slug) => {
           try {
-            const raw = await this.redisService!.get(`${REDIS_KEY_PREFIX}${slug}`);
+            const raw = await this.redisService!.get(
+              `${REDIS_KEY_PREFIX}${slug}`,
+            );
+            let parsed: MarketDataQuote | null = null;
             if (raw) {
-              const parsed = JSON.parse(raw) as MarketDataQuote;
-              if (parsed?.slug && typeof parsed.priceUsd === 'number') {
-                resultsBySlug.set(slug, parsed);
-                this.quoteCache.set(slug, { quote: parsed, cachedAt: now });
-                return;
+              if (typeof raw === 'string') {
+                try {
+                  parsed = JSON.parse(raw) as MarketDataQuote;
+                } catch {
+                  parsed = null;
+                }
+              } else if (typeof raw === 'object' && raw !== null) {
+                parsed = raw;
               }
+            } else {
+              const cmcAlias = SLUG_TO_CMC_ALIAS[slug];
+              if (cmcAlias) {
+                const aliasRaw = await this.redisService!.get(
+                  `${REDIS_KEY_PREFIX}${cmcAlias}`,
+                );
+                if (aliasRaw) {
+                  if (typeof aliasRaw === 'string') {
+                    try {
+                      parsed = JSON.parse(aliasRaw) as MarketDataQuote;
+                    } catch {
+                      parsed = null;
+                    }
+                  } else if (
+                    typeof aliasRaw === 'object' &&
+                    aliasRaw !== null
+                  ) {
+                    parsed = aliasRaw;
+                  }
+                  if (parsed) {
+                    parsed = { ...parsed, slug };
+                  }
+                }
+              }
+            }
+            if (parsed?.slug && typeof parsed.priceUsd === 'number') {
+              resultsBySlug.set(slug, parsed);
+              this.quoteCache.set(slug, { quote: parsed, cachedAt: now });
+              return;
             }
           } catch {
             // Redis error must fail open to allow CMC fetch without breaking user request
@@ -122,16 +177,15 @@ export class MarketDataAdapter {
     }
 
     // Singleflight / request coalescing: deduplicate concurrent fetches for identical chunks
+    // The in-flight promise returns CANONICAL quotes keyed by their CMC slug.
     const chunkPromises = chunks.map((chunkSlugs) => {
-      const cacheKey = chunkSlugs.sort().join(',');
+      const cacheKey = [...chunkSlugs].sort().join(',');
       const inFlight = this.inFlightChunks.get(cacheKey);
       if (inFlight) return inFlight;
 
-      const promise = this.fetchChunk(chunkSlugs, cmcSlugToRequestedSlugs).finally(
-        () => {
-          this.inFlightChunks.delete(cacheKey);
-        },
-      );
+      const promise = this.fetchChunk(chunkSlugs).finally(() => {
+        this.inFlightChunks.delete(cacheKey);
+      });
       this.inFlightChunks.set(cacheKey, promise);
       return promise;
     });
@@ -144,18 +198,44 @@ export class MarketDataAdapter {
     for (const result of chunkResults) {
       if (result.status === 'fulfilled') {
         anyChunkSucceeded = true;
-        for (const quote of result.value) {
-          resultsBySlug.set(quote.slug, quote);
-          this.quoteCache.set(quote.slug, { quote, cachedAt: now });
-          // Asynchronously write to Redis with 60s TTL
-          if (this.redisService) {
+        for (const canonicalQuote of result.value) {
+          const mappedSlugs = cmcSlugToRequestedSlugs.get(
+            canonicalQuote.slug,
+          ) ?? [canonicalQuote.slug];
+          for (const targetSlug of mappedSlugs) {
+            const quoteForTarget = { ...canonicalQuote, slug: targetSlug };
+            resultsBySlug.set(targetSlug, quoteForTarget);
+            this.quoteCache.set(targetSlug, {
+              quote: quoteForTarget,
+              cachedAt: now,
+            });
+            if (this.redisService && this.redisService.isConfigured !== false) {
+              this.redisService
+                .setEx(
+                  `${REDIS_KEY_PREFIX}${targetSlug}`,
+                  60,
+                  JSON.stringify(quoteForTarget),
+                )
+                .catch(() => {});
+            }
+          }
+          // Also cache under canonical slug in memory and Redis
+          this.quoteCache.set(canonicalQuote.slug, {
+            quote: canonicalQuote,
+            cachedAt: now,
+          });
+          if (this.redisService && this.redisService.isConfigured !== false) {
             this.redisService
-              .setEx(`${REDIS_KEY_PREFIX}${quote.slug}`, 60, JSON.stringify(quote))
+              .setEx(
+                `${REDIS_KEY_PREFIX}${canonicalQuote.slug}`,
+                60,
+                JSON.stringify(canonicalQuote),
+              )
               .catch(() => {});
           }
         }
       } else {
-        const error = result.reason;
+        const error: unknown = result.reason;
         if (error instanceof MarketDataError && !firstError) {
           firstError = error;
         }
@@ -176,10 +256,7 @@ export class MarketDataAdapter {
       .filter((quote): quote is MarketDataQuote => Boolean(quote));
   }
 
-  private async fetchChunk(
-    cmcSlugs: string[],
-    cmcSlugToRequestedSlugs: Map<string, string[]>,
-  ): Promise<MarketDataQuote[]> {
+  private async fetchChunk(cmcSlugs: string[]): Promise<MarketDataQuote[]> {
     let response: Response;
     try {
       response = await fetch(
@@ -328,15 +405,21 @@ export class MarketDataAdapter {
       const payload = (await response.json()) as {
         data?: unknown;
         status?: {
-          error_code?: number;
+          error_code?: number | string;
           error_message?: string | null;
           credit_count?: number;
         };
       };
 
-      // Review Provider error_code even when HTTP 200 is returned
-      if (payload?.status?.error_code && payload.status.error_code !== 0) {
-        const isRateLimit = payload.status.error_code === 1008;
+      // Review Provider error_code even when HTTP 200 is returned (handles both number and string)
+      const rawErrorCode = payload?.status?.error_code;
+      const errorCodeNum =
+        rawErrorCode !== undefined && rawErrorCode !== null
+          ? Number(rawErrorCode)
+          : 0;
+
+      if (Number.isFinite(errorCodeNum) && errorCodeNum !== 0) {
+        const isRateLimit = errorCodeNum === 1008;
         const category: MarketDataFailureCategory = isRateLimit
           ? 'RATE_LIMITED'
           : 'UPSTREAM_SERVER_ERROR';
@@ -344,8 +427,8 @@ export class MarketDataAdapter {
           category,
           statusCode: 200,
           message:
-            payload.status.error_message ??
-            `CoinMarketCap status error_code ${payload.status.error_code}`,
+            payload.status?.error_message ??
+            `CoinMarketCap status error_code ${rawErrorCode}`,
           requestedCount: cmcSlugs.length,
         };
         console.warn(
@@ -365,21 +448,34 @@ export class MarketDataAdapter {
         return [];
       }
 
-      // Flatten items across possible CMC v2 response formats:
+      // Collect raw entries preserving key if present:
       // 1. Map of arrays: { [slug]: Quote[] }
-      // 2. Map of objects: { [id_or_slug]: Quote }
+      // 2. Map of objects: { [slug]: Quote }
       // 3. Array of objects: Quote[]
-      const rawItems: unknown[] = Array.isArray(data)
-        ? data
-        : Object.values(data as Record<string, unknown>).flatMap((val) =>
-            Array.isArray(val) ? val : [val],
-          );
+      const rawEntries: Array<{ keySlug: string; item: unknown }> = [];
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          rawEntries.push({ keySlug: '', item });
+        }
+      } else {
+        for (const [key, val] of Object.entries(
+          data as Record<string, unknown>,
+        )) {
+          if (Array.isArray(val)) {
+            for (const item of val) {
+              rawEntries.push({ keySlug: key, item });
+            }
+          } else {
+            rawEntries.push({ keySlug: key, item: val });
+          }
+        }
+      }
 
       const candidateQuotesBySlug = new Map<string, MarketDataQuote[]>();
 
-      for (const raw of rawItems) {
-        if (!raw || typeof raw !== 'object') continue;
-        const quote = raw as {
+      for (const { keySlug, item } of rawEntries) {
+        if (!item || typeof item !== 'object') continue;
+        const quote = item as {
           slug?: string;
           cmc_rank?: number | null;
           infinite_supply?: boolean | null;
@@ -395,11 +491,13 @@ export class MarketDataAdapter {
           };
         };
 
-        if (
-          !quote.slug ||
-          typeof quote.slug !== 'string' ||
-          !quote.quote?.USD
-        ) {
+        const resolvedSlug = (
+          typeof quote.slug === 'string' && quote.slug.trim().length > 0
+            ? quote.slug.trim()
+            : keySlug
+        ).toLowerCase();
+
+        if (!resolvedSlug || !quote.quote?.USD) {
           continue;
         }
 
@@ -439,41 +537,36 @@ export class MarketDataAdapter {
           continue;
         }
 
-        const requestedSlugs = cmcSlugToRequestedSlugs.get(quote.slug) ?? [
-          quote.slug,
-        ];
-        for (const requestedSlug of requestedSlugs) {
-          const parsedQuote: MarketDataQuote = {
-            slug: requestedSlug,
-            rank: quote.cmc_rank,
-            infiniteSupply: Boolean(quote.infinite_supply),
-            maxSupply:
-              typeof quote.max_supply === 'number' &&
-              Number.isFinite(quote.max_supply)
-                ? quote.max_supply
-                : null,
-            circulatingSupply:
-              typeof quote.circulating_supply === 'number' &&
-              Number.isFinite(quote.circulating_supply)
-                ? quote.circulating_supply
-                : 0,
-            priceUsd: usd.price,
-            marketCapUsd: usd.market_cap,
-            marketCapDominance:
-              typeof usd.market_cap_dominance === 'number' &&
-              Number.isFinite(usd.market_cap_dominance)
-                ? usd.market_cap_dominance
-                : 0,
-            percentChange24h: usd.percent_change_24h,
-          };
+        const parsedQuote: MarketDataQuote = {
+          slug: resolvedSlug,
+          rank: quote.cmc_rank,
+          infiniteSupply: Boolean(quote.infinite_supply),
+          maxSupply:
+            typeof quote.max_supply === 'number' &&
+            Number.isFinite(quote.max_supply)
+              ? quote.max_supply
+              : null,
+          circulatingSupply:
+            typeof quote.circulating_supply === 'number' &&
+            Number.isFinite(quote.circulating_supply)
+              ? quote.circulating_supply
+              : 0,
+          priceUsd: usd.price,
+          marketCapUsd: usd.market_cap,
+          marketCapDominance:
+            typeof usd.market_cap_dominance === 'number' &&
+            Number.isFinite(usd.market_cap_dominance)
+              ? usd.market_cap_dominance
+              : 0,
+          percentChange24h: usd.percent_change_24h,
+        };
 
-          const list = candidateQuotesBySlug.get(requestedSlug) ?? [];
-          list.push(parsedQuote);
-          candidateQuotesBySlug.set(requestedSlug, list);
-        }
+        const list = candidateQuotesBySlug.get(resolvedSlug) ?? [];
+        list.push(parsedQuote);
+        candidateQuotesBySlug.set(resolvedSlug, list);
       }
 
-      // Disambiguate duplicate candidates for each requested slug (e.g. choose best rank / market cap)
+      // Disambiguate duplicate candidates for each canonical slug
       const results: MarketDataQuote[] = [];
       for (const candidates of candidateQuotesBySlug.values()) {
         if (candidates.length === 1) {
