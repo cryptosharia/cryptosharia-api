@@ -6,26 +6,22 @@ import {
   MarketDataFailureCategory,
 } from './market-data.error';
 
-type CoinMarketCapResponse = {
-  data?: Record<
-    string,
-    {
-      slug: string;
-      cmc_rank: number;
-      infinite_supply: boolean;
-      max_supply: number | null;
-      circulating_supply: number;
-      quote: {
-        USD: {
-          price: number;
-          market_cap: number;
-          market_cap_dominance: number;
-          percent_change_24h: number;
-        };
-      };
-    }
-  >;
+export type MarketDataQuote = {
+  slug: string;
+  rank: number;
+  infiniteSupply: boolean;
+  maxSupply: number | null;
+  circulatingSupply: number;
+  priceUsd: number;
+  marketCapUsd: number;
+  marketCapDominance: number;
+  percentChange24h: number;
 };
+
+interface CachedQuoteEntry {
+  quote: MarketDataQuote;
+  cachedAt: number;
+}
 
 export const SLUG_TO_CMC_ALIAS: Readonly<Record<string, string>> =
   Object.freeze({
@@ -33,33 +29,53 @@ export const SLUG_TO_CMC_ALIAS: Readonly<Record<string, string>> =
   });
 
 const REQUEST_TIMEOUT_MS = 5000;
+const BATCH_CHUNK_SIZE = 20;
+const CACHE_TTL_MS = 60_000;
 
 @Injectable()
 export class MarketDataAdapter {
   private readonly apiKey: string;
+  private readonly quoteCache = new Map<string, CachedQuoteEntry>();
 
   constructor(configService: ConfigService) {
     this.apiKey = configService.getOrThrow<string>('CMC_API_KEY');
   }
 
-  async getQuotes(input: { slugs: string[] }): Promise<
-    {
-      slug: string;
-      rank: number;
-      infiniteSupply: boolean;
-      maxSupply: number | null;
-      circulatingSupply: number;
-      priceUsd: number;
-      marketCapUsd: number;
-      marketCapDominance: number;
-      percentChange24h: number;
-    }[]
-  > {
+  /**
+   * Clears the in-memory quote cache (useful for testing and deterministic resets).
+   */
+  clearCache(): void {
+    this.quoteCache.clear();
+  }
+
+  async getQuotes(input: { slugs: string[] }): Promise<MarketDataQuote[]> {
     if (!input.slugs || !input.slugs.length) return [];
 
-    // Map requested slugs to CMC slugs without collision
+    const now = Date.now();
+    const resultsBySlug = new Map<string, MarketDataQuote>();
+    const missingSlugs: string[] = [];
+
+    // Check in-memory quote cache first for fresh quotes
+    const uniqueRequestedSlugs = Array.from(new Set(input.slugs));
+    for (const slug of uniqueRequestedSlugs) {
+      const cached = this.quoteCache.get(slug);
+      if (cached && now - cached.cachedAt < CACHE_TTL_MS) {
+        resultsBySlug.set(slug, cached.quote);
+      } else {
+        missingSlugs.push(slug);
+      }
+    }
+
+    // If all requested slugs are fresh in cache, return immediately without calling CMC
+    if (missingSlugs.length === 0) {
+      return input.slugs
+        .map((slug) => resultsBySlug.get(slug))
+        .filter((quote): quote is MarketDataQuote => Boolean(quote));
+    }
+
+    // Map missing slugs to CoinMarketCap slugs (e.g. usdc -> usd-coin)
     const cmcSlugToRequestedSlugs = new Map<string, string[]>();
-    for (const slug of input.slugs) {
+    for (const slug of missingSlugs) {
       const cmcSlug = SLUG_TO_CMC_ALIAS[slug] ?? slug;
       const list = cmcSlugToRequestedSlugs.get(cmcSlug) ?? [];
       list.push(slug);
@@ -67,10 +83,58 @@ export class MarketDataAdapter {
     }
     const uniqueCmcSlugs = Array.from(cmcSlugToRequestedSlugs.keys());
 
+    // Split requests into resilient small batches (max 20 per request)
+    const chunks: string[][] = [];
+    for (let i = 0; i < uniqueCmcSlugs.length; i += BATCH_CHUNK_SIZE) {
+      chunks.push(uniqueCmcSlugs.slice(i, i + BATCH_CHUNK_SIZE));
+    }
+
+    const chunkPromises = chunks.map((chunkSlugs) =>
+      this.fetchChunk(chunkSlugs, cmcSlugToRequestedSlugs),
+    );
+
+    const chunkResults = await Promise.allSettled(chunkPromises);
+
+    let anyChunkSucceeded = false;
+    let firstError: MarketDataError | null = null;
+
+    for (const result of chunkResults) {
+      if (result.status === 'fulfilled') {
+        anyChunkSucceeded = true;
+        for (const quote of result.value) {
+          resultsBySlug.set(quote.slug, quote);
+          this.quoteCache.set(quote.slug, { quote, cachedAt: now });
+        }
+      } else {
+        const error = result.reason;
+        if (error instanceof MarketDataError && !firstError) {
+          firstError = error;
+        }
+        console.warn(
+          '[MarketDataAdapter] Partial chunk quote fetch failed:',
+          error instanceof Error ? error.message : error,
+        );
+      }
+    }
+
+    // If ALL chunks failed and we have no cached results for the requested slugs, rethrow the error
+    if (!anyChunkSucceeded && resultsBySlug.size === 0 && firstError) {
+      throw firstError;
+    }
+
+    return input.slugs
+      .map((slug) => resultsBySlug.get(slug))
+      .filter((quote): quote is MarketDataQuote => Boolean(quote));
+  }
+
+  private async fetchChunk(
+    cmcSlugs: string[],
+    cmcSlugToRequestedSlugs: Map<string, string[]>,
+  ): Promise<MarketDataQuote[]> {
     let response: Response;
     try {
       response = await fetch(
-        `https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?slug=${uniqueCmcSlugs.join(',')}&skip_invalid=true`,
+        `https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?slug=${cmcSlugs.join(',')}&skip_invalid=true`,
         {
           signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
           headers: {
@@ -91,7 +155,7 @@ export class MarketDataAdapter {
           : networkError instanceof Error
             ? networkError.message
             : 'Unknown network error',
-        requestedCount: input.slugs.length,
+        requestedCount: cmcSlugs.length,
       };
       console.error(
         '[MarketDataAdapter] CoinMarketCap request timeout or network error',
@@ -116,7 +180,7 @@ export class MarketDataAdapter {
         message:
           errorPayload?.status?.error_message ??
           'Bad Request / Slug syntax rejected',
-        requestedCount: input.slugs.length,
+        requestedCount: cmcSlugs.length,
       };
       console.warn(
         '[MarketDataAdapter] CoinMarketCap 400 Bad Request: Parameter or slug syntax rejected',
@@ -140,7 +204,7 @@ export class MarketDataAdapter {
           response.status === 401
             ? 'API key invalid or missing'
             : 'Access forbidden for current API key plan',
-        requestedCount: input.slugs.length,
+        requestedCount: cmcSlugs.length,
       };
       console.error(
         '[MarketDataAdapter] CoinMarketCap Authentication / Permission Error',
@@ -159,7 +223,7 @@ export class MarketDataAdapter {
         category: 'RATE_LIMITED',
         statusCode: 429,
         message: 'Rate limit or monthly credit quota exceeded',
-        requestedCount: input.slugs.length,
+        requestedCount: cmcSlugs.length,
       };
       console.warn(
         '[MarketDataAdapter] CoinMarketCap Rate Limit / Quota Exceeded',
@@ -178,7 +242,7 @@ export class MarketDataAdapter {
         category: 'UPSTREAM_SERVER_ERROR',
         statusCode: response.status,
         message: `Upstream server error (${response.status})`,
-        requestedCount: input.slugs.length,
+        requestedCount: cmcSlugs.length,
       };
       console.error(
         '[MarketDataAdapter] CoinMarketCap Upstream Server Error',
@@ -197,7 +261,7 @@ export class MarketDataAdapter {
         category: 'UPSTREAM_SERVER_ERROR',
         statusCode: response.status,
         message: `Unexpected HTTP status ${response.status}`,
-        requestedCount: input.slugs.length,
+        requestedCount: cmcSlugs.length,
       };
       console.error(
         '[MarketDataAdapter] CoinMarketCap request failed',
@@ -212,38 +276,86 @@ export class MarketDataAdapter {
     }
 
     try {
-      const payload = (await response.json()) as CoinMarketCapResponse;
+      const payload = (await response.json()) as {
+        data?: unknown;
+        status?: { error_code?: number; error_message?: string };
+      };
       const data = payload?.data;
       if (!data || typeof data !== 'object') {
         return [];
       }
 
-      const results: Array<{
-        slug: string;
-        rank: number;
-        infiniteSupply: boolean;
-        maxSupply: number | null;
-        circulatingSupply: number;
-        priceUsd: number;
-        marketCapUsd: number;
-        marketCapDominance: number;
-        percentChange24h: number;
-      }> = [];
+      // Flatten items across possible CMC v2 response formats:
+      // 1. Map of arrays: { [slug]: Quote[] }
+      // 2. Map of objects: { [id_or_slug]: Quote }
+      // 3. Array of objects: Quote[]
+      const rawItems: unknown[] = Array.isArray(data)
+        ? data
+        : Object.values(data as Record<string, unknown>).flatMap((val) =>
+            Array.isArray(val) ? val : [val],
+          );
 
-      for (const quote of Object.values(data)) {
+      const candidateQuotesBySlug = new Map<string, MarketDataQuote[]>();
+
+      for (const raw of rawItems) {
+        if (!raw || typeof raw !== 'object') continue;
+        const quote = raw as {
+          slug?: string;
+          cmc_rank?: number | null;
+          infinite_supply?: boolean | null;
+          max_supply?: number | null;
+          circulating_supply?: number | null;
+          quote?: {
+            USD?: {
+              price?: number | null;
+              market_cap?: number | null;
+              market_cap_dominance?: number | null;
+              percent_change_24h?: number | null;
+            };
+          };
+        };
+
         if (
-          !quote ||
-          typeof quote !== 'object' ||
           !quote.slug ||
+          typeof quote.slug !== 'string' ||
           !quote.quote?.USD
         ) {
           continue;
         }
 
         const usd = quote.quote.USD;
-        // Priority 2: Unavailable quote must be null, not zero price.
-        // If price is missing or not a finite number, omit it so consumer gets null.
-        if (typeof usd.price !== 'number' || !Number.isFinite(usd.price)) {
+        // Priority 2 & 9: Unavailable or non-finite price MUST NOT be synthesized as 0.
+        // Omit quotes with invalid/missing price so consumer receives null.
+        if (
+          typeof usd.price !== 'number' ||
+          !Number.isFinite(usd.price) ||
+          usd.price <= 0
+        ) {
+          continue;
+        }
+
+        // Priority 9: Do NOT synthesize 0 for unknown market cap, rank, or percentChange24h.
+        // Omit quotes with non-positive/unknown market cap or rank so consumer gets null.
+        if (
+          typeof usd.market_cap !== 'number' ||
+          !Number.isFinite(usd.market_cap) ||
+          usd.market_cap <= 0
+        ) {
+          continue;
+        }
+
+        if (
+          typeof quote.cmc_rank !== 'number' ||
+          !Number.isFinite(quote.cmc_rank) ||
+          quote.cmc_rank <= 0
+        ) {
+          continue;
+        }
+
+        if (
+          typeof usd.percent_change_24h !== 'number' ||
+          !Number.isFinite(usd.percent_change_24h)
+        ) {
           continue;
         }
 
@@ -251,13 +363,9 @@ export class MarketDataAdapter {
           quote.slug,
         ];
         for (const requestedSlug of requestedSlugs) {
-          results.push({
+          const parsedQuote: MarketDataQuote = {
             slug: requestedSlug,
-            rank:
-              typeof quote.cmc_rank === 'number' &&
-              Number.isFinite(quote.cmc_rank)
-                ? quote.cmc_rank
-                : 0,
+            rank: quote.cmc_rank,
             infiniteSupply: Boolean(quote.infinite_supply),
             maxSupply:
               typeof quote.max_supply === 'number' &&
@@ -270,22 +378,32 @@ export class MarketDataAdapter {
                 ? quote.circulating_supply
                 : 0,
             priceUsd: usd.price,
-            marketCapUsd:
-              typeof usd.market_cap === 'number' &&
-              Number.isFinite(usd.market_cap)
-                ? usd.market_cap
-                : 0,
+            marketCapUsd: usd.market_cap,
             marketCapDominance:
               typeof usd.market_cap_dominance === 'number' &&
               Number.isFinite(usd.market_cap_dominance)
                 ? usd.market_cap_dominance
                 : 0,
-            percentChange24h:
-              typeof usd.percent_change_24h === 'number' &&
-              Number.isFinite(usd.percent_change_24h)
-                ? usd.percent_change_24h
-                : 0,
+            percentChange24h: usd.percent_change_24h,
+          };
+
+          const list = candidateQuotesBySlug.get(requestedSlug) ?? [];
+          list.push(parsedQuote);
+          candidateQuotesBySlug.set(requestedSlug, list);
+        }
+      }
+
+      // Disambiguate duplicate candidates for each requested slug (e.g. choose best rank / market cap)
+      const results: MarketDataQuote[] = [];
+      for (const candidates of candidateQuotesBySlug.values()) {
+        if (candidates.length === 1) {
+          results.push(candidates[0]);
+        } else if (candidates.length > 1) {
+          candidates.sort((a, b) => {
+            if (a.rank > 0 && b.rank > 0) return a.rank - b.rank;
+            return b.marketCapUsd - a.marketCapUsd;
           });
+          results.push(candidates[0]);
         }
       }
 
@@ -298,7 +416,7 @@ export class MarketDataAdapter {
         statusCode: response.status,
         message:
           error instanceof Error ? error.message : 'Unknown parsing error',
-        requestedCount: input.slugs.length,
+        requestedCount: cmcSlugs.length,
       };
       console.error(
         '[MarketDataAdapter] Malformed CoinMarketCap response payload',
