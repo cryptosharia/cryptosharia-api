@@ -5,7 +5,7 @@ import { createClient } from 'redis';
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
-  private readonly mode: 'serverless' | 'serverful';
+  private readonly mode: 'serverless' | 'serverful' | 'disabled';
   private readonly serverlessClient?: UpstashRedis;
   private readonly _serverfulClient?: ReturnType<typeof createClient>;
   private connection?: Promise<ReturnType<typeof createClient>>;
@@ -14,17 +14,52 @@ export class RedisService implements OnModuleDestroy {
     // Serverless deployments talk to Upstash over REST;
     // everything else uses a direct TCP client against REDIS_URL.
     if (configService.get<boolean>('SERVERLESS') === true) {
-      this.mode = 'serverless';
-      this.serverlessClient = new UpstashRedis({
-        url: configService.getOrThrow<string>('KV_REST_API_URL'),
-        token: configService.getOrThrow<string>('KV_REST_API_TOKEN'),
-      });
+      let url: string | undefined;
+      let token: string | undefined;
+      try {
+        url =
+          configService.get<string>('KV_REST_API_URL') ||
+          (
+            configService as unknown as { getOrThrow?: (key: string) => string }
+          ).getOrThrow?.('KV_REST_API_URL');
+        token =
+          configService.get<string>('KV_REST_API_TOKEN') ||
+          (
+            configService as unknown as { getOrThrow?: (key: string) => string }
+          ).getOrThrow?.('KV_REST_API_TOKEN');
+      } catch {
+        // Not configured
+      }
+
+      if (url && token) {
+        this.mode = 'serverless';
+        this.serverlessClient = new UpstashRedis({ url, token });
+      } else {
+        this.mode = 'disabled';
+      }
     } else {
-      this.mode = 'serverful';
-      this._serverfulClient = createClient({
-        url: configService.getOrThrow<string>('REDIS_URL'),
-      });
+      let url: string | undefined;
+      try {
+        url =
+          configService.get<string>('REDIS_URL') ||
+          (
+            configService as unknown as { getOrThrow?: (key: string) => string }
+          ).getOrThrow?.('REDIS_URL');
+      } catch {
+        // Not configured
+      }
+
+      if (url) {
+        this.mode = 'serverful';
+        this._serverfulClient = createClient({ url });
+      } else {
+        this.mode = 'disabled';
+      }
     }
+  }
+
+  get isConfigured(): boolean {
+    return this.mode !== 'disabled';
   }
 
   private get serverfulClient(): Promise<ReturnType<typeof createClient>> {
@@ -37,17 +72,20 @@ export class RedisService implements OnModuleDestroy {
   }
 
   async get(key: string): Promise<string | null> {
+    if (this.mode === 'disabled') return null;
     if (this.mode === 'serverless') return this.serverlessClient!.get(key);
     return (await this.serverfulClient).get(key);
   }
 
   async getDel(key: string): Promise<string | null> {
+    if (this.mode === 'disabled') return null;
     if (this.mode === 'serverless')
       return this.serverlessClient!.getdel<string>(key);
     return (await this.serverfulClient).getDel(key);
   }
 
   async setEx(key: string, seconds: number, value: string): Promise<void> {
+    if (this.mode === 'disabled') return;
     if (this.mode === 'serverless') {
       await this.serverlessClient!.setex(key, seconds, value);
       return;
@@ -56,27 +94,32 @@ export class RedisService implements OnModuleDestroy {
   }
 
   async del(...keys: string[]): Promise<number> {
+    if (this.mode === 'disabled') return 0;
     if (this.mode === 'serverless') return this.serverlessClient!.del(...keys);
     return (await this.serverfulClient).del(keys);
   }
 
   async incr(key: string): Promise<number> {
+    if (this.mode === 'disabled') return 0;
     if (this.mode === 'serverless') return this.serverlessClient!.incr(key);
     return (await this.serverfulClient).incr(key);
   }
 
   async expire(key: string, seconds: number): Promise<number> {
+    if (this.mode === 'disabled') return 0;
     if (this.mode === 'serverless')
       return this.serverlessClient!.expire(key, seconds);
     return (await this.serverfulClient).expire(key, seconds);
   }
 
   async ttl(key: string): Promise<number> {
+    if (this.mode === 'disabled') return -2;
     if (this.mode === 'serverless') return this.serverlessClient!.ttl(key);
     return (await this.serverfulClient).ttl(key);
   }
 
   async scanMatch(pattern: string): Promise<string[]> {
+    if (this.mode === 'disabled') return [];
     if (this.mode === 'serverless') {
       const keys: string[] = [];
       let cursor = '0';

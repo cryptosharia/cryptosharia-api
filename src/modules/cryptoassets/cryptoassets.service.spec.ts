@@ -142,6 +142,47 @@ describe('CryptoassetsService withQuotes & resilience', () => {
     expect(items[0].quote).toBeNull();
   });
 
+  it('handles partial quote availability by assigning quotes to available assets and null to missing ones', async () => {
+    const secondRecord = {
+      ...sampleDbRecord,
+      cryptoasset: {
+        ...sampleDbRecord.cryptoasset,
+        id: '22222222-2222-2222-2222-222222222222',
+        slug: 'bitcoin',
+        name: 'Bitcoin',
+        ticker: 'BTC',
+      },
+    };
+    mockRepo.selectAll.mockResolvedValue([sampleDbRecord, secondRecord]);
+    // Market data only returns a quote for Bitcoin, USDC quote is missing
+    mockMarketData.getQuotes.mockResolvedValue([
+      {
+        slug: 'bitcoin',
+        rank: 1,
+        infiniteSupply: false,
+        maxSupply: 21_000_000,
+        circulatingSupply: 19_000_000,
+        priceUsd: 90_000,
+        marketCapUsd: 1_800_000_000_000,
+        marketCapDominance: 54.0,
+        percentChange24h: 2.5,
+      },
+    ]);
+
+    const items = await service.selectAll({
+      page: 1,
+      limit: 20,
+      quote: true,
+    });
+
+    expect(items).toHaveLength(2);
+    const usdcItem = items.find((i) => i.slug === 'usdc');
+    const btcItem = items.find((i) => i.slug === 'bitcoin');
+
+    expect(btcItem?.quote).toMatchObject({ slug: 'bitcoin', priceUsd: 90_000 });
+    expect(usdcItem?.quote).toBeNull();
+  });
+
   it('does NOT swallow database errors or non-MarketDataError exceptions', async () => {
     const dbError = new Error(
       'FATAL: connection to server at postgresql failed',

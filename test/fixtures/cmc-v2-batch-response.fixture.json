@@ -1,0 +1,110 @@
+{
+  "status": {
+    "timestamp": "2026-10-10T03:40:00.000Z",
+    "error_code": 0,
+    "error_message": null,
+    "elapsed": 12,
+    "credit_count": 1
+  },
+  "data": {
+    "bitcoin": [
+      {
+        "id": 1,
+        "name": "Bitcoin",
+        "symbol": "BTC",
+        "slug": "bitcoin",
+        "num_market_pairs": 11845,
+        "date_added": "2010-07-13T00:00:00.000Z",
+        "tags": ["mineable", "pow", "sha-256", "store-of-value"],
+        "max_supply": 21000000,
+        "circulating_supply": 19760000,
+        "total_supply": 19760000,
+        "is_active": 1,
+        "infinite_supply": false,
+        "platform": null,
+        "cmc_rank": 1,
+        "is_fiat": 0,
+        "quote": {
+          "USD": {
+            "price": 82488.54784405293,
+            "volume_24h": 41234567890.12,
+            "volume_change_24h": 5.43,
+            "percent_change_1h": 0.12,
+            "percent_change_24h": 2.45,
+            "percent_change_7d": 4.56,
+            "market_cap": 1629973705398.48,
+            "market_cap_dominance": 58.45,
+            "fully_diluted_market_cap": 1732259504725.11,
+            "last_updated": "2026-10-10T03:39:00.000Z"
+          }
+        }
+      }
+    ],
+    "usd-coin": [
+      {
+        "id": 3408,
+        "name": "USDC",
+        "symbol": "USDC",
+        "slug": "usd-coin",
+        "num_market_pairs": 25600,
+        "date_added": "2018-10-08T00:00:00.000Z",
+        "tags": ["medium-of-exchange", "stablecoin", "asset-backed-stablecoin"],
+        "max_supply": null,
+        "circulating_supply": 72896401169.52,
+        "total_supply": 72896401169.52,
+        "is_active": 1,
+        "infinite_supply": true,
+        "platform": null,
+        "cmc_rank": 6,
+        "is_fiat": 0,
+        "quote": {
+          "USD": {
+            "price": 0.9998522057943888,
+            "volume_24h": 8765432100.5,
+            "volume_change_24h": -2.1,
+            "percent_change_1h": 0.001,
+            "percent_change_24h": 0.00140884,
+            "percent_change_7d": 0.01,
+            "market_cap": 72885627231.84,
+            "market_cap_dominance": 2.61,
+            "fully_diluted_market_cap": 72885627231.84,
+            "last_updated": "2026-10-10T03:39:00.000Z"
+          }
+        }
+      }
+    ],
+    "ethereum": [
+      {
+        "id": 1027,
+        "name": "Ethereum",
+        "symbol": "ETH",
+        "slug": "ethereum",
+        "num_market_pairs": 10420,
+        "date_added": "2015-08-07T00:00:00.000Z",
+        "tags": ["pos", "smart-contracts"],
+        "max_supply": null,
+        "circulating_supply": 120450000,
+        "total_supply": 120450000,
+        "is_active": 1,
+        "infinite_supply": true,
+        "platform": null,
+        "cmc_rank": 2,
+        "is_fiat": 0,
+        "quote": {
+          "USD": {
+            "price": 2489.3583129567965,
+            "volume_24h": 18234567890.0,
+            "volume_change_24h": 1.2,
+            "percent_change_1h": -0.05,
+            "percent_change_24h": -1.15,
+            "percent_change_7d": 2.1,
+            "market_cap": 299843208795.64,
+            "market_cap_dominance": 13.8,
+            "fully_diluted_market_cap": 299843208795.64,
+            "last_updated": "2026-10-10T03:39:00.000Z"
+          }
+        }
+      }
+    ]
+  }
+}

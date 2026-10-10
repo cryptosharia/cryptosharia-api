@@ -142,4 +142,32 @@ describe('RedisService', () => {
     await used.onModuleDestroy();
     expect(serverful.quit).toHaveBeenCalled();
   });
+
+  it('disables redis gracefully when serverless credentials are not configured', async () => {
+    const unconfiguredServerless = {
+      get: vi.fn((key: string) => key === 'SERVERLESS'),
+      getOrThrow: vi.fn(() => {
+        throw new Error('Not set');
+      }),
+    };
+    const service = new RedisService(unconfiguredServerless as never);
+    expect(service.isConfigured).toBe(false);
+    await expect(service.get('any-key')).resolves.toBeNull();
+    await expect(service.setEx('any-key', 60, 'val')).resolves.toBeUndefined();
+    await expect(service.del('any-key')).resolves.toBe(0);
+    await expect(service.ttl('any-key')).resolves.toBe(-2);
+    await expect(service.scanMatch('any:*')).resolves.toEqual([]);
+  });
+
+  it('disables redis gracefully when serverful REDIS_URL is not configured', async () => {
+    const unconfiguredServerful = {
+      get: vi.fn(() => false),
+      getOrThrow: vi.fn(() => {
+        throw new Error('Not set');
+      }),
+    };
+    const service = new RedisService(unconfiguredServerful as never);
+    expect(service.isConfigured).toBe(false);
+    await expect(service.get('any-key')).resolves.toBeNull();
+  });
 });
