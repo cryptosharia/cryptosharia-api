@@ -535,4 +535,156 @@ describe('MarketDataAdapter', () => {
     expect(quotes[0].marketCapUsd).toBe(4_200_000_000);
     fetchMock.mockRestore();
   });
+
+  it('strictly chunks 62 slugs into [20, 20, 20, 2] chunks and never exceeds 20 slugs per request', async () => {
+    const chunkCounts: number[] = [];
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation((url) => {
+        const urlStr = typeof url === 'string' ? url : (url as URL).href;
+        const match = urlStr.match(/slug=([^&]+)/);
+        const slugs = match ? match[1].split(',') : [];
+        chunkCounts.push(slugs.length);
+        return Promise.resolve(
+          new Response(JSON.stringify({ data: {} }), { status: 200 }),
+        );
+      });
+    const adapter = new MarketDataAdapter(config as never);
+
+    const published62 = Array.from({ length: 62 }, (_, i) => `asset-${i}`);
+    await adapter.getQuotes({ slugs: published62 });
+
+    expect(chunkCounts).toEqual([20, 20, 20, 2]);
+    expect(chunkCounts.every((count) => count <= 20)).toBe(true);
+    fetchMock.mockRestore();
+  });
+
+  it('correctly processes real-world CoinMarketCap v2 batch response fixture', async () => {
+    const fixtureData = await import(
+      '../../../test/fixtures/cmc-v2-batch-response.fixture.json'
+    );
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify(fixtureData.default), { status: 200 }),
+    );
+    const adapter = new MarketDataAdapter(config as never);
+
+    const quotes = await adapter.getQuotes({
+      slugs: ['bitcoin', 'usdc', 'ethereum'],
+    });
+
+    expect(quotes).toHaveLength(3);
+    const btc = quotes.find((q) => q.slug === 'bitcoin');
+    const usdc = quotes.find((q) => q.slug === 'usdc');
+    const eth = quotes.find((q) => q.slug === 'ethereum');
+
+    expect(btc).toBeDefined();
+    expect(btc?.priceUsd).toBeCloseTo(82488.5478);
+    expect(btc?.rank).toBe(1);
+    expect(btc?.marketCapUsd).toBeGreaterThan(1_000_000_000_000);
+
+    expect(usdc).toBeDefined();
+    expect(usdc?.priceUsd).toBeCloseTo(0.99985, 4);
+    expect(usdc?.rank).toBe(6);
+    expect(usdc?.marketCapUsd).toBeGreaterThan(70_000_000_000);
+
+    expect(eth).toBeDefined();
+    expect(eth?.priceUsd).toBeCloseTo(2489.358);
+    expect(eth?.rank).toBe(2);
+
+    fetchMock.mockRestore();
+  });
+
+  it('rejects with MarketDataError when CoinMarketCap returns non-zero status.error_code on HTTP 200', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          status: {
+            error_code: 1008,
+            error_message: 'API key rate limit exceeded',
+          },
+          data: null,
+        }),
+        { status: 200 },
+      ),
+    );
+    const adapter = new MarketDataAdapter(config as never);
+
+    await expect(
+      adapter.getQuotes({ slugs: ['bitcoin'] }),
+    ).rejects.toMatchObject({
+      code: 'QUOTES_FETCH_FAILED',
+      statusCode: 200,
+      category: 'RATE_LIMITED',
+      diagnostics: {
+        category: 'RATE_LIMITED',
+        statusCode: 200,
+        message: 'API key rate limit exceeded',
+        requestedCount: 1,
+      },
+    });
+
+    fetchMock.mockRestore();
+  });
+
+  it('coalesces concurrent requests for identical chunks to a single network call (singleflight)', async () => {
+    let callCount = 0;
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () => {
+        callCount++;
+        await new Promise((r) => setTimeout(r, 10));
+        return new Response(
+          JSON.stringify({
+            data: {
+              bitcoin: {
+                slug: 'bitcoin',
+                cmc_rank: 1,
+                quote: { USD: { price: 80000, market_cap: 1.5e12, percent_change_24h: 1 } },
+              },
+            },
+          }),
+          { status: 200 },
+        );
+      });
+    const adapter = new MarketDataAdapter(config as never);
+
+    const [res1, res2, res3] = await Promise.all([
+      adapter.getQuotes({ slugs: ['bitcoin'] }),
+      adapter.getQuotes({ slugs: ['bitcoin'] }),
+      adapter.getQuotes({ slugs: ['bitcoin'] }),
+    ]);
+
+    expect(callCount).toBe(1);
+    expect(res1).toEqual(res2);
+    expect(res2).toEqual(res3);
+    fetchMock.mockRestore();
+  });
+
+  it('utilizes Upstash Redis cache across instances when configured', async () => {
+    const mockRedis = {
+      get: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          slug: 'bitcoin',
+          rank: 1,
+          infiniteSupply: false,
+          maxSupply: 21_000_000,
+          circulatingSupply: 19_000_000,
+          priceUsd: 85_000,
+          marketCapUsd: 1.6e12,
+          marketCapDominance: 56,
+          percentChange24h: 3,
+        }),
+      ),
+      setEx: vi.fn().mockResolvedValue(undefined),
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    const adapter = new MarketDataAdapter(config as never, mockRedis as never);
+
+    const quotes = await adapter.getQuotes({ slugs: ['bitcoin'] });
+
+    expect(mockRedis.get).toHaveBeenCalledWith('market:quote:bitcoin');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(quotes[0].priceUsd).toBe(85_000);
+    fetchMock.mockRestore();
+  });
 });

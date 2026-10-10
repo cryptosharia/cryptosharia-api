@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '#src/modules/redis/redis.service';
 import {
   MarketDataDiagnostics,
   MarketDataError,
@@ -31,21 +32,27 @@ export const SLUG_TO_CMC_ALIAS: Readonly<Record<string, string>> =
 const REQUEST_TIMEOUT_MS = 5000;
 const BATCH_CHUNK_SIZE = 20;
 const CACHE_TTL_MS = 60_000;
+const REDIS_KEY_PREFIX = 'market:quote:';
 
 @Injectable()
 export class MarketDataAdapter {
   private readonly apiKey: string;
   private readonly quoteCache = new Map<string, CachedQuoteEntry>();
+  private readonly inFlightChunks = new Map<string, Promise<MarketDataQuote[]>>();
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    @Optional() private readonly redisService?: RedisService,
+  ) {
     this.apiKey = configService.getOrThrow<string>('CMC_API_KEY');
   }
 
   /**
-   * Clears the in-memory quote cache (useful for testing and deterministic resets).
+   * Clears the in-memory quote cache and in-flight promises (for testing resets).
    */
   clearCache(): void {
     this.quoteCache.clear();
+    this.inFlightChunks.clear();
   }
 
   async getQuotes(input: { slugs: string[] }): Promise<MarketDataQuote[]> {
@@ -55,7 +62,7 @@ export class MarketDataAdapter {
     const resultsBySlug = new Map<string, MarketDataQuote>();
     const missingSlugs: string[] = [];
 
-    // Check in-memory quote cache first for fresh quotes
+    // 1. Check in-memory quote cache first
     const uniqueRequestedSlugs = Array.from(new Set(input.slugs));
     for (const slug of uniqueRequestedSlugs) {
       const cached = this.quoteCache.get(slug);
@@ -66,7 +73,32 @@ export class MarketDataAdapter {
       }
     }
 
-    // If all requested slugs are fresh in cache, return immediately without calling CMC
+    // 2. Check Upstash Redis cache (if configured) for missing slugs across Vercel instances
+    if (missingSlugs.length > 0 && this.redisService) {
+      const remainingMissing: string[] = [];
+      await Promise.all(
+        missingSlugs.map(async (slug) => {
+          try {
+            const raw = await this.redisService!.get(`${REDIS_KEY_PREFIX}${slug}`);
+            if (raw) {
+              const parsed = JSON.parse(raw) as MarketDataQuote;
+              if (parsed?.slug && typeof parsed.priceUsd === 'number') {
+                resultsBySlug.set(slug, parsed);
+                this.quoteCache.set(slug, { quote: parsed, cachedAt: now });
+                return;
+              }
+            }
+          } catch {
+            // Redis error must fail open to allow CMC fetch without breaking user request
+          }
+          remainingMissing.push(slug);
+        }),
+      );
+      missingSlugs.length = 0;
+      missingSlugs.push(...remainingMissing);
+    }
+
+    // If all requested slugs are satisfied from cache, return immediately
     if (missingSlugs.length === 0) {
       return input.slugs
         .map((slug) => resultsBySlug.get(slug))
@@ -83,15 +115,26 @@ export class MarketDataAdapter {
     }
     const uniqueCmcSlugs = Array.from(cmcSlugToRequestedSlugs.keys());
 
-    // Split requests into resilient small batches (max 20 per request)
+    // Split requests into resilient small batches (strictly at most 20 per request)
     const chunks: string[][] = [];
     for (let i = 0; i < uniqueCmcSlugs.length; i += BATCH_CHUNK_SIZE) {
       chunks.push(uniqueCmcSlugs.slice(i, i + BATCH_CHUNK_SIZE));
     }
 
-    const chunkPromises = chunks.map((chunkSlugs) =>
-      this.fetchChunk(chunkSlugs, cmcSlugToRequestedSlugs),
-    );
+    // Singleflight / request coalescing: deduplicate concurrent fetches for identical chunks
+    const chunkPromises = chunks.map((chunkSlugs) => {
+      const cacheKey = chunkSlugs.sort().join(',');
+      const inFlight = this.inFlightChunks.get(cacheKey);
+      if (inFlight) return inFlight;
+
+      const promise = this.fetchChunk(chunkSlugs, cmcSlugToRequestedSlugs).finally(
+        () => {
+          this.inFlightChunks.delete(cacheKey);
+        },
+      );
+      this.inFlightChunks.set(cacheKey, promise);
+      return promise;
+    });
 
     const chunkResults = await Promise.allSettled(chunkPromises);
 
@@ -104,6 +147,12 @@ export class MarketDataAdapter {
         for (const quote of result.value) {
           resultsBySlug.set(quote.slug, quote);
           this.quoteCache.set(quote.slug, { quote, cachedAt: now });
+          // Asynchronously write to Redis with 60s TTL
+          if (this.redisService) {
+            this.redisService
+              .setEx(`${REDIS_KEY_PREFIX}${quote.slug}`, 60, JSON.stringify(quote))
+              .catch(() => {});
+          }
         }
       } else {
         const error = result.reason;
@@ -278,8 +327,39 @@ export class MarketDataAdapter {
     try {
       const payload = (await response.json()) as {
         data?: unknown;
-        status?: { error_code?: number; error_message?: string };
+        status?: {
+          error_code?: number;
+          error_message?: string | null;
+          credit_count?: number;
+        };
       };
+
+      // Review Provider error_code even when HTTP 200 is returned
+      if (payload?.status?.error_code && payload.status.error_code !== 0) {
+        const isRateLimit = payload.status.error_code === 1008;
+        const category: MarketDataFailureCategory = isRateLimit
+          ? 'RATE_LIMITED'
+          : 'UPSTREAM_SERVER_ERROR';
+        const diagnostics: MarketDataDiagnostics = {
+          category,
+          statusCode: 200,
+          message:
+            payload.status.error_message ??
+            `CoinMarketCap status error_code ${payload.status.error_code}`,
+          requestedCount: cmcSlugs.length,
+        };
+        console.warn(
+          '[MarketDataAdapter] CoinMarketCap response reported non-zero status.error_code',
+          diagnostics,
+        );
+        throw new MarketDataError(
+          'QUOTES_FETCH_FAILED',
+          200,
+          category,
+          diagnostics,
+        );
+      }
+
       const data = payload?.data;
       if (!data || typeof data !== 'object') {
         return [];
