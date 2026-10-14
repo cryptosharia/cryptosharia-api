@@ -14,6 +14,12 @@ import {
   cryptoassets,
   teamMembers,
   users,
+  academyScopes,
+  academyContent,
+  academyLessonMedia,
+  academyGrants,
+  academyProgress,
+  academyCompletions,
 } from './drizzle.schema';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -392,3 +398,98 @@ export const TeamMember = createSelectSchema(teamMembers, {
   updatedBy: (f) => f.meta({ description: 'User pengubah' }),
 });
 export type TeamMember = z.infer<typeof TeamMember>;
+
+export const AcademyScope = createSelectSchema(academyScopes, {
+  id: (f) =>
+    f.meta({ description: 'ID lingkup hak akses', example: 'scope-a' }),
+  name: (f) => f.meta({ description: 'Nama paket/lingkup' }),
+  description: (f) => f.nullable().meta({ description: 'Deskripsi lingkup' }),
+  isActive: (f) => f.meta({ description: 'Status aktif' }),
+  createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
+  updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
+  createdBy: (f) => f.meta({ description: 'User pembuat' }),
+  updatedBy: (f) => f.meta({ description: 'User pengubah' }),
+});
+export type AcademyScope = z.infer<typeof AcademyScope>;
+
+export const AcademyContent = createSelectSchema(academyContent, {
+  id: (f) => f.meta({ description: 'ID konten kurikulum' }),
+  kind: (f) => f.meta({ description: 'Tingkat hierarki konten' }),
+  parentId: (f) => f.meta({ description: 'ID induk dalam hierarki' }),
+  subjectId: (f) => f.meta({ description: 'Subjek pembelajaran' }),
+  level: (f) => f.meta({ description: 'Tingkat (1-6)' }),
+  chapterNumber: (f) => f.meta({ description: 'Nomor bab (1-7)' }),
+  order: (f) => f.meta({ description: 'Urutan pelajaran' }),
+  scopeId: (f) => f.nullable().meta({ description: 'Lingkup akses materi' }),
+  title: (f) => f.meta({ description: 'Judul materi' }),
+  description: (f) => f.meta({ description: 'Deskripsi materi' }),
+  thumbnail: (f) => f.meta({ description: 'URL thumbnail' }),
+  durationSeconds: (f) => f.meta({ description: 'Durasi video (detik)' }),
+  instructor: (f) => f.meta({ description: 'Pengajar/instruktur' }),
+  status: (f) => f.meta({ description: 'Status publikasi' }),
+  version: (f) => f.meta({ description: 'Versi konten' }),
+  syariahRequired: (f) => f.meta({ description: 'Kewajiban review syariah' }),
+  reviewedBy: (f) => f.nullable().meta({ description: 'Reviewer konten' }),
+  syariahReviewedBy: (f) =>
+    f.nullable().meta({ description: 'Reviewer syariah' }),
+  rightsConfirmed: (f) => f.meta({ description: 'Konfirmasi hak cipta' }),
+  approvedAt: (f) => f.nullable().meta({ description: 'Waktu persetujuan' }),
+  publishedAt: (f) => f.nullable().meta({ description: 'Waktu publikasi' }),
+  publishedBy: (f) =>
+    f.nullable().meta({ description: 'User yang mempublikasikan' }),
+  createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
+  updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
+  createdBy: (f) => f.meta({ description: 'User pembuat' }),
+  updatedBy: (f) => f.meta({ description: 'User pengubah' }),
+});
+export type AcademyContent = z.infer<typeof AcademyContent>;
+
+export const AcademyLessonMedia = createSelectSchema(academyLessonMedia, {
+  lessonId: (f) => f.meta({ description: 'ID pelajaran terkait' }),
+  videoId: (f) => f.meta({ description: 'YouTube Video ID' }),
+  version: (f) => f.meta({ description: 'Versi video' }),
+  readingRefs: () => z.array(z.string()).default([]),
+  slideRefs: () => z.array(z.string()).default([]),
+  subtitleRefs: () => z.array(z.string()).default([]),
+  attachmentRefs: () => z.array(z.string()).default([]),
+  internalNote: (f) => f.nullable().meta({ description: 'Catatan internal' }),
+  createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
+  updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
+  createdBy: (f) => f.meta({ description: 'User pembuat' }),
+  updatedBy: (f) => f.meta({ description: 'User pengubah' }),
+});
+export type AcademyLessonMedia = z.infer<typeof AcademyLessonMedia>;
+
+export const AcademyGrant = createSelectSchema(academyGrants, {
+  id: (f) => f.meta({ description: 'ID grant' }),
+  userId: (f) => f.meta({ description: 'ID pengguna penerima akses' }),
+  scopeId: (f) => f.meta({ description: 'Lingkup hak akses' }),
+  state: (f) => f.meta({ description: 'Status grant (active/revoked)' }),
+  startsAt: (f) => f.meta({ description: 'Waktu mulai berlaku' }),
+  expiresAt: (f) => f.meta({ description: 'Waktu berakhir' }),
+  source: (f) => f.meta({ description: 'Sumber pemberian hak akses' }),
+  auditId: (f) => f.nullable().meta({ description: 'Audit trail ID' }),
+  createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
+  updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
+  createdBy: (f) => f.meta({ description: 'User pembuat' }),
+  updatedBy: (f) => f.meta({ description: 'User pengubah' }),
+});
+export type AcademyGrant = z.infer<typeof AcademyGrant>;
+
+export const AcademyProgress = createSelectSchema(academyProgress, {
+  userId: (f) => f.meta({ description: 'ID pengguna' }),
+  lessonId: (f) => f.meta({ description: 'ID pelajaran' }),
+  version: (f) => f.meta({ description: 'Versi pelajaran saat diputar' }),
+  positionSeconds: (f) => f.meta({ description: 'Posisi resume (detik)' }),
+  updatedAt: (f) => f.meta({ description: 'Waktu terakhir disimpan' }),
+});
+export type AcademyProgress = z.infer<typeof AcademyProgress>;
+
+export const AcademyCompletion = createSelectSchema(academyCompletions, {
+  userId: (f) => f.meta({ description: 'ID pengguna' }),
+  lessonId: (f) => f.meta({ description: 'ID pelajaran yang diselesaikan' }),
+  version: (f) =>
+    f.meta({ description: 'Versi pelajaran yang diselesaikan' }),
+  completedAt: (f) => f.meta({ description: 'Waktu penyelesaian' }),
+});
+export type AcademyCompletion = z.infer<typeof AcademyCompletion>;
