@@ -39,7 +39,11 @@ lerna-debug.log*
 .env
 .env.*
 !.env.example
-!.env.test
+
+# Local-only test credentials and generated files
+/.env.test
+/.svelte-kit/
+/test/package3-real-bff.e2e-spec.ts
 
 # temp directory
 .temp
