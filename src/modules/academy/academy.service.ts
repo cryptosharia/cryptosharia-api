@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type {
   AcademyCompletion,
   AcademyContent,
+  AcademyGrant,
   AcademyLessonMedia,
   AcademyProgress,
   AcademyScope,
@@ -34,6 +35,28 @@ export class AcademyService {
   }
 
   /**
+   * Asserts participant has valid, active, non-revoked entitlement.
+   */
+  private async assertEntitlement(
+    userId: string,
+    scopeId: string,
+    now: Date = new Date(),
+  ): Promise<void> {
+    if (typeof this.repository.validateEntitlement === 'function') {
+      await this.repository.validateEntitlement(userId, scopeId, now);
+    } else {
+      const grant = await this.repository.selectActiveGrant(
+        userId,
+        scopeId,
+        now,
+      );
+      if (!grant) {
+        throw new AcademyError('UNAUTHORIZED_SCOPE');
+      }
+    }
+  }
+
+  /**
    * Retrieves lesson details and delivers videoId ONLY after confirming active entitlement grant.
    */
   async getAuthorizedLessonMedia(
@@ -42,7 +65,7 @@ export class AcademyService {
     now: Date = new Date(),
   ): Promise<AuthorizedLessonDetail> {
     const lesson = await this.repository.selectContentById(lessonId);
-    if (!lesson) {
+    if (!lesson || lesson.kind !== 'lesson') {
       throw new AcademyError('CONTENT_NOT_FOUND');
     }
     if (lesson.status !== 'published') {
@@ -55,14 +78,7 @@ export class AcademyService {
       );
     }
 
-    const grant = await this.repository.selectActiveGrant(
-      userId,
-      lesson.scopeId,
-      now,
-    );
-    if (!grant) {
-      throw new AcademyError('UNAUTHORIZED_SCOPE');
-    }
+    await this.assertEntitlement(userId, lesson.scopeId, now);
 
     const media = await this.repository.selectLessonMedia(lessonId);
     if (!media) {
@@ -70,6 +86,10 @@ export class AcademyService {
     }
 
     return { lesson, media };
+  }
+
+  async getUserGrants(userId: string): Promise<AcademyGrant[]> {
+    return this.repository.selectUserGrants(userId);
   }
 
   async getUserProgress(userId: string): Promise<AcademyProgress[]> {
@@ -81,10 +101,14 @@ export class AcademyService {
     lessonId: string,
     version: number,
     positionSeconds: number,
+    now: Date = new Date(),
   ): Promise<void> {
     const lesson = await this.repository.selectContentById(lessonId);
     if (!lesson || lesson.status !== 'published') {
       throw new AcademyError('LESSON_NOT_PUBLISHED');
+    }
+    if (lesson.version !== version) {
+      throw new AcademyError('COMPLETION_VERSION_MISMATCH');
     }
 
     if (
@@ -94,6 +118,12 @@ export class AcademyService {
     ) {
       throw new AcademyError('INVALID_PROGRESS_POSITION');
     }
+
+    if (!lesson.scopeId) {
+      throw new AcademyError('UNAUTHORIZED_SCOPE');
+    }
+
+    await this.assertEntitlement(userId, lesson.scopeId, now);
 
     await this.repository.upsertProgress(
       userId,
@@ -124,16 +154,24 @@ export class AcademyService {
       throw new AcademyError('UNAUTHORIZED_SCOPE');
     }
 
-    const grant = await this.repository.selectActiveGrant(
-      userId,
-      lesson.scopeId,
-      now,
-    );
-    if (!grant) {
-      throw new AcademyError('UNAUTHORIZED_SCOPE');
-    }
+    await this.assertEntitlement(userId, lesson.scopeId, now);
 
     await this.repository.insertCompletion(userId, lessonId, version);
+  }
+
+  async getCompletionsWithSummary(
+    userId: string,
+    scopeId?: string,
+    now: Date = new Date(),
+  ): Promise<{
+    completions: AcademyCompletion[];
+    summary: AggregateProgressSummary;
+  }> {
+    const [completions, summary] = await Promise.all([
+      this.repository.selectUserCompletions(userId),
+      this.getAggregateProgress(userId, scopeId, now),
+    ]);
+    return { completions, summary };
   }
 
   async getAggregateProgress(

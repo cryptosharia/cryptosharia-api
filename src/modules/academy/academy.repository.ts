@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, gt, lte } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import {
   academyCompletions,
   academyContent,
@@ -149,26 +149,96 @@ export class AcademyRepository {
       .orderBy(desc(academyGrants.startsAt));
   }
 
-  async selectActiveGrant(
+  /**
+   * Asserts participant entitlement for a given scope at time `now`.
+   * Enforces revocation precedence: overlapping or duplicate active grants
+   * cannot silently defeat an existing revocation.
+   */
+  async validateEntitlement(
     userId: string,
     scopeId: string,
     now: Date = new Date(),
     executor?: DbExecutor,
-  ): Promise<AcademyGrant | null> {
-    const [grant] = await this.getExecutor(executor)
+  ): Promise<AcademyGrant> {
+    const scope = await this.selectScopeById(scopeId, executor);
+    if (!scope || !scope.isActive) {
+      throw new AcademyError(
+        'UNAUTHORIZED_SCOPE',
+        'Lingkup materi tidak aktif atau tidak ditemukan',
+      );
+    }
+
+    const grants = await this.getExecutor(executor)
       .select()
       .from(academyGrants)
       .where(
         and(
           eq(academyGrants.userId, userId),
           eq(academyGrants.scopeId, scopeId),
-          eq(academyGrants.state, 'active'),
-          lte(academyGrants.startsAt, now),
-          gt(academyGrants.expiresAt, now),
         ),
       )
-      .limit(1);
-    return grant ?? null;
+      .orderBy(desc(academyGrants.createdAt), desc(academyGrants.updatedAt));
+
+    if (grants.length === 0) {
+      throw new AcademyError('GRANT_NOT_FOUND');
+    }
+
+    const nowMs = now.getTime();
+    const revokedGrant = grants.find((g) => g.state === 'revoked');
+
+    const validActiveGrant = grants.find((g) => {
+      if (g.state !== 'active') return false;
+      const startMs = new Date(g.startsAt).getTime();
+      const expireMs = new Date(g.expiresAt).getTime();
+      return startMs <= nowMs && nowMs < expireMs;
+    });
+
+    if (validActiveGrant) {
+      const revokedTime = revokedGrant?.updatedAt
+        ? new Date(revokedGrant.updatedAt).getTime()
+        : 0;
+      const activeCreatedTime = validActiveGrant.createdAt
+        ? new Date(validActiveGrant.createdAt).getTime()
+        : 0;
+
+      if (revokedGrant && revokedTime >= activeCreatedTime) {
+        throw new AcademyError('GRANT_REVOKED');
+      }
+      return validActiveGrant;
+    }
+
+    if (revokedGrant) {
+      throw new AcademyError('GRANT_REVOKED');
+    }
+
+    const futureGrant = grants.find(
+      (g) => g.state === 'active' && new Date(g.startsAt).getTime() > nowMs,
+    );
+    if (futureGrant) {
+      throw new AcademyError('GRANT_NOT_STARTED');
+    }
+
+    const expiredGrant = grants.find(
+      (g) => g.state === 'active' && new Date(g.expiresAt).getTime() <= nowMs,
+    );
+    if (expiredGrant) {
+      throw new AcademyError('GRANT_EXPIRED');
+    }
+
+    throw new AcademyError('GRANT_INACTIVE');
+  }
+
+  async selectActiveGrant(
+    userId: string,
+    scopeId: string,
+    now: Date = new Date(),
+    executor?: DbExecutor,
+  ): Promise<AcademyGrant | null> {
+    try {
+      return await this.validateEntitlement(userId, scopeId, now, executor);
+    } catch {
+      return null;
+    }
   }
 
   // --- Progress / Resume Positions ---
@@ -328,16 +398,39 @@ export class AcademyRepository {
   ): AggregateProgressSummary {
     const nowTime = now.getTime();
 
-    const activeScopes = new Set(
-      activeGrants
-        .filter(
-          (g) =>
-            g.state === 'active' &&
-            new Date(g.startsAt).getTime() <= nowTime &&
-            nowTime < new Date(g.expiresAt).getTime(),
-        )
-        .map((g) => g.scopeId),
-    );
+    // Group grants by scope to enforce revocation precedence
+    const grantsByScope = new Map<string, AcademyGrant[]>();
+    for (const g of activeGrants) {
+      const list = grantsByScope.get(g.scopeId) ?? [];
+      list.push(g);
+      grantsByScope.set(g.scopeId, list);
+    }
+
+    const activeScopes = new Set<string>();
+    for (const [sId, sGrants] of grantsByScope.entries()) {
+      const revoked = sGrants.find((g) => g.state === 'revoked');
+      const active = sGrants.find(
+        (g) =>
+          g.state === 'active' &&
+          new Date(g.startsAt).getTime() <= nowTime &&
+          nowTime < new Date(g.expiresAt).getTime(),
+      );
+
+      if (active) {
+        const revokedTime = revoked?.updatedAt
+          ? new Date(revoked.updatedAt).getTime()
+          : 0;
+        const activeCreatedTime = active.createdAt
+          ? new Date(active.createdAt).getTime()
+          : 0;
+
+        if (revoked && revokedTime >= activeCreatedTime) {
+          // Revocation takes precedence over overlapping grant
+          continue;
+        }
+        activeScopes.add(sId);
+      }
+    }
 
     const eligibleLessons = publishedLessons.filter(
       (l) =>

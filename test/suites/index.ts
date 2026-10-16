@@ -9,6 +9,7 @@ import { TagsSuite } from './tags.suite';
 import { PostsSuite } from './posts.suite';
 import { CryptoassetsSuite } from './cryptoassets.suite';
 import { MessagesSuite } from './messages.suite';
+import { AcademySuite } from './academy.suite';
 
 export class SuitesService {
   private readonly _suites: Suite[];
@@ -24,6 +25,7 @@ export class SuitesService {
       new CryptoassetsSuite(ctx),
       new MessagesSuite(ctx),
       new AssetsSuite(ctx),
+      new AcademySuite(ctx),
     ];
   }
 

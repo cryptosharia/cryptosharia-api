@@ -22,14 +22,24 @@ async function cleanup() {
 export default async function globalSetup() {
   try {
     await run(['docker', 'compose', '-f', composeFile, 'up', '-d', '--wait']);
-    await run([
-      'bun',
-      'x',
-      'drizzle-kit',
-      'migrate',
-      '--config',
-      'drizzle.config.test.ts',
-    ]);
+    const migrateCmd =
+      process.platform === 'win32'
+        ? [
+            'npx',
+            'drizzle-kit',
+            'migrate',
+            '--config',
+            'drizzle.config.test.ts',
+          ]
+        : [
+            'bun',
+            'x',
+            'drizzle-kit',
+            'migrate',
+            '--config',
+            'drizzle.config.test.ts',
+          ];
+    await run(migrateCmd);
   } catch (error) {
     await cleanup();
     throw error;
