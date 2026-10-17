@@ -11,6 +11,9 @@ export const ALL_PERMISSIONS = [
   'users.manage_role',
   'messages.read',
   'team.manage',
+  'academy.manage',
+  'academy.review',
+  'academy.publish',
 ] as const;
 
 export type Permission = (typeof ALL_PERMISSIONS)[number];

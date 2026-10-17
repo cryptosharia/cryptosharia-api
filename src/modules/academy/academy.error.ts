@@ -13,6 +13,8 @@ export const ACADEMY_ERRORS = {
   UNAUTHORIZED_SCOPE: 'Pengguna tidak memiliki hak akses untuk materi ini',
   COMPLETION_VERSION_MISMATCH: 'Versi materi tidak sesuai dengan versi publikasi aktif',
   INVALID_PROGRESS_POSITION: 'Posisi resume video di luar durasi materi yang valid',
+  INVALID_STATUS_TRANSITION: 'Transisi status konten tidak valid',
+  RIGHTS_NOT_CONFIRMED: 'Pernyataan hak cipta/syariah wajib dikonfirmasi sebelum persetujuan/publikasi',
 } as const;
 
 export type AcademyErrorCode = keyof typeof ACADEMY_ERRORS;

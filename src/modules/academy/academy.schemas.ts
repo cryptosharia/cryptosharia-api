@@ -176,3 +176,130 @@ export const CompletionsResponse = z.object({
   summary: AggregateProgressSummarySchema,
 });
 export type CompletionsResponse = z.infer<typeof CompletionsResponse>;
+
+// ==========================================
+// Admin CMS & Editorial Schemas (Package 4)
+// ==========================================
+
+export const ScopeIdParam = z.object({
+  id: z.string().min(1, 'ID lingkup tidak boleh kosong').max(50),
+});
+export type ScopeIdParam = z.infer<typeof ScopeIdParam>;
+
+export const CreateScopeBody = z.object({
+  id: z
+    .string()
+    .min(2, 'ID scope minimal 2 karakter')
+    .max(50, 'ID scope maksimal 50 karakter')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Hanya huruf kecil, angka, dan tanda hubung'),
+  name: z.string().min(2, 'Nama scope minimal 2 karakter').max(150),
+  description: z.string().optional().default(''),
+  isActive: z.boolean().optional().default(true),
+});
+export type CreateScopeBody = z.infer<typeof CreateScopeBody>;
+
+export const UpdateScopeBody = z.object({
+  name: z.string().min(2).max(150).optional(),
+  description: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+export type UpdateScopeBody = z.infer<typeof UpdateScopeBody>;
+
+export const AdminContentQuery = z.object({
+  status: z.enum(['draft', 'review', 'approved', 'published', 'archived']).optional(),
+  kind: z.enum(['subject', 'level', 'chapter', 'lesson']).optional(),
+  subjectId: z.enum(['fundamental', 'technical', 'muamalah', 'web3']).optional(),
+  scopeId: z.string().optional(),
+});
+export type AdminContentQuery = z.infer<typeof AdminContentQuery>;
+
+export const CreateContentBody = z.object({
+  id: z
+    .string()
+    .min(2, 'ID konten minimal 2 karakter')
+    .max(100, 'ID konten maksimal 100 karakter')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Hanya huruf kecil, angka, dan tanda hubung'),
+  kind: z.enum(['subject', 'level', 'chapter', 'lesson']),
+  parentId: z.string().min(1, 'parentId wajib diisi').max(100),
+  subjectId: z.enum(['fundamental', 'technical', 'muamalah', 'web3']),
+  level: z.number().int().min(1).max(6).default(1),
+  chapterNumber: z.number().int().min(1).max(7).default(1),
+  order: z.number().int().min(0).default(0),
+  scopeId: z.string().max(50).nullable().optional(),
+  title: z.string().min(2, 'Judul minimal 2 karakter').max(255),
+  description: z.string().default(''),
+  thumbnail: z.string().default('/favicon.png'),
+  durationSeconds: z.number().int().min(0).default(0),
+  instructor: z.string().max(150).default(''),
+  syariahRequired: z.boolean().default(false),
+});
+export type CreateContentBody = z.infer<typeof CreateContentBody>;
+
+export const UpdateContentBody = z.object({
+  title: z.string().min(2).max(255).optional(),
+  description: z.string().optional(),
+  thumbnail: z.string().optional(),
+  durationSeconds: z.number().int().min(0).optional(),
+  instructor: z.string().max(150).optional(),
+  order: z.number().int().min(0).optional(),
+  scopeId: z.string().max(50).nullable().optional(),
+  syariahRequired: z.boolean().optional(),
+});
+export type UpdateContentBody = z.infer<typeof UpdateContentBody>;
+
+export const ContentTransitionBody = z.object({
+  targetStatus: z.enum(['draft', 'review', 'approved', 'published', 'archived']),
+  rightsConfirmed: z.boolean().optional().default(false),
+});
+export type ContentTransitionBody = z.infer<typeof ContentTransitionBody>;
+
+export const SetLessonMediaBody = z.object({
+  videoId: z
+    .string()
+    .length(11, 'YouTube Video ID harus tepat 11 karakter')
+    .meta({ example: 'dQw4w9WgXcQ' }),
+  readingRefs: z.array(z.string()).default([]),
+  slideRefs: z.array(z.string()).default([]),
+  subtitleRefs: z.array(z.string()).default([]),
+  attachmentRefs: z.array(z.string()).default([]),
+  internalNote: z.string().nullable().optional(),
+});
+export type SetLessonMediaBody = z.infer<typeof SetLessonMediaBody>;
+
+export const CreateGrantBody = z.object({
+  userId: z.string().uuid('ID pengguna harus berupa format UUID yang valid'),
+  scopeId: z.string().min(1, 'scopeId wajib diisi').max(50),
+  state: z.enum(['active', 'revoked']).default('active'),
+  startsAt: z.string().datetime().optional(),
+  expiresAt: z.string().datetime().optional(),
+  source: z.string().max(50).default('manual'),
+  auditId: z.string().max(100).optional(),
+});
+export type CreateGrantBody = z.infer<typeof CreateGrantBody>;
+
+export const AdminDashboardStats = z.object({
+  totalLessons: z.number().int(),
+  publishedLessons: z.number().int(),
+  draftContent: z.number().int(),
+  reviewContent: z.number().int(),
+  totalScopes: z.number().int(),
+  totalGrants: z.number().int(),
+});
+export type AdminDashboardStats = z.infer<typeof AdminDashboardStats>;
+
+export const ContentIdParam = z.object({
+  id: z.string().min(1, 'ID konten wajib diisi').max(100),
+});
+export type ContentIdParam = z.infer<typeof ContentIdParam>;
+
+export const GrantIdParam = z.object({
+  id: z.string().uuid('ID grant harus berupa format UUID yang valid'),
+});
+export type GrantIdParam = z.infer<typeof GrantIdParam>;
+
+export const AdminGrantsQuery = z.object({
+  userId: z.string().uuid().optional(),
+  scopeId: z.string().optional(),
+});
+export type AdminGrantsQuery = z.infer<typeof AdminGrantsQuery>;
+

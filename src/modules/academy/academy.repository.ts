@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, type SQL } from 'drizzle-orm';
 import {
   academyCompletions,
   academyContent,
@@ -455,6 +455,379 @@ export class AcademyRepository {
       completed: completedCount,
       total,
       percentage,
+    };
+  }
+
+  // ==========================================
+  // Admin Operations (Package 4 CMS)
+  // ==========================================
+
+  async insertScope(
+    data: {
+      id: string;
+      name: string;
+      description?: string;
+      isActive?: boolean;
+      createdBy: string;
+    },
+    executor?: DbExecutor,
+  ): Promise<AcademyScope> {
+    const [scope] = await this.getExecutor(executor)
+      .insert(academyScopes)
+      .values({
+        id: data.id,
+        name: data.name,
+        description: data.description ?? '',
+        isActive: data.isActive ?? true,
+        createdBy: data.createdBy,
+        updatedBy: data.createdBy,
+      })
+      .returning();
+    return scope;
+  }
+
+  async updateScope(
+    id: string,
+    data: {
+      name?: string;
+      description?: string;
+      isActive?: boolean;
+      updatedBy: string;
+    },
+    executor?: DbExecutor,
+  ): Promise<AcademyScope> {
+    const [scope] = await this.getExecutor(executor)
+      .update(academyScopes)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(academyScopes.id, id))
+      .returning();
+    if (!scope) {
+      throw new AcademyError('SCOPE_NOT_FOUND', 'Scope tidak ditemukan');
+    }
+    return scope;
+  }
+
+  async selectAllScopesAdmin(executor?: DbExecutor): Promise<AcademyScope[]> {
+    return this.getExecutor(executor)
+      .select()
+      .from(academyScopes)
+      .orderBy(asc(academyScopes.name));
+  }
+
+  async selectAllContentAdmin(
+    filters?: {
+      status?: 'draft' | 'review' | 'approved' | 'published' | 'archived';
+      kind?: 'subject' | 'level' | 'chapter' | 'lesson';
+      subjectId?: 'fundamental' | 'technical' | 'muamalah' | 'web3';
+      scopeId?: string;
+    },
+    executor?: DbExecutor,
+  ): Promise<AcademyContent[]> {
+    const conditions: SQL[] = [];
+    if (filters?.status) conditions.push(eq(academyContent.status, filters.status));
+    if (filters?.kind) conditions.push(eq(academyContent.kind, filters.kind));
+    if (filters?.subjectId) conditions.push(eq(academyContent.subjectId, filters.subjectId));
+    if (filters?.scopeId) conditions.push(eq(academyContent.scopeId, filters.scopeId));
+
+    const q = this.getExecutor(executor).select().from(academyContent);
+    if (conditions.length > 0) {
+      q.where(and(...conditions));
+    }
+
+    return q.orderBy(
+      asc(academyContent.level),
+      asc(academyContent.chapterNumber),
+      asc(academyContent.order),
+      asc(academyContent.id),
+    );
+  }
+
+  async insertContent(
+    data: {
+      id: string;
+      kind: 'subject' | 'level' | 'chapter' | 'lesson';
+      parentId: string;
+      subjectId: 'fundamental' | 'technical' | 'muamalah' | 'web3';
+      level: number;
+      chapterNumber: number;
+      order: number;
+      scopeId?: string | null;
+      title: string;
+      description?: string;
+      thumbnail?: string;
+      durationSeconds?: number;
+      instructor?: string;
+      syariahRequired?: boolean;
+      createdBy: string;
+    },
+    executor?: DbExecutor,
+  ): Promise<AcademyContent> {
+    const [item] = await this.getExecutor(executor)
+      .insert(academyContent)
+      .values({
+        id: data.id,
+        kind: data.kind,
+        parentId: data.parentId,
+        subjectId: data.subjectId,
+        level: data.level,
+        chapterNumber: data.chapterNumber,
+        order: data.order,
+        scopeId: data.scopeId ?? null,
+        title: data.title,
+        description: data.description ?? '',
+        thumbnail: data.thumbnail ?? '/favicon.png',
+        durationSeconds: data.durationSeconds ?? 0,
+        instructor: data.instructor ?? '',
+        status: 'draft',
+        version: 1,
+        syariahRequired: data.syariahRequired ?? false,
+        createdBy: data.createdBy,
+        updatedBy: data.createdBy,
+      })
+      .returning();
+    return item;
+  }
+
+  async updateContent(
+    id: string,
+    data: {
+      title?: string;
+      description?: string;
+      thumbnail?: string;
+      durationSeconds?: number;
+      instructor?: string;
+      order?: number;
+      scopeId?: string | null;
+      syariahRequired?: boolean;
+      updatedBy: string;
+    },
+    executor?: DbExecutor,
+  ): Promise<AcademyContent> {
+    const [item] = await this.getExecutor(executor)
+      .update(academyContent)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(academyContent.id, id))
+      .returning();
+    if (!item) {
+      throw new AcademyError('CONTENT_NOT_FOUND', 'Konten tidak ditemukan');
+    }
+    return item;
+  }
+
+  async deleteContentDraft(id: string, executor?: DbExecutor): Promise<void> {
+    const existing = await this.selectContentById(id, executor);
+    if (!existing) {
+      throw new AcademyError('CONTENT_NOT_FOUND', 'Konten tidak ditemukan');
+    }
+    if (existing.status !== 'draft') {
+      throw new AcademyError(
+        'INVALID_STATUS_TRANSITION',
+        'Hanya konten berstatus draft yang dapat dihapus',
+      );
+    }
+    await this.getExecutor(executor)
+      .delete(academyContent)
+      .where(eq(academyContent.id, id));
+  }
+
+  async transitionContentStatus(
+    id: string,
+    targetStatus: 'draft' | 'review' | 'approved' | 'published' | 'archived',
+    actorUserId: string,
+    rightsConfirmed: boolean = false,
+    executor?: DbExecutor,
+  ): Promise<AcademyContent> {
+    const current = await this.selectContentById(id, executor);
+    if (!current) {
+      throw new AcademyError('CONTENT_NOT_FOUND', 'Konten tidak ditemukan');
+    }
+
+    const updates: Record<string, unknown> = {
+      status: targetStatus,
+      updatedBy: actorUserId,
+      updatedAt: new Date(),
+    };
+
+    if (targetStatus === 'approved') {
+      updates.reviewedBy = actorUserId;
+      updates.rightsConfirmed = rightsConfirmed;
+      updates.approvedAt = new Date();
+      if (current.syariahRequired) {
+        updates.syariahReviewedBy = actorUserId;
+      }
+    } else if (targetStatus === 'published') {
+      updates.publishedBy = actorUserId;
+      updates.publishedAt = new Date();
+    } else if (targetStatus === 'draft') {
+      updates.reviewedBy = null;
+      updates.syariahReviewedBy = null;
+      updates.rightsConfirmed = false;
+      updates.approvedAt = null;
+      updates.publishedAt = null;
+      updates.publishedBy = null;
+    }
+
+    const [updated] = await this.getExecutor(executor)
+      .update(academyContent)
+      .set(updates)
+      .where(eq(academyContent.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async upsertLessonMedia(
+    data: {
+      lessonId: string;
+      videoId: string;
+      readingRefs?: string[];
+      slideRefs?: string[];
+      subtitleRefs?: string[];
+      attachmentRefs?: string[];
+      internalNote?: string | null;
+      updatedBy: string;
+    },
+    executor?: DbExecutor,
+  ): Promise<AcademyLessonMedia> {
+    const [media] = await this.getExecutor(executor)
+      .insert(academyLessonMedia)
+      .values({
+        lessonId: data.lessonId,
+        videoId: data.videoId,
+        readingRefs: data.readingRefs ?? [],
+        slideRefs: data.slideRefs ?? [],
+        subtitleRefs: data.subtitleRefs ?? [],
+        attachmentRefs: data.attachmentRefs ?? [],
+        internalNote: data.internalNote ?? null,
+        createdBy: data.updatedBy,
+        updatedBy: data.updatedBy,
+      })
+      .onConflictDoUpdate({
+        target: [academyLessonMedia.lessonId],
+        set: {
+          videoId: data.videoId,
+          readingRefs: data.readingRefs ?? [],
+          slideRefs: data.slideRefs ?? [],
+          subtitleRefs: data.subtitleRefs ?? [],
+          attachmentRefs: data.attachmentRefs ?? [],
+          internalNote: data.internalNote ?? null,
+          updatedBy: data.updatedBy,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return media;
+  }
+
+  async insertGrant(
+    data: {
+      userId: string;
+      scopeId: string;
+      state?: 'active' | 'revoked';
+      startsAt?: Date;
+      expiresAt?: Date;
+      source?: string;
+      auditId?: string;
+      createdBy: string;
+    },
+    executor?: DbExecutor,
+  ): Promise<AcademyGrant> {
+    const startsAt = data.startsAt ?? new Date();
+    const expiresAt = data.expiresAt ?? new Date(Date.now() + 365 * 24 * 3600 * 1000);
+
+    const [grant] = await this.getExecutor(executor)
+      .insert(academyGrants)
+      .values({
+        userId: data.userId,
+        scopeId: data.scopeId,
+        state: data.state ?? 'active',
+        startsAt,
+        expiresAt,
+        source: data.source ?? 'manual',
+        auditId: data.auditId ?? null,
+        createdBy: data.createdBy,
+        updatedBy: data.createdBy,
+      })
+      .returning();
+    return grant;
+  }
+
+  async revokeGrant(
+    id: string,
+    updatedBy: string,
+    executor?: DbExecutor,
+  ): Promise<AcademyGrant> {
+    const [grant] = await this.getExecutor(executor)
+      .update(academyGrants)
+      .set({
+        state: 'revoked',
+        updatedBy,
+        updatedAt: new Date(),
+      })
+      .where(eq(academyGrants.id, id))
+      .returning();
+    if (!grant) {
+      throw new AcademyError('GRANT_NOT_FOUND', 'Grant tidak ditemukan');
+    }
+    return grant;
+  }
+
+  async selectAllGrantsAdmin(
+    filters?: { userId?: string; scopeId?: string },
+    executor?: DbExecutor,
+  ): Promise<AcademyGrant[]> {
+    const conditions: SQL[] = [];
+    if (filters?.userId) conditions.push(eq(academyGrants.userId, filters.userId));
+    if (filters?.scopeId) conditions.push(eq(academyGrants.scopeId, filters.scopeId));
+
+    const q = this.getExecutor(executor).select().from(academyGrants);
+    if (conditions.length > 0) {
+      q.where(and(...conditions));
+    }
+    return q.orderBy(desc(academyGrants.createdAt));
+  }
+
+  async selectAdminStats(executor?: DbExecutor): Promise<{
+    totalLessons: number;
+    publishedLessons: number;
+    draftContent: number;
+    reviewContent: number;
+    totalScopes: number;
+    totalGrants: number;
+  }> {
+    const allContent = await this.getExecutor(executor)
+      .select({
+        kind: academyContent.kind,
+        status: academyContent.status,
+      })
+      .from(academyContent);
+
+    const totalLessons = allContent.filter((c) => c.kind === 'lesson').length;
+    const publishedLessons = allContent.filter(
+      (c) => c.kind === 'lesson' && c.status === 'published',
+    ).length;
+    const draftContent = allContent.filter((c) => c.status === 'draft').length;
+    const reviewContent = allContent.filter((c) => c.status === 'review').length;
+
+    const scopes = await this.selectScopes(executor);
+    const grants = await this.getExecutor(executor)
+      .select({ id: academyGrants.id })
+      .from(academyGrants)
+      .where(eq(academyGrants.state, 'active'));
+
+    return {
+      totalLessons,
+      publishedLessons,
+      draftContent,
+      reviewContent,
+      totalScopes: scopes.length,
+      totalGrants: grants.length,
     };
   }
 }

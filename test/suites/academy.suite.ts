@@ -758,7 +758,7 @@ export class AcademySuite extends Suite {
           const p1 = progRes.data.find(
             (progress) => progress.lessonId === 'lesson-1',
           );
-          expect(p1.positionSeconds).toBe(75);
+          expect(p1?.positionSeconds).toBe(75);
         });
 
         it('enforces cross-user completion isolation', async () => {
