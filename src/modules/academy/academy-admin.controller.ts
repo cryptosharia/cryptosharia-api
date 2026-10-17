@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -146,12 +147,35 @@ export class AcademyAdminController {
 
   @Post('content/:id/transition')
   @HttpCode(HttpStatus.OK)
-  @RequirePermissions('academy.manage')
+  @RequirePermissions('academy.manage', 'academy.review', 'academy.publish')
   async transitionContent(
     @Param(new ParseZodPipe(ContentIdParam)) { id }: ContentIdParam,
     @Body(new ParseZodPipe(ContentTransitionBody)) body: ContentTransitionBody,
     @CurrentUser() user: CurrentUser,
   ) {
+    if (['review', 'draft'].includes(body.targetStatus)) {
+      if (
+        !user.permissions.includes('academy.manage') &&
+        !user.permissions.includes('academy.review')
+      ) {
+        throw new ForbiddenException(
+          'Izin academy.manage atau academy.review diperlukan untuk aksi ini',
+        );
+      }
+    } else if (body.targetStatus === 'approved') {
+      if (!user.permissions.includes('academy.review')) {
+        throw new ForbiddenException(
+          'Izin editorial/sharia review (academy.review) diperlukan untuk menyetujui materi',
+        );
+      }
+    } else if (['published', 'archived'].includes(body.targetStatus)) {
+      if (!user.permissions.includes('academy.publish')) {
+        throw new ForbiddenException(
+          'Izin publikasi kurikulum (academy.publish) diperlukan untuk memublikasikan atau mengarsipkan materi',
+        );
+      }
+    }
+
     return this.academyService.transitionContentStatus(
       id,
       body.targetStatus,
