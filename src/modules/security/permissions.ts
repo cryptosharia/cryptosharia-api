@@ -14,6 +14,7 @@ export const ALL_PERMISSIONS = [
   'academy.manage',
   'academy.review',
   'academy.publish',
+  'website.settings.manage',
 ] as const;
 
 export type Permission = (typeof ALL_PERMISSIONS)[number];
@@ -23,7 +24,8 @@ export const ROLE_PERMISSIONS: Record<User['role'], Permission[]> = {
   admin: ALL_PERMISSIONS.filter(
     (permission) =>
       permission !== 'users.manage_role' &&
-      permission !== 'users.manage_status',
+      permission !== 'users.manage_status' &&
+      permission !== 'website.settings.manage',
   ),
   posts_manager: ['posts.manage', 'tags.manage'],
   cryptoassets_manager: ['cryptoassets.manage', 'tags.manage'],

@@ -20,6 +20,7 @@ import {
   academyGrants,
   academyProgress,
   academyCompletions,
+  websiteSettings,
 } from './drizzle.schema';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -77,6 +78,7 @@ export const ActivityLog = createSelectSchema(activityLogs, {
       'cryptoasset.delete',
       'cryptoasset.update',
       'user.update',
+      'website_settings.academy_visibility.updated',
     ])
     .meta({
       description: 'Aksi yang dilakukan',
@@ -91,6 +93,7 @@ export const ActivityLog = createSelectSchema(activityLogs, {
       'tags',
       'cryptoassets',
       'user',
+      'website_settings',
     ])
     .meta({ description: 'Tipe subjek', example: 'auth' }),
   subjectId: (f) => f.meta({ description: 'ID subjek' }),
@@ -100,6 +103,9 @@ export const ActivityLog = createSelectSchema(activityLogs, {
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
 });
 export type ActivityLog = z.infer<typeof ActivityLog>;
+
+export const WebsiteSettings = createSelectSchema(websiteSettings);
+export type WebsiteSettings = z.infer<typeof WebsiteSettings>;
 
 export const Asset = createSelectSchema(assets, {
   id: (f) => f.meta({ description: 'ID aset' }),

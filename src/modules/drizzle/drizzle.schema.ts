@@ -100,6 +100,25 @@ export const activityLogs = pgTable('activity_logs', {
   createdAt: createdAt(),
 });
 
+/** Runtime visibility preferences for public website Academy promotion. */
+export const websiteSettings = pgTable('website_settings', {
+  key: varchar('key', { length: 50 }).primaryKey(),
+  academyPromotionEnabled: boolean('academy_promotion_enabled')
+    .notNull()
+    .default(true),
+  academyNavbarEnabled: boolean('academy_navbar_enabled')
+    .notNull()
+    .default(true),
+  academyHomepageSectionEnabled: boolean('academy_homepage_section_enabled')
+    .notNull()
+    .default(true),
+  version: integer('version').notNull().default(1),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedBy: uuid('updated_by').references((): AnyPgColumn => users.id),
+});
+
 /** Crypto asset screening and editorial content. */
 export const cryptoassets = pgTable('cryptoassets', {
   id: primaryKeyUuid(),
