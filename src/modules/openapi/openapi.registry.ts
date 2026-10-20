@@ -11,6 +11,7 @@ import { messagesRouteConfig } from '#src/modules/messages/messages.openapi';
 import { postsRouteConfig } from '#src/modules/posts/posts.openapi';
 import { cryptoassetsRouteConfig } from '#src/modules/cryptoassets/cryptoassets.openapi';
 import { teamMembersRouteConfig } from '#src/modules/team-members/team-members.openapi';
+import { websiteSettingsRouteConfig } from '#src/modules/website-settings/website-settings.openapi';
 
 export function generateOpenApiDocument() {
   const registry = new OpenAPIRegistry();
@@ -41,6 +42,7 @@ export function generateOpenApiDocument() {
     ...messagesRouteConfig,
     ...assetsRouteConfig,
     ...teamMembersRouteConfig,
+    ...websiteSettingsRouteConfig,
   ];
   for (const route of routes) registry.registerPath(route);
 

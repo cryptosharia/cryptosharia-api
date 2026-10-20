@@ -1161,7 +1161,7 @@ export interface paths {
     head?: never;
     /**
      * Edit user
-     * @description Ubah profil, status, dan/atau role user.
+     * @description Ubah profil, status, dan/atau role user.<br>`status` & `role` hanya bisa diedit oleh akun yang punya akses
      */
     patch: {
       parameters: {
@@ -1207,7 +1207,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Profil diubah */
+        /** @description User diubah */
         200: {
           headers: {
             [name: string]: unknown;
@@ -5715,6 +5715,1313 @@ export interface paths {
         };
       };
     };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/team-members': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List anggota tim
+     * @description Menampilkan daftar anggota tim CryptoSharia dengan search, filter status aktif, sorting, dan pagination.
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description Halaman */
+          page?: number;
+          /** @description Item per halaman */
+          limit?: number;
+          /** @description Cari berdasarkan nama, peran, atau fokus */
+          search?: string;
+          /** @description Filter berdasarkan status aktif (default true untuk publik) */
+          isActive?: boolean;
+          /** @description Urutkan berdasarkan kolom */
+          sortBy?: 'orderIndex' | 'name' | 'createdAt';
+          /** @description Arah pengurutan */
+          sortDirection?: 'asc' | 'desc';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Daftar anggota tim berhasil ditampilkan */
+        200: {
+          headers: {
+            'total-items': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID anggota tim
+               */
+              id: string;
+              /** @description Slug anggota tim */
+              slug: string | null;
+              /**
+               * @description Nama anggota tim
+               * @example Sholahuddin Al Ayyubi
+               */
+              name: string;
+              /**
+               * @description Gelar/kredensial
+               * @example B.B.A., M.Sc.
+               */
+              credentials: string | null;
+              /**
+               * @description Jabatan
+               * @example Chief Executive Officer
+               */
+              role: string;
+              /**
+               * Format: uuid
+               * @description ID foto profil
+               */
+              imageId: string | null;
+              /** @description URL foto profil */
+              imageUrl: string | null;
+              /** @description Deskripsi profil/peran */
+              description: string;
+              /**
+               * @description Fokus bidang
+               * @example Strategi Perusahaan & Partnership
+               */
+              focus: string;
+              /** @description Kontribusi */
+              contribution: string | null;
+              /**
+               * @description Waktu bergabung
+               * @example 25 Mei 2025
+               */
+              joined: string | null;
+              /**
+               * @description Daftar area keahlian
+               * @default []
+               */
+              expertise: {
+                title: string;
+                description: string;
+              }[];
+              /** @description Urutan tampilan */
+              orderIndex: number;
+              /** @description Status aktif */
+              isActive: boolean;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /** @description URL foto profil yang telah di-resolve */
+              image: string;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            }[];
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * Tambah anggota tim
+     * @description Menambahkan anggota tim baru ke CryptoSharia.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Nama lengkap anggota tim
+             * @example Sholahuddin Al Ayyubi
+             */
+            name: string;
+            /**
+             * @description Slug unik anggota tim
+             * @example sholahuddin
+             */
+            slug?: string;
+            /**
+             * @description Gelar atau kredensial
+             * @example B.B.A., M.Sc.
+             */
+            credentials?: string | null;
+            /**
+             * @description Jabatan / Peran
+             * @example Chief Executive Officer
+             */
+            role: string;
+            /**
+             * Format: uuid
+             * @description ID aset foto profil yang diunggah
+             */
+            imageId?: string | null;
+            /**
+             * @description URL foto profil langsung atau path lokal
+             * @example /team/ceo-sholahuddin-al-ayyubi.webp
+             */
+            imageUrl?: string | null;
+            /** @description Deskripsi / peran anggota tim */
+            description: string;
+            /**
+             * @description Fokus bidang
+             * @example Strategi Perusahaan & Partnership
+             */
+            focus: string;
+            /** @description Kontribusi penting dalam ekosistem */
+            contribution?: string | null;
+            /**
+             * @description Waktu bergabung
+             * @example 25 Mei 2025
+             */
+            joined?: string | null;
+            /**
+             * @description Daftar keahlian / spesialisasi
+             * @default []
+             */
+            expertise?: {
+              title: string;
+              description: string;
+            }[];
+            /**
+             * @description Urutan prioritas tampilan
+             * @default 0
+             */
+            orderIndex?: number;
+            /**
+             * @description Status apakah ditampilkan ke publik
+             * @default true
+             */
+            isActive?: boolean;
+          };
+        };
+      };
+      responses: {
+        /** @description Anggota tim berhasil ditambahkan */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID anggota tim
+               */
+              id: string;
+              /** @description Slug anggota tim */
+              slug: string | null;
+              /**
+               * @description Nama anggota tim
+               * @example Sholahuddin Al Ayyubi
+               */
+              name: string;
+              /**
+               * @description Gelar/kredensial
+               * @example B.B.A., M.Sc.
+               */
+              credentials: string | null;
+              /**
+               * @description Jabatan
+               * @example Chief Executive Officer
+               */
+              role: string;
+              /**
+               * Format: uuid
+               * @description ID foto profil
+               */
+              imageId: string | null;
+              /** @description URL foto profil */
+              imageUrl: string | null;
+              /** @description Deskripsi profil/peran */
+              description: string;
+              /**
+               * @description Fokus bidang
+               * @example Strategi Perusahaan & Partnership
+               */
+              focus: string;
+              /** @description Kontribusi */
+              contribution: string | null;
+              /**
+               * @description Waktu bergabung
+               * @example 25 Mei 2025
+               */
+              joined: string | null;
+              /**
+               * @description Daftar area keahlian
+               * @default []
+               */
+              expertise: {
+                title: string;
+                description: string;
+              }[];
+              /** @description Urutan tampilan */
+              orderIndex: number;
+              /** @description Status aktif */
+              isActive: boolean;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /** @description URL foto profil yang telah di-resolve */
+              image: string;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Slug sudah digunakan */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'SLUG_ALREADY_EXISTS';
+              message: string;
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/team-members/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Detail anggota tim
+     * @description Menampilkan detail anggota tim berdasarkan ID atau slug.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID atau slug anggota tim */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Detail anggota tim berhasil ditampilkan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID anggota tim
+               */
+              id: string;
+              /** @description Slug anggota tim */
+              slug: string | null;
+              /**
+               * @description Nama anggota tim
+               * @example Sholahuddin Al Ayyubi
+               */
+              name: string;
+              /**
+               * @description Gelar/kredensial
+               * @example B.B.A., M.Sc.
+               */
+              credentials: string | null;
+              /**
+               * @description Jabatan
+               * @example Chief Executive Officer
+               */
+              role: string;
+              /**
+               * Format: uuid
+               * @description ID foto profil
+               */
+              imageId: string | null;
+              /** @description URL foto profil */
+              imageUrl: string | null;
+              /** @description Deskripsi profil/peran */
+              description: string;
+              /**
+               * @description Fokus bidang
+               * @example Strategi Perusahaan & Partnership
+               */
+              focus: string;
+              /** @description Kontribusi */
+              contribution: string | null;
+              /**
+               * @description Waktu bergabung
+               * @example 25 Mei 2025
+               */
+              joined: string | null;
+              /**
+               * @description Daftar area keahlian
+               * @default []
+               */
+              expertise: {
+                title: string;
+                description: string;
+              }[];
+              /** @description Urutan tampilan */
+              orderIndex: number;
+              /** @description Status aktif */
+              isActive: boolean;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /** @description URL foto profil yang telah di-resolve */
+              image: string;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Anggota tim tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'TEAM_MEMBER_NOT_FOUND';
+              message: string;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    /**
+     * Hapus anggota tim
+     * @description Menghapus anggota tim dari sistem.
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID atau slug anggota tim */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Anggota tim berhasil dihapus */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Anggota tim tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'TEAM_MEMBER_NOT_FOUND';
+              message: string;
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /**
+     * Update anggota tim
+     * @description Memperbarui data anggota tim yang sudah ada.
+     */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description ID atau slug anggota tim */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Nama lengkap anggota tim
+             * @example Sholahuddin Al Ayyubi
+             */
+            name?: string;
+            /**
+             * @description Slug unik anggota tim
+             * @example sholahuddin
+             */
+            slug?: string;
+            /**
+             * @description Gelar atau kredensial
+             * @example B.B.A., M.Sc.
+             */
+            credentials?: string | null;
+            /**
+             * @description Jabatan / Peran
+             * @example Chief Executive Officer
+             */
+            role?: string;
+            /**
+             * Format: uuid
+             * @description ID aset foto profil yang diunggah
+             */
+            imageId?: string | null;
+            /**
+             * @description URL foto profil langsung atau path lokal
+             * @example /team/ceo-sholahuddin-al-ayyubi.webp
+             */
+            imageUrl?: string | null;
+            /** @description Deskripsi / peran anggota tim */
+            description?: string;
+            /**
+             * @description Fokus bidang
+             * @example Strategi Perusahaan & Partnership
+             */
+            focus?: string;
+            /** @description Kontribusi penting dalam ekosistem */
+            contribution?: string | null;
+            /**
+             * @description Waktu bergabung
+             * @example 25 Mei 2025
+             */
+            joined?: string | null;
+            /**
+             * @description Daftar keahlian / spesialisasi
+             * @default []
+             */
+            expertise?: {
+              title: string;
+              description: string;
+            }[];
+            /**
+             * @description Urutan prioritas tampilan
+             * @default 0
+             */
+            orderIndex?: number;
+            /**
+             * @description Status apakah ditampilkan ke publik
+             * @default true
+             */
+            isActive?: boolean;
+          };
+        };
+      };
+      responses: {
+        /** @description Anggota tim berhasil diperbarui */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * Format: uuid
+               * @description ID anggota tim
+               */
+              id: string;
+              /** @description Slug anggota tim */
+              slug: string | null;
+              /**
+               * @description Nama anggota tim
+               * @example Sholahuddin Al Ayyubi
+               */
+              name: string;
+              /**
+               * @description Gelar/kredensial
+               * @example B.B.A., M.Sc.
+               */
+              credentials: string | null;
+              /**
+               * @description Jabatan
+               * @example Chief Executive Officer
+               */
+              role: string;
+              /**
+               * Format: uuid
+               * @description ID foto profil
+               */
+              imageId: string | null;
+              /** @description URL foto profil */
+              imageUrl: string | null;
+              /** @description Deskripsi profil/peran */
+              description: string;
+              /**
+               * @description Fokus bidang
+               * @example Strategi Perusahaan & Partnership
+               */
+              focus: string;
+              /** @description Kontribusi */
+              contribution: string | null;
+              /**
+               * @description Waktu bergabung
+               * @example 25 Mei 2025
+               */
+              joined: string | null;
+              /**
+               * @description Daftar area keahlian
+               * @default []
+               */
+              expertise: {
+                title: string;
+                description: string;
+              }[];
+              /** @description Urutan tampilan */
+              orderIndex: number;
+              /** @description Status aktif */
+              isActive: boolean;
+              /**
+               * Format: date-time
+               * @description Waktu dibuat
+               */
+              createdAt: string;
+              /**
+               * Format: date-time
+               * @description Waktu diubah
+               */
+              updatedAt: string | null;
+              /** @description URL foto profil yang telah di-resolve */
+              image: string;
+              /** @description User pembuat */
+              createdBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+              /** @description User pengubah terakhir */
+              updatedBy: {
+                /**
+                 * Format: uuid
+                 * @description ID user
+                 */
+                id: string;
+                /**
+                 * @description Nama user
+                 * @example John Doe
+                 */
+                name: string;
+                /**
+                 * Format: email
+                 * @description Email untuk login
+                 * @example john@example.com
+                 */
+                email: string;
+              } | null;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Anggota tim tidak ditemukan */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'TEAM_MEMBER_NOT_FOUND';
+              message: string;
+            };
+          };
+        };
+        /** @description Slug sudah digunakan */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'SLUG_ALREADY_EXISTS';
+              message: string;
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  '/public/site-settings/academy': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Pengaturan tampilan Academy untuk website publik
+     * @description Mengembalikan hanya tiga preferensi visibilitas dan hasil efektif. Tidak memuat metadata administrator.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Pengaturan visibilitas publik */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              academyPromotionEnabled: boolean;
+              academyNavbarEnabled: boolean;
+              academyHomepageSectionEnabled: boolean;
+              effectiveNavbar: boolean;
+              effectiveSection: boolean;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/site-settings/academy': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Baca pengaturan tampilan Academy
+     * @description Membutuhkan bearer token administrator dengan website.settings.manage.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Pengaturan Academy beserta version untuk optimistic concurrency */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              academyPromotionEnabled: boolean;
+              academyNavbarEnabled: boolean;
+              academyHomepageSectionEnabled: boolean;
+              effectiveNavbar: boolean;
+              effectiveSection: boolean;
+              version: number;
+              /** Format: date-time */
+              updatedAt: string;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+      };
+    };
+    /**
+     * Simpan pengaturan tampilan Academy
+     * @description Menyimpan tiga preferensi secara atomik. expectedVersion mencegah perubahan administrator lain tertimpa.
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            academyPromotionEnabled: boolean;
+            academyNavbarEnabled: boolean;
+            academyHomepageSectionEnabled: boolean;
+            expectedVersion: number;
+          };
+        };
+      };
+      responses: {
+        /** @description Pengaturan berhasil disimpan */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              academyPromotionEnabled: boolean;
+              academyNavbarEnabled: boolean;
+              academyHomepageSectionEnabled: boolean;
+              effectiveNavbar: boolean;
+              effectiveSection: boolean;
+              version: number;
+              /** Format: date-time */
+              updatedAt: string;
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akses ditolak */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'FORBIDDEN';
+              /** @enum {string} */
+              message: 'Akses ditolak';
+            };
+          };
+        };
+        /** @description Versi pengaturan sudah berubah */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              message: string;
+              currentVersion: number;
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
