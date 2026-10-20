@@ -28,6 +28,7 @@ import { PostsModule } from './modules/posts/posts.module';
 import { CryptoassetsModule } from './modules/cryptoassets/cryptoassets.module';
 import { TeamMembersModule } from './modules/team-members/team-members.module';
 import { AcademyModule } from './modules/academy/academy.module';
+import { WebsiteSettingsModule } from './modules/website-settings/website-settings.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AcademyModule } from './modules/academy/academy.module';
     CryptoassetsModule,
     TeamMembersModule,
     AcademyModule,
+    WebsiteSettingsModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: ApiKeyGuard },
