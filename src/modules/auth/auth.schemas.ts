@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { User } from '#src/modules/drizzle/drizzle.types';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from './auth.constants';
 
 const RefreshToken = z.string().min(1, 'Tidak boleh kosong').meta({
   description: 'Refresh token (long-lived)',
@@ -29,6 +30,39 @@ export const OtpVerifyBody = z.object({
   code: OtpCode,
 });
 export type OtpVerifyBody = z.infer<typeof OtpVerifyBody>;
+
+const Password = z
+  .string()
+  .min(PASSWORD_MIN_LENGTH, `Minimal ${PASSWORD_MIN_LENGTH} karakter`)
+  .max(PASSWORD_MAX_LENGTH, `Maksimal ${PASSWORD_MAX_LENGTH} karakter`);
+const LoginPassword = z
+  .string()
+  .min(1, 'Tidak boleh kosong')
+  .max(PASSWORD_MAX_LENGTH, `Maksimal ${PASSWORD_MAX_LENGTH} karakter`);
+
+export const PasswordLoginBody = z.object({
+  email: User.shape.email,
+  password: LoginPassword,
+});
+export type PasswordLoginBody = z.infer<typeof PasswordLoginBody>;
+
+export const PasswordResetRequestBody = z.object({
+  email: User.shape.email,
+  application: z.enum(['admin', 'learning']),
+});
+export type PasswordResetRequestBody = z.infer<typeof PasswordResetRequestBody>;
+
+export const PasswordResetBody = z.object({
+  token: z.string().regex(/^[A-Za-z0-9_-]{43}$/, 'Token tidak valid'),
+  newPassword: Password,
+});
+export type PasswordResetBody = z.infer<typeof PasswordResetBody>;
+
+export const PasswordSetBody = z.object({
+  otpCode: OtpCode,
+  newPassword: Password,
+});
+export type PasswordSetBody = z.infer<typeof PasswordSetBody>;
 
 export const RefreshBody = z.object({ refreshToken: RefreshToken });
 export type RefreshBody = z.infer<typeof RefreshBody>;

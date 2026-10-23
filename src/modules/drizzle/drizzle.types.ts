@@ -53,8 +53,9 @@ export const User = createSelectSchema(users, {
   createdAt: (f) => f.meta({ description: 'Waktu dibuat' }),
   updatedAt: (f) => f.meta({ description: 'Waktu diubah' }),
   updatedBy: (f) => f.meta({ description: 'User pengubah terakhir' }),
-});
+}).omit({ passwordHash: true, passwordSetAt: true });
 export type User = z.infer<typeof User>;
+export type UserRecord = typeof users.$inferSelect;
 
 export const ActivityLog = createSelectSchema(activityLogs, {
   id: (f) => f.meta({ description: 'ID log aktivitas' }),
@@ -64,6 +65,9 @@ export const ActivityLog = createSelectSchema(activityLogs, {
       'asset.upload',
       'imgbb.upload',
       'auth.otp.request',
+      'auth.password.login',
+      'auth.password.reset',
+      'auth.password.set',
       'auth.refresh',
       'auth.signin',
       'auth.signout',
@@ -376,9 +380,14 @@ export const TeamMember = createSelectSchema(teamMembers, {
       .trim()
       .min(2, 'Minimal 2 karakter')
       .max(150, 'Maksimal 150 karakter')
-      .meta({ description: 'Nama anggota tim', example: 'Sholahuddin Al Ayyubi' }),
+      .meta({
+        description: 'Nama anggota tim',
+        example: 'Sholahuddin Al Ayyubi',
+      }),
   credentials: (f) =>
-    f.nullable().meta({ description: 'Gelar/kredensial', example: 'B.B.A., M.Sc.' }),
+    f
+      .nullable()
+      .meta({ description: 'Gelar/kredensial', example: 'B.B.A., M.Sc.' }),
   role: (f) =>
     f
       .trim()
@@ -388,9 +397,16 @@ export const TeamMember = createSelectSchema(teamMembers, {
   imageId: (f) => f.nullable().meta({ description: 'ID foto profil' }),
   imageUrl: (f) => f.nullable().meta({ description: 'URL foto profil' }),
   description: (f) => f.meta({ description: 'Deskripsi profil/peran' }),
-  focus: (f) => f.meta({ description: 'Fokus bidang', example: 'Strategi Perusahaan & Partnership' }),
+  focus: (f) =>
+    f.meta({
+      description: 'Fokus bidang',
+      example: 'Strategi Perusahaan & Partnership',
+    }),
   contribution: (f) => f.nullable().meta({ description: 'Kontribusi' }),
-  joined: (f) => f.nullable().meta({ description: 'Waktu bergabung', example: '25 Mei 2025' }),
+  joined: (f) =>
+    f
+      .nullable()
+      .meta({ description: 'Waktu bergabung', example: '25 Mei 2025' }),
   expertise: () =>
     z
       .array(TeamExpertiseItem)
@@ -494,8 +510,7 @@ export type AcademyProgress = z.infer<typeof AcademyProgress>;
 export const AcademyCompletion = createSelectSchema(academyCompletions, {
   userId: (f) => f.meta({ description: 'ID pengguna' }),
   lessonId: (f) => f.meta({ description: 'ID pelajaran yang diselesaikan' }),
-  version: (f) =>
-    f.meta({ description: 'Versi pelajaran yang diselesaikan' }),
+  version: (f) => f.meta({ description: 'Versi pelajaran yang diselesaikan' }),
   completedAt: (f) => f.meta({ description: 'Waktu penyelesaian' }),
 });
 export type AcademyCompletion = z.infer<typeof AcademyCompletion>;

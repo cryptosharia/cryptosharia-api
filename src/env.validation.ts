@@ -19,12 +19,37 @@ const envSchema = z
     RESEND_API_KEY: z.string().min(1).optional(),
     RESEND_FROM: z.string().min(1).optional(),
     RESEND_REPLY_TO: z.email().optional(),
+    PASSWORD_RESET_ADMIN_ORIGIN: z.url().optional(),
+    PASSWORD_RESET_LEARNING_ORIGIN: z.url().optional(),
     CONTACT_FORM_TO_EMAIL: z.email().optional(),
     KV_REST_API_URL: z.url().optional(),
     KV_REST_API_TOKEN: z.string().min(1).optional(),
     REDIS_URL: z.url().optional(),
   })
   .superRefine((env, context) => {
+    for (const name of [
+      'PASSWORD_RESET_ADMIN_ORIGIN',
+      'PASSWORD_RESET_LEARNING_ORIGIN',
+    ] as const) {
+      const value = env[name];
+      if (!value) continue;
+      const parsed = new URL(value);
+      const localHttp =
+        env.NODE_ENV !== 'production' &&
+        parsed.protocol === 'http:' &&
+        ['localhost', '127.0.0.1'].includes(parsed.hostname);
+      if (
+        parsed.origin !== value ||
+        (parsed.protocol !== 'https:' && !localHttp)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: [name],
+          message: 'Must be an HTTPS origin without path, query, or fragment',
+        });
+      }
+    }
+
     if (env.NODE_ENV !== 'test') {
       const requiredOutsideTest = [
         ['CMC_API_KEY', env.CMC_API_KEY],
@@ -57,6 +82,19 @@ const envSchema = z
     }
 
     if (env.NODE_ENV !== 'production') return;
+
+    for (const name of [
+      'PASSWORD_RESET_ADMIN_ORIGIN',
+      'PASSWORD_RESET_LEARNING_ORIGIN',
+    ] as const) {
+      if (!env[name]) {
+        context.addIssue({
+          code: 'custom',
+          path: [name],
+          message: 'Required in production',
+        });
+      }
+    }
 
     if (!env.KV_REST_API_URL) {
       context.addIssue({

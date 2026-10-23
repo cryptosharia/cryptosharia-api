@@ -12,7 +12,11 @@ import {
 } from 'drizzle-orm';
 import { users, assets } from '#src/modules/drizzle/drizzle.schema';
 import { DrizzleService } from '#src/modules/drizzle/drizzle.service';
-import type { Asset, DbExecutor } from '#src/modules/drizzle/drizzle.types';
+import type {
+  Asset,
+  DbExecutor,
+  UserRecord,
+} from '#src/modules/drizzle/drizzle.types';
 import { User } from '#src/modules/drizzle/drizzle.types';
 import { escapeLikePattern } from '#src/common/escape-like-pattern';
 import { UsersError } from './users.error';
@@ -78,13 +82,22 @@ export class UsersRepository {
   async selectByEmail(
     email: User['email'],
     dbExecutor: DbExecutor = this.drizzleService.db,
-  ): Promise<User> {
+  ): Promise<UserRecord> {
     const [user] = await dbExecutor
       .select()
       .from(users)
       .where(eq(users.email, email));
     if (!user) throw new UsersError('USER_NOT_FOUND');
     return user;
+  }
+
+  async hasPassword(id: User['id']): Promise<boolean> {
+    const [user] = await this.drizzleService.db
+      .select({ passwordHash: users.passwordHash })
+      .from(users)
+      .where(eq(users.id, id));
+    if (!user) throw new UsersError('USER_NOT_FOUND');
+    return user.passwordHash !== null;
   }
 
   async selectAll(options: {
@@ -155,5 +168,16 @@ export class UsersRepository {
       .returning();
     if (!user) throw new UsersError('USER_NOT_FOUND');
     return user;
+  }
+
+  async updatePassword(
+    id: User['id'],
+    passwordHash: string,
+    passwordSetAt = new Date(),
+  ): Promise<void> {
+    await this.drizzleService.db
+      .update(users)
+      .set({ passwordHash, passwordSetAt })
+      .where(eq(users.id, id));
   }
 }

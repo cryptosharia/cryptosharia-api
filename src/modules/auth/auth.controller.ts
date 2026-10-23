@@ -16,6 +16,10 @@ import { AuthenticationGuard } from '#src/modules/security/authentication.guard'
 import { CurrentUser } from '#src/modules/security/current-user.decorator';
 import { AuthExceptionFilter } from './auth.exception-filter';
 import {
+  PasswordLoginBody,
+  PasswordResetBody,
+  PasswordResetRequestBody,
+  PasswordSetBody,
   OtpRequestBody,
   OtpVerifyBody,
   RefreshBody,
@@ -36,6 +40,62 @@ export class AuthController {
   ) {
     return this.authService.requestOtp({
       email: body.email,
+      ipAddress: getClientIp(request),
+    });
+  }
+
+  @Post('password/login')
+  @HttpCode(HttpStatus.OK)
+  loginWithPassword(
+    @Body(new ParseZodPipe(PasswordLoginBody)) body: PasswordLoginBody,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.authService.loginWithPassword({
+      email: body.email,
+      password: body.password,
+      ipAddress: getClientIp(request),
+    });
+  }
+
+  @Post('password/forgot')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  requestPasswordReset(
+    @Body(new ParseZodPipe(PasswordResetRequestBody))
+    body: PasswordResetRequestBody,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.authService.requestPasswordReset({
+      email: body.email,
+      application: body.application,
+      ipAddress: getClientIp(request),
+    });
+  }
+
+  @Post('password/reset')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  resetPassword(
+    @Body(new ParseZodPipe(PasswordResetBody)) body: PasswordResetBody,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.authService.resetPassword({
+      token: body.token,
+      newPassword: body.newPassword,
+      ipAddress: getClientIp(request),
+    });
+  }
+
+  @Post('password/set')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthenticationGuard)
+  setPassword(
+    @CurrentUser() currentUser: CurrentUser,
+    @Body(new ParseZodPipe(PasswordSetBody)) body: PasswordSetBody,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.authService.setPassword({
+      userId: currentUser.id,
+      otpCode: body.otpCode,
+      newPassword: body.newPassword,
       ipAddress: getClientIp(request),
     });
   }

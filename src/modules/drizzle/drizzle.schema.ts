@@ -81,6 +81,10 @@ export const users = pgTable('users', {
   role: userRoleEnum('role').notNull().default('member'),
   /** Administrative account lifecycle status. */
   status: userStatusEnum('status').notNull().default('active'),
+  /** Argon2id password hash; null for accounts that still use OTP only. */
+  passwordHash: text('password_hash'),
+  /** Time the password was most recently set or reset. */
+  passwordSetAt: timestamp('password_set_at', { withTimezone: true }),
   /** Timestamp of the most recent successful login. */
   lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
   createdAt: createdAt(),
@@ -379,18 +383,9 @@ export const academyLessonMedia = pgTable('academy_lesson_media', {
     .references((): AnyPgColumn => academyContent.id, { onDelete: 'cascade' }),
   videoId: varchar('video_id', { length: 32 }).notNull(),
   version: integer('version').notNull().default(1),
-  readingRefs: jsonb('reading_refs')
-    .$type<string[]>()
-    .notNull()
-    .default([]),
-  slideRefs: jsonb('slide_refs')
-    .$type<string[]>()
-    .notNull()
-    .default([]),
-  subtitleRefs: jsonb('subtitle_refs')
-    .$type<string[]>()
-    .notNull()
-    .default([]),
+  readingRefs: jsonb('reading_refs').$type<string[]>().notNull().default([]),
+  slideRefs: jsonb('slide_refs').$type<string[]>().notNull().default([]),
+  subtitleRefs: jsonb('subtitle_refs').$type<string[]>().notNull().default([]),
   attachmentRefs: jsonb('attachment_refs')
     .$type<string[]>()
     .notNull()
@@ -447,7 +442,9 @@ export const academyProgress = pgTable(
       .references((): AnyPgColumn => users.id, { onDelete: 'cascade' }),
     lessonId: varchar('lesson_id', { length: 100 })
       .notNull()
-      .references((): AnyPgColumn => academyContent.id, { onDelete: 'cascade' }),
+      .references((): AnyPgColumn => academyContent.id, {
+        onDelete: 'cascade',
+      }),
     version: integer('version').notNull().default(1),
     positionSeconds: integer('position_seconds').notNull().default(0),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -472,7 +469,9 @@ export const academyCompletions = pgTable(
       .references((): AnyPgColumn => users.id, { onDelete: 'cascade' }),
     lessonId: varchar('lesson_id', { length: 100 })
       .notNull()
-      .references((): AnyPgColumn => academyContent.id, { onDelete: 'cascade' }),
+      .references((): AnyPgColumn => academyContent.id, {
+        onDelete: 'cascade',
+      }),
     version: integer('version').notNull().default(1),
     completedAt: timestamp('completed_at', { withTimezone: true })
       .notNull()
@@ -480,9 +479,6 @@ export const academyCompletions = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.lessonId, table.version] }),
-    index('idx_academy_completions_user').on(
-      table.userId,
-      table.lessonId,
-    ),
+    index('idx_academy_completions_user').on(table.userId, table.lessonId),
   ],
 );

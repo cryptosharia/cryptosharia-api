@@ -18,3 +18,15 @@ export function createOtpEmail(input: { code: string }) {
 </div>
 `.trim();
 }
+
+export function createPasswordResetEmail(input: { resetUrl: string }) {
+  const resetUrl = escapeHtml(input.resetUrl);
+  return `
+<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #f97316;">Atur ulang kata sandi CryptoSharia</h2>
+  <p>Gunakan tautan berikut untuk mengatur kata sandi. Tautan berlaku selama 15 menit dan hanya dapat digunakan sekali.</p>
+  <p><a href="${resetUrl}">Atur ulang kata sandi</a></p>
+  <p>Jika Anda tidak meminta perubahan ini, abaikan email ini.</p>
+</div>
+`.trim();
+}

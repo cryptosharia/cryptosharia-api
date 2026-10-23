@@ -29,14 +29,17 @@ describe('AuthService', () => {
   let crypto: Record<string, ReturnType<typeof vi.fn>>;
   let mailer: { send: ReturnType<typeof vi.fn> };
   let audit: { log: ReturnType<typeof vi.fn> };
-  let config: { getOrThrow: ReturnType<typeof vi.fn> };
+  let config: {
+    getOrThrow: (key: string) => string;
+    get: (key: string) => string | undefined;
+  };
   let service: AuthService;
 
   beforeEach(() => {
     authRepository = {
       getOtpHash: vi.fn(),
       saveOtp: vi.fn().mockResolvedValue(undefined),
-      consumeOtp: vi.fn().mockResolvedValue(undefined),
+      consumeOtp: vi.fn(),
       getOtpTtl: vi.fn().mockResolvedValue(0),
       incrementOtpAttempts: vi.fn().mockResolvedValue(1),
       setOtpAttemptsTtl: vi.fn().mockResolvedValue(1),
@@ -50,22 +53,38 @@ describe('AuthService', () => {
       extendSession: vi.fn().mockResolvedValue(1),
       deleteSession: vi.fn().mockResolvedValue(1),
       deleteUserSessions: vi.fn().mockResolvedValue(2),
+      incrementPasswordLoginLimit: vi.fn().mockResolvedValue(1),
+      incrementPasswordResetLimit: vi.fn().mockResolvedValue(1),
+      savePasswordResetToken: vi.fn().mockResolvedValue(undefined),
+      consumePasswordResetToken: vi.fn(),
     };
     users = {
       selectByEmail: vi.fn(),
       selectById: vi.fn(),
       insert: vi.fn(),
       update: vi.fn(),
+      updatePassword: vi.fn().mockResolvedValue(undefined),
+      hasPassword: vi.fn().mockResolvedValue(false),
       updateLastLoginAt: vi.fn(),
     };
     crypto = {
       generateToken: vi.fn().mockReturnValue('raw-token'),
       hashToken: vi.fn((token: string) => `hash:${token}`),
       signJwt: vi.fn().mockResolvedValue('access-token'),
+      hashPassword: vi.fn().mockResolvedValue('argon-hash'),
+      verifyPassword: vi.fn().mockResolvedValue(false),
     };
     mailer = { send: vi.fn().mockResolvedValue(undefined) };
     audit = { log: vi.fn().mockResolvedValue(undefined) };
-    config = { getOrThrow: vi.fn().mockReturnValue('test-otp-secret') };
+    config = {
+      getOrThrow: vi.fn().mockReturnValue('test-otp-secret'),
+      get: vi.fn((name: string) =>
+        name === 'PASSWORD_RESET_ADMIN_ORIGIN'
+          ? 'https://admin.example.test'
+          : 'https://learning.example.test',
+      ),
+    };
+    authRepository.consumeOtp.mockResolvedValue(otpHash(user.email, '123456'));
     service = new AuthService(
       users as never,
       crypto as never,
@@ -236,6 +255,196 @@ describe('AuthService', () => {
     });
   });
 
+  describe('loginWithPassword', () => {
+    it('returns an existing session pair for a valid password', async () => {
+      const record = {
+        ...user,
+        passwordHash: 'argon-hash',
+        passwordSetAt: new Date(),
+      };
+      users.selectByEmail.mockResolvedValue(record);
+      crypto.verifyPassword.mockResolvedValue(true);
+
+      await expect(
+        service.loginWithPassword({
+          email: ' JOHN@EXAMPLE.COM ',
+          password: 'correct horse battery staple',
+          ipAddress: '192.0.2.4',
+        }),
+      ).resolves.toEqual({
+        accessToken: 'access-token',
+        refreshToken: `${user.id}:raw-token`,
+      });
+      expect(crypto.verifyPassword).toHaveBeenCalledWith(
+        'correct horse battery staple',
+        'argon-hash',
+      );
+      expect(authRepository.saveSession).toHaveBeenCalled();
+      expect(audit.log).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'auth.password.login' }),
+      );
+    });
+
+    it('uses the generic error for a wrong password and an unknown email', async () => {
+      users.selectByEmail.mockResolvedValue({
+        ...user,
+        passwordHash: 'argon-hash',
+        passwordSetAt: new Date(),
+      });
+      crypto.verifyPassword.mockResolvedValue(false);
+      await expect(
+        service.loginWithPassword({ email: user.email, password: 'incorrect' }),
+      ).rejects.toMatchObject({
+        code: 'PASSWORD_INVALID_CREDENTIALS',
+        message: 'Email atau kata sandi tidak valid.',
+      });
+
+      users.selectByEmail.mockRejectedValue(new UsersError('USER_NOT_FOUND'));
+      crypto.verifyPassword.mockResolvedValue(false);
+      await expect(
+        service.loginWithPassword({
+          email: 'missing@example.com',
+          password: 'incorrect',
+        }),
+      ).rejects.toMatchObject({ code: 'PASSWORD_INVALID_CREDENTIALS' });
+      expect(crypto.verifyPassword).toHaveBeenCalledTimes(2);
+    });
+
+    it('rejects OTP-only accounts using the same generic credential response', async () => {
+      users.selectByEmail.mockResolvedValue({
+        ...user,
+        passwordHash: null,
+        passwordSetAt: null,
+      });
+      crypto.verifyPassword.mockResolvedValue(false);
+
+      await expect(
+        service.loginWithPassword({
+          email: user.email,
+          password: 'some password',
+        }),
+      ).rejects.toMatchObject({ code: 'PASSWORD_INVALID_CREDENTIALS' });
+      expect(crypto.hashPassword).toHaveBeenCalledTimes(1);
+      expect(crypto.verifyPassword).toHaveBeenCalledWith(
+        'some password',
+        'argon-hash',
+      );
+    });
+
+    it('rate limits by account before checking credentials', async () => {
+      authRepository.incrementPasswordLoginLimit
+        .mockResolvedValueOnce(6)
+        .mockResolvedValueOnce(1);
+
+      await expect(
+        service.loginWithPassword({ email: user.email, password: 'incorrect' }),
+      ).rejects.toMatchObject({ code: 'PASSWORD_LOGIN_RATE_LIMITED' });
+      expect(users.selectByEmail).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('password reset and first-time set', () => {
+    it('sets an OTP-only account password only after consuming a matching OTP', async () => {
+      users.selectById.mockResolvedValue(user);
+      users.selectByEmail.mockResolvedValue({
+        ...user,
+        passwordHash: null,
+        passwordSetAt: null,
+      });
+      authRepository.getOtpHash.mockResolvedValue(
+        otpHash(user.email, '123456'),
+      );
+
+      await service.setPassword({
+        userId: user.id,
+        otpCode: '123456',
+        newPassword: 'a secure new password',
+      });
+
+      expect(authRepository.consumeOtp).toHaveBeenCalledWith(user.email);
+      expect(users.updatePassword).toHaveBeenCalledWith(user.id, 'argon-hash');
+      expect(audit.log).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'auth.password.set' }),
+      );
+      expect(JSON.stringify(audit.log.mock.calls)).not.toContain('argon-hash');
+    });
+
+    it('sends a hashed, expiring token only for an active account', async () => {
+      users.selectByEmail.mockResolvedValue({ ...user, passwordHash: null });
+
+      const result = await service.requestPasswordReset({
+        email: user.email,
+        application: 'learning',
+        ipAddress: '192.0.2.4',
+      });
+
+      expect(result).toBeUndefined();
+      expect(authRepository.savePasswordResetToken).toHaveBeenCalledWith(
+        expect.stringMatching(/^hash:/),
+        user.id,
+        900,
+      );
+      const sent = mailer.send.mock.calls[0][0] as { html: string };
+      expect(sent.html).toContain(
+        'https://learning.example.test/auth/reset-password/',
+      );
+      expect(sent.html).not.toContain('passwordHash');
+    });
+
+    it('returns the same result for unknown and rate-limited reset requests', async () => {
+      users.selectByEmail.mockRejectedValue(new UsersError('USER_NOT_FOUND'));
+      await expect(
+        service.requestPasswordReset({
+          email: 'missing@example.com',
+          application: 'admin',
+        }),
+      ).resolves.toBeUndefined();
+      expect(mailer.send).not.toHaveBeenCalled();
+
+      authRepository.incrementPasswordResetLimit
+        .mockResolvedValueOnce(4)
+        .mockResolvedValueOnce(1);
+      await expect(
+        service.requestPasswordReset({
+          email: user.email,
+          application: 'admin',
+        }),
+      ).resolves.toBeUndefined();
+      expect(users.selectByEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('resets once, revokes old sessions, and rejects replay or expiry', async () => {
+      authRepository.consumePasswordResetToken.mockResolvedValueOnce(user.id);
+      users.selectById.mockResolvedValue(user);
+
+      await service.resetPassword({
+        token: 'A'.repeat(43),
+        newPassword: 'a secure new password',
+        ipAddress: '192.0.2.4',
+      });
+
+      expect(users.updatePassword).toHaveBeenCalledWith(user.id, 'argon-hash');
+      expect(authRepository.deleteUserSessions).toHaveBeenCalledWith(user.id);
+      expect(audit.log).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'auth.password.reset' }),
+      );
+
+      await expect(
+        service.resetPassword({
+          token: 'A'.repeat(43),
+          newPassword: 'a secure new password',
+        }),
+      ).rejects.toMatchObject({ code: 'PASSWORD_RESET_INVALID' });
+      authRepository.consumePasswordResetToken.mockResolvedValueOnce(null);
+      await expect(
+        service.resetPassword({
+          token: 'B'.repeat(43),
+          newPassword: 'a secure new password',
+        }),
+      ).rejects.toMatchObject({ code: 'PASSWORD_RESET_INVALID' });
+    });
+  });
+
   describe('refresh', () => {
     it('returns a fresh access token and slides the session expiry', async () => {
       authRepository.getSession.mockResolvedValue(new Date().toISOString());
@@ -313,8 +522,12 @@ describe('AuthService', () => {
   describe('me', () => {
     it('returns the profile of an active user', async () => {
       users.selectById.mockResolvedValue(user);
+      users.hasPassword.mockResolvedValue(false);
 
-      await expect(service.me(user.id)).resolves.toEqual(user);
+      await expect(service.me(user.id)).resolves.toEqual({
+        ...user,
+        hasPassword: false,
+      });
     });
 
     it('rejects an unknown user id', async () => {

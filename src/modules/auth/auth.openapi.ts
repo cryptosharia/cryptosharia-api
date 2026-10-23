@@ -1,4 +1,5 @@
 import type { RouteConfig } from '@asteasolutions/zod-to-openapi';
+import { z } from 'zod';
 import { createErrorResponse } from '#src/common/create-error-response';
 import { createResponsesConfig } from '#src/common/create-responses-config';
 import {
@@ -13,6 +14,10 @@ import {
   OtpInvalidDetails,
   OtpRequestBody,
   OtpVerifyBody,
+  PasswordLoginBody,
+  PasswordResetBody,
+  PasswordResetRequestBody,
+  PasswordSetBody,
   RefreshBody,
   RefreshResponse,
   RetryAfterHeader,
@@ -87,6 +92,102 @@ export const authRouteConfig: RouteConfig[] = [
   },
   {
     method: 'post',
+    path: '/auth/password/login',
+    summary: 'Login dengan email dan kata sandi',
+    description:
+      'Membuat sesi dengan kata sandi tanpa mengubah role atau izin akun.',
+    security: apiKeySecurity,
+    request: {
+      body: { content: { 'application/json': { schema: PasswordLoginBody } } },
+    },
+    responses: createResponsesConfig({
+      200: { description: 'Login berhasil', body: SessionResponse },
+      401: {
+        description: AUTH_ERRORS.PASSWORD_INVALID_CREDENTIALS,
+        body: createErrorResponse(AUTH_ERRORS, [
+          'PASSWORD_INVALID_CREDENTIALS',
+        ]),
+      },
+      422: validationError,
+      429: {
+        description: AUTH_ERRORS.PASSWORD_LOGIN_RATE_LIMITED,
+        body: createErrorResponse(AUTH_ERRORS, ['PASSWORD_LOGIN_RATE_LIMITED']),
+        headers: { 'Retry-After': RetryAfterHeader },
+      },
+    }),
+  },
+  {
+    method: 'post',
+    path: '/auth/password/forgot',
+    summary: 'Minta tautan reset kata sandi',
+    description:
+      'Mengirim tautan reset sekali pakai. Response sama untuk semua alamat email.',
+    security: apiKeySecurity,
+    request: {
+      body: {
+        content: { 'application/json': { schema: PasswordResetRequestBody } },
+      },
+    },
+    responses: createResponsesConfig({
+      204: { description: 'Permintaan diproses' },
+      422: validationError,
+      401: authErrors[401],
+    }),
+  },
+  {
+    method: 'post',
+    path: '/auth/password/reset',
+    summary: 'Atur ulang kata sandi',
+    description:
+      'Memakai token reset yang di-hash di Redis, singkat, dan hanya dapat dipakai sekali.',
+    security: apiKeySecurity,
+    request: {
+      body: { content: { 'application/json': { schema: PasswordResetBody } } },
+    },
+    responses: createResponsesConfig({
+      204: { description: 'Kata sandi diperbarui dan sesi lama dicabut' },
+      400: {
+        description: AUTH_ERRORS.PASSWORD_RESET_INVALID,
+        body: createErrorResponse(AUTH_ERRORS, ['PASSWORD_RESET_INVALID']),
+      },
+      422: validationError,
+      401: authErrors[401],
+    }),
+  },
+  {
+    method: 'post',
+    path: '/auth/password/set',
+    summary: 'Atur kata sandi untuk akun OTP',
+    description:
+      'Memerlukan sesi aktif dan OTP email baru yang cocok dengan alamat sesi tersebut.',
+    security: fullSecurity,
+    request: {
+      body: { content: { 'application/json': { schema: PasswordSetBody } } },
+    },
+    responses: createResponsesConfig({
+      204: { description: 'Kata sandi pertama diatur' },
+      400: {
+        description: AUTH_ERRORS.OTP_INVALID_OR_EXPIRED,
+        body: createErrorResponse(AUTH_ERRORS, ['OTP_INVALID_OR_EXPIRED']),
+      },
+      401: authErrors[401],
+      403: {
+        description: AUTH_ERRORS.USER_INACTIVE,
+        body: createErrorResponse(AUTH_ERRORS, ['USER_INACTIVE']),
+      },
+      409: {
+        description: AUTH_ERRORS.PASSWORD_ALREADY_SET,
+        body: createErrorResponse(AUTH_ERRORS, ['PASSWORD_ALREADY_SET']),
+      },
+      422: validationError,
+      429: {
+        description: AUTH_ERRORS.OTP_MAX_ATTEMPTS_EXCEEDED,
+        body: createErrorResponse(AUTH_ERRORS, ['OTP_MAX_ATTEMPTS_EXCEEDED']),
+      },
+    }),
+  },
+  {
+    method: 'post',
     path: '/auth/refresh',
     summary: 'Perbarui access token',
     description: 'Terbitkan access token baru.',
@@ -141,7 +242,10 @@ export const authRouteConfig: RouteConfig[] = [
     description: 'Mengembalikan profil user yang sedang signin.',
     security: fullSecurity,
     responses: createResponsesConfig({
-      200: { description: 'User saat ini', body: UserResponse },
+      200: {
+        description: 'User saat ini',
+        body: UserResponse.extend({ hasPassword: z.boolean() }),
+      },
       ...authErrors,
     }),
   },

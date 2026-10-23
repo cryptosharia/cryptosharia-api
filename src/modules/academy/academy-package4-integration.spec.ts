@@ -1,7 +1,10 @@
 import './academy-test-env';
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import { Test } from '@nestjs/testing';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import multipart from '@fastify/multipart';
 import type { AddressInfo } from 'node:net';
 import { MailerService } from '#src/modules/mailer/mailer.service';
@@ -107,6 +110,13 @@ describe('Package 4B CMS Integration & Security Suite (Isolated QA Neon Branch)'
       .insert(users)
       .values([
         {
+          id: '25f4507b-7908-458c-a07b-edae1f0e107a',
+          email: 'qa.admin@test.local',
+          name: 'QA Admin',
+          role: 'super_admin',
+          status: 'active',
+        },
+        {
           id: studentUser1Id,
           email: 'qa.student1@test.local',
           name: 'QA Student 1',
@@ -119,6 +129,42 @@ describe('Package 4B CMS Integration & Security Suite (Isolated QA Neon Branch)'
           name: 'QA Student 2',
           role: 'member',
           status: 'active',
+        },
+      ])
+      .onConflictDoNothing();
+
+    await drizzleService.db
+      .insert(academyContent)
+      .values([
+        {
+          id: 'fundamental',
+          kind: 'subject',
+          parentId: 'root',
+          subjectId: 'fundamental',
+          order: 0,
+          title: 'Fundamental',
+          status: 'published',
+        },
+        {
+          id: 'fundamental-l1',
+          kind: 'level',
+          parentId: 'fundamental',
+          subjectId: 'fundamental',
+          level: 1,
+          order: 1,
+          title: 'Level 1',
+          status: 'published',
+        },
+        {
+          id: 'fundamental-l1-c1',
+          kind: 'chapter',
+          parentId: 'fundamental-l1',
+          subjectId: 'fundamental',
+          level: 1,
+          chapterNumber: 1,
+          order: 1,
+          title: 'Chapter 1',
+          status: 'published',
         },
       ])
       .onConflictDoNothing();
@@ -176,7 +222,10 @@ describe('Package 4B CMS Integration & Security Suite (Isolated QA Neon Branch)'
       data = text;
     }
     if (!res.ok) {
-      console.log(`[HTTP ${res.status}] ${options.method ?? 'GET'} ${path}:`, data);
+      console.log(
+        `[HTTP ${res.status}] ${options.method ?? 'GET'} ${path}:`,
+        data,
+      );
     }
     return { status: res.status, ok: res.ok, data };
   };

@@ -1,7 +1,30 @@
-process.env.DATABASE_URL =
-  process.env.DATABASE_URL || 'postgres://localhost/neondb';
-process.env.API_KEY =
-  process.env.API_KEY || 'test-bff-api-key-academy-qa-2026';
+import { config } from 'dotenv';
+
+config({ path: '.env.test', override: false });
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL must target the isolated local test database.');
+}
+
+let database: URL;
+try {
+  database = new URL(databaseUrl);
+} catch {
+  throw new Error('DATABASE_URL must target the isolated local test database.');
+}
+
+const databaseName = decodeURIComponent(database.pathname.slice(1));
+if (
+  !['postgres:', 'postgresql:'].includes(database.protocol) ||
+  !['localhost', '127.0.0.1', '[::1]'].includes(database.hostname) ||
+  !/(?:^|[_-])(?:test|qa)(?:$|[_-])/i.test(databaseName)
+) {
+  throw new Error('DATABASE_URL must target the isolated local test database.');
+}
+
+process.env.DATABASE_URL = databaseUrl;
+process.env.API_KEY = process.env.API_KEY || 'test-bff-api-key-academy-qa-2026';
 process.env.ACCESS_TOKEN_SECRET =
   process.env.ACCESS_TOKEN_SECRET ||
   'test-access-token-secret-for-qa-environment-32chars';

@@ -53,6 +53,46 @@ export class AuthRepository {
     return this.redisService.del(this.otpAttemptsKey(email));
   }
 
+  async incrementPasswordLoginLimit(
+    scope: 'account' | 'ip',
+    identifierHash: string,
+    windowId: number,
+    ttlSeconds: number,
+  ): Promise<number> {
+    const key = `password_login_rl:${scope}:${identifierHash}:${windowId}`;
+    const count = await this.redisService.incr(key);
+    if (count === 1) await this.redisService.expire(key, ttlSeconds);
+    return count;
+  }
+
+  async incrementPasswordResetLimit(
+    scope: 'account' | 'ip',
+    identifierHash: string,
+    windowId: number,
+    ttlSeconds: number,
+  ): Promise<number> {
+    const key = `password_reset_rl:${scope}:${identifierHash}:${windowId}`;
+    const count = await this.redisService.incr(key);
+    if (count === 1) await this.redisService.expire(key, ttlSeconds);
+    return count;
+  }
+
+  async savePasswordResetToken(
+    tokenHash: string,
+    userId: string,
+    ttlSeconds: number,
+  ): Promise<void> {
+    await this.redisService.setEx(
+      `password_reset:${tokenHash}`,
+      ttlSeconds,
+      userId,
+    );
+  }
+
+  async consumePasswordResetToken(tokenHash: string): Promise<string | null> {
+    return this.redisService.getDel(`password_reset:${tokenHash}`);
+  }
+
   async clearOtp(email: string): Promise<number> {
     return this.redisService.del(
       this.otpKey(email),

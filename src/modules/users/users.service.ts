@@ -31,6 +31,10 @@ export class UsersService {
     return this.usersRepository.selectByEmail(email, dbExecutor);
   }
 
+  async hasPassword(id: User['id']) {
+    return this.usersRepository.hasPassword(id);
+  }
+
   async selectAll(
     options: Parameters<UsersRepository['selectAll']>[0],
   ): Promise<UserResponse[]> {
@@ -78,6 +82,10 @@ export class UsersService {
       undefined,
       dbExecutor,
     );
+  }
+
+  async updatePassword(id: User['id'], passwordHash: string) {
+    return this.usersRepository.updatePassword(id, passwordHash);
   }
 
   private toResponse(record: UserWithAvatar): UserResponse {

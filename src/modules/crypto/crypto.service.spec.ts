@@ -27,4 +27,24 @@ describe('CryptoService', () => {
     expect(service.hashToken(token)).toBe(service.hashToken(token));
     expect(service.hashToken(token)).not.toBe(service.hashToken('other'));
   });
+
+  it('hashes and verifies passwords with Argon2id', async () => {
+    const password = 'correct horse battery staple';
+    const hash = await service.hashPassword(password);
+
+    expect(hash).toMatch(/^\$argon2id\$v=19\$m=65536,/);
+    expect(hash).toContain('t=3');
+    expect(hash).toContain('p=1');
+    expect(hash).not.toContain(password);
+    await expect(service.verifyPassword(password, hash)).resolves.toBe(true);
+    await expect(service.verifyPassword('wrong password', hash)).resolves.toBe(
+      false,
+    );
+  });
+
+  it('treats malformed stored hashes as a failed credential', async () => {
+    await expect(
+      service.verifyPassword('any password', 'not-a-phc-hash'),
+    ).resolves.toBe(false);
+  });
 });

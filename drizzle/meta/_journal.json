@@ -57,6 +57,13 @@
       "when": 1792501279752,
       "tag": "0007_website_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792730201543,
+      "tag": "0008_keen_talon",
+      "breakpoints": true
     }
   ]
 }

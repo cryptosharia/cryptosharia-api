@@ -323,6 +323,536 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/auth/password/login': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Login dengan email dan kata sandi
+     * @description Membuat sesi dengan kata sandi tanpa mengubah role atau izin akun.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * Format: email
+             * @description Email untuk login
+             * @example john@example.com
+             */
+            email: string;
+            password: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Login berhasil */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /**
+               * @description Access token (short-lived)
+               * @example eyJhbGciOiJIUzI1NiIs...
+               */
+              accessToken: string;
+              /**
+               * @description Refresh token (long-lived)
+               * @example 0d53e95e-9ac5-41e1-b8d7-9c7f2a3b4c5d:a1b2c3d4...
+               */
+              refreshToken: string;
+            };
+          };
+        };
+        /** @description Email atau kata sandi tidak valid. */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Email atau kata sandi tidak valid.';
+              /** @enum {string} */
+              error: 'PASSWORD_INVALID_CREDENTIALS';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+        /** @description Terlalu banyak percobaan. Coba lagi nanti. */
+        429: {
+          headers: {
+            /** @description Detik sebelum request berikutnya */
+            'Retry-After': string;
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Terlalu banyak percobaan. Coba lagi nanti.';
+              /** @enum {string} */
+              error: 'PASSWORD_LOGIN_RATE_LIMITED';
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/password/forgot': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Minta tautan reset kata sandi
+     * @description Mengirim tautan reset sekali pakai. Response sama untuk semua alamat email.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * Format: email
+             * @description Email untuk login
+             * @example john@example.com
+             */
+            email: string;
+            /** @enum {string} */
+            application: 'admin' | 'learning';
+          };
+        };
+      };
+      responses: {
+        /** @description Permintaan diproses */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/password/reset': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Atur ulang kata sandi
+     * @description Memakai token reset yang di-hash di Redis, singkat, dan hanya dapat dipakai sekali.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            token: string;
+            newPassword: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Kata sandi diperbarui dan sesi lama dicabut */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Tautan reset tidak valid atau kedaluwarsa. */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Tautan reset tidak valid atau kedaluwarsa.';
+              /** @enum {string} */
+              error: 'PASSWORD_RESET_INVALID';
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/password/set': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Atur kata sandi untuk akun OTP
+     * @description Memerlukan sesi aktif dan OTP email baru yang cocok dengan alamat sesi tersebut.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': {
+            /**
+             * @description Kode OTP 6 digit
+             * @example 123456
+             */
+            otpCode: string;
+            newPassword: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Kata sandi pertama diatur */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Kode OTP tidak valid atau kedaluwarsa */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Kode OTP tidak valid atau kedaluwarsa';
+              /** @enum {string} */
+              error: 'OTP_INVALID_OR_EXPIRED';
+            };
+          };
+        };
+        /** @description Tidak terautentikasi */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'UNAUTHORIZED';
+              /** @enum {string} */
+              message: 'Tidak terautentikasi';
+            };
+          };
+        };
+        /** @description Akun tidak aktif. Hubungi support. */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Akun tidak aktif. Hubungi support.';
+              /** @enum {string} */
+              error: 'USER_INACTIVE';
+            };
+          };
+        };
+        /** @description Kata sandi akun ini sudah tersedia. */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Kata sandi akun ini sudah tersedia.';
+              /** @enum {string} */
+              error: 'PASSWORD_ALREADY_SET';
+            };
+          };
+        };
+        /** @description Validasi gagal */
+        422: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              error: 'VALIDATION_FAILED';
+              /** @enum {string} */
+              message: 'Validasi gagal';
+              details: {
+                /**
+                 * @description Kesalahan validasi root
+                 * @example [
+                 *       "<error1>",
+                 *       "<error2>",
+                 *       "<error...>"
+                 *     ]
+                 */
+                root: string[];
+                /**
+                 * @description Kesalahan validasi per field
+                 * @example {
+                 *       "<field1>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field2>": [
+                 *         "<error1>",
+                 *         "<error2>",
+                 *         "<error...>"
+                 *       ],
+                 *       "<field...>": [
+                 *         "<error...>"
+                 *       ]
+                 *     }
+                 */
+                fields: {
+                  [key: string]: string[];
+                };
+              };
+            };
+          };
+        };
+        /** @description Terlalu banyak percobaan. Request kode baru untuk melanjutkan. */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** @enum {string} */
+              message: 'Terlalu banyak percobaan. Request kode baru untuk melanjutkan.';
+              /** @enum {string} */
+              error: 'OTP_MAX_ATTEMPTS_EXCEEDED';
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/auth/refresh': {
     parameters: {
       query?: never;
@@ -735,6 +1265,7 @@ export interface paths {
                 /** @description Tinggi gambar (piksel) */
                 height: number | null;
               } | null;
+              hasPassword: boolean;
             };
           };
         };
