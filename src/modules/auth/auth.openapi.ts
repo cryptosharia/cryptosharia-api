@@ -5,6 +5,8 @@ import { createResponsesConfig } from '#src/common/create-responses-config';
 import {
   APP_ERRORS,
   ForbiddenResponse,
+  InternalServerErrorResponse,
+  ServiceUnavailableResponse,
   UnauthorizedResponse,
   ValidationFailedResponse,
 } from '#src/common/error-response.schemas';
@@ -53,6 +55,14 @@ export const authRouteConfig: RouteConfig[] = [
       204: { description: 'Kode OTP terkirim' },
       422: validationError,
       401: authErrors[401],
+      500: {
+        description: APP_ERRORS.INTERNAL_SERVER_ERROR,
+        body: InternalServerErrorResponse,
+      },
+      503: {
+        description: APP_ERRORS.SERVICE_UNAVAILABLE,
+        body: ServiceUnavailableResponse,
+      },
       429: {
         description: AUTH_ERRORS.OTP_REQUEST_RATE_LIMITED,
         body: createErrorResponse(AUTH_ERRORS, ['OTP_REQUEST_RATE_LIMITED']),
