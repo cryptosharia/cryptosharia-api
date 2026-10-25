@@ -12,7 +12,9 @@ describe('MailerService', () => {
             ? 'CryptoSharia <system@example.com>'
             : 'support@example.com',
         ),
-        get: vi.fn(),
+        get: vi.fn((key: string) =>
+          key === 'RESEND_REPLY_TO' ? 'support@example.com' : undefined,
+        ),
       } as never,
     );
 
@@ -53,5 +55,30 @@ describe('MailerService', () => {
     expect(send).toHaveBeenCalledWith(
       expect.objectContaining({ replyTo: 'custom@example.com' }),
     );
+  });
+
+  it('falls back to the sender when the optional reply-to setting is absent', async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    const service = new MailerService(
+      { send } as never,
+      {
+        getOrThrow: vi.fn(() => 'system@example.com'),
+        get: vi.fn(() => undefined),
+      } as never,
+    );
+
+    await service.send({
+      to: 'user@example.com',
+      subject: 'Subject',
+      html: '<p>Body</p>',
+    });
+
+    expect(send).toHaveBeenCalledWith({
+      to: 'user@example.com',
+      subject: 'Subject',
+      html: '<p>Body</p>',
+      from: 'system@example.com',
+      replyTo: 'system@example.com',
+    });
   });
 });
