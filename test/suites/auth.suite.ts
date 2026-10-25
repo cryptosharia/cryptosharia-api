@@ -7,6 +7,9 @@ import type { Context } from '#test/helpers/context.type';
 import { Suite } from '#test/helpers/suite.base';
 import type { TestMailerService } from '#test/helpers/test-mailer.service';
 import { createClient } from 'redis';
+import { vi } from 'vitest';
+import { AuthRepository } from '#src/modules/auth/auth.repository';
+import { RedisService } from '#src/modules/redis/redis.service';
 
 export class AuthSuite extends Suite {
   constructor(ctx: Context) {
@@ -77,6 +80,49 @@ export class AuthSuite extends Suite {
           );
           expect(mailer().messages.at(-1)?.html).toMatch(/\d{6}/);
           expect(mailer().messages.at(-1)?.html).toContain('5 menit');
+          const ttl = await this.ctx.app.get(AuthRepository).getOtpTtl(email);
+          expect(ttl).toBeGreaterThan(0);
+          expect(ttl).toBeLessThanOrEqual(300);
+        });
+
+        it('fails safely before storing an OTP when Redis is unavailable', async () => {
+          const repository = this.ctx.app.get(AuthRepository);
+          const incrSpy = vi
+            .spyOn(this.ctx.app.get(RedisService), 'incr')
+            .mockRejectedValueOnce(
+              new Error('synthetic local Redis unavailable'),
+            );
+          const saveOtpSpy = vi.spyOn(repository, 'saveOtp');
+          try {
+            const { error, response } = await requestOtp();
+            expect(response.status).toBe(503);
+            expect(saveOtpSpy).not.toHaveBeenCalled();
+            expect(mailer().messages).toHaveLength(0);
+            expect(await repository.getOtpHash(email)).toBeNull();
+            expect(error).toMatchObject({ error: 'SERVICE_UNAVAILABLE' });
+            expect(JSON.stringify(error)).not.toContain('synthetic');
+          } finally {
+            saveOtpSpy.mockRestore();
+            incrSpy.mockRestore();
+          }
+        });
+
+        it('returns a generic service failure when the fake email transport fails', async () => {
+          const sendSpy = vi
+            .spyOn(mailer(), 'send')
+            .mockRejectedValueOnce(
+              new Error('synthetic local email sink failure'),
+            );
+          try {
+            const { error, response } = await requestOtp();
+            expect(response.status).toBe(503);
+            const ttl = await this.ctx.app.get(AuthRepository).getOtpTtl(email);
+            expect(ttl).toBeGreaterThan(0);
+            expect(error).toMatchObject({ error: 'SERVICE_UNAVAILABLE' });
+            expect(JSON.stringify(error)).not.toContain('synthetic');
+          } finally {
+            sendSpy.mockRestore();
+          }
         });
 
         it('returns 204 for an unknown email to prevent enumeration', async () => {

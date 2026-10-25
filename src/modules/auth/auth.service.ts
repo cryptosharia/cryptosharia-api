@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   createHmac,
@@ -169,34 +169,53 @@ export class AuthService {
   async requestOtp(input: { email: string; ipAddress?: string }) {
     const email = input.email.trim().toLowerCase();
 
-    const requests = await this.authRepository.incrementRateLimit(email);
-    if (requests === 1) {
-      await this.authRepository.setRateLimitTtl(
-        email,
-        OTP_REQUEST_WINDOW_SECONDS,
-      );
+    let requests: number;
+    try {
+      requests = await this.authRepository.incrementRateLimit(email);
+      if (requests === 1) {
+        await this.authRepository.setRateLimitTtl(
+          email,
+          OTP_REQUEST_WINDOW_SECONDS,
+        );
+      }
+    } catch {
+      throw new ServiceUnavailableException();
     }
     if (requests > OTP_REQUEST_LIMIT) {
-      const ttl = await this.authRepository.getRateLimitTtl(email);
+      let ttl: number;
+      try {
+        ttl = await this.authRepository.getRateLimitTtl(email);
+      } catch {
+        throw new ServiceUnavailableException();
+      }
       throw new AuthError('OTP_REQUEST_RATE_LIMITED', {
         retryAfterSeconds: Math.max(ttl, 0),
       });
     }
 
     const code = generateOtpCode();
-    await this.authRepository.saveOtp(
-      email,
-      this.hashOtp(email, code),
-      OTP_TTL_SECONDS,
-    );
-    await this.authRepository.clearOtpAttempts(email);
+    try {
+      await this.authRepository.saveOtp(
+        email,
+        this.hashOtp(email, code),
+        OTP_TTL_SECONDS,
+      );
+      await this.authRepository.clearOtpAttempts(email);
+    } catch {
+      throw new ServiceUnavailableException();
+    }
 
-    await this.auditService.log({
-      action: 'auth.otp.request',
-      subjectType: 'auth',
-      description: `Kode OTP diminta: ${email}`,
-      ipAddress: input.ipAddress,
-    });
+    try {
+      await this.auditService.log({
+        action: 'auth.otp.request',
+        subjectType: 'auth',
+        description: `Kode OTP diminta: ${email}`,
+        ipAddress: input.ipAddress,
+      });
+    } catch {
+      throw new ServiceUnavailableException();
+    }
+
     try {
       await this.mailerService.send({
         to: email,
@@ -204,7 +223,9 @@ export class AuthService {
         html: createOtpEmail({ code }),
       });
     } catch {
-      // Delivery failure must keep the same response as an unknown email to prevent enumeration.
+      // This endpoint sends to every requested address without looking up users,
+      // so one generic service failure does not reveal whether an account exists.
+      throw new ServiceUnavailableException();
     }
   }
 

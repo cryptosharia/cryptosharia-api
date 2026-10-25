@@ -142,12 +142,24 @@ describe('AuthService', () => {
       expect(authRepository.saveOtp).not.toHaveBeenCalled();
     });
 
-    it('swallows mailer failures so the email does not reveal the account', async () => {
-      mailer.send.mockRejectedValue(new Error('SMTP down'));
+    it('fails safely before storing an OTP when Redis is unavailable', async () => {
+      authRepository.incrementRateLimit.mockRejectedValue(
+        new Error('synthetic local Redis unavailable'),
+      );
 
       await expect(
         service.requestOtp({ email: user.email }),
-      ).resolves.toBeUndefined();
+      ).rejects.toMatchObject({ status: 503, message: 'Service Unavailable' });
+      expect(authRepository.saveOtp).not.toHaveBeenCalled();
+      expect(mailer.send).not.toHaveBeenCalled();
+    });
+
+    it('returns a generic service failure when the mailer fails', async () => {
+      mailer.send.mockRejectedValue(new Error('synthetic provider failure'));
+
+      await expect(
+        service.requestOtp({ email: user.email }),
+      ).rejects.toMatchObject({ status: 503 });
     });
   });
 

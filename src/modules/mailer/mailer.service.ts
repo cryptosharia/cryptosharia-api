@@ -13,7 +13,7 @@ export class MailerService {
     configService: ConfigService,
   ) {
     this.from = configService.getOrThrow<string>('RESEND_FROM');
-    this.replyTo = configService.getOrThrow<string>('RESEND_REPLY_TO');
+    this.replyTo = configService.get<string>('RESEND_REPLY_TO') || this.from;
   }
 
   send(input: {
