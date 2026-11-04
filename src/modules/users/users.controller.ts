@@ -3,24 +3,31 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
+  Post,
+  Query,
   Req,
   Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import type { FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { getClientIp } from '#src/common/get-client-ip';
-import { Query } from '@nestjs/common';
-import type { FastifyReply } from 'fastify';
 import { CurrentUser } from '#src/modules/security/current-user.decorator';
 import { ParseZodPipe } from '#src/common/parse-zod.pipe';
 import { AuthenticationGuard } from '#src/modules/security/authentication.guard';
 import { PermissionGuard } from '#src/modules/security/permission.guard';
 import { RequirePermissions } from '#src/modules/security/require-permissions.decorator';
 import { UsersExceptionFilter } from './users.exception-filter';
-import { UserParam, UserUpdateBody, UsersQuery } from './users.schemas';
+import {
+  UserCreateBody,
+  UserParam,
+  UserUpdateBody,
+  UsersQuery,
+} from './users.schemas';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -41,6 +48,20 @@ export class UsersController {
     ]);
     response.header('total-items', total);
     return users;
+  }
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @RequirePermissions('users.manage_role')
+  async create(
+    @Body(new ParseZodPipe(UserCreateBody)) body: UserCreateBody,
+    @CurrentUser() currentUser: CurrentUser,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.usersService.create(body, {
+      id: currentUser.id,
+      ipAddress: getClientIp(request),
+    });
   }
 
   @Get(':id')

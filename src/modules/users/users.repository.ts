@@ -155,6 +155,42 @@ export class UsersRepository {
     }
   }
 
+  async insertWithPassword(
+    data: {
+      name: string;
+      email: string;
+      passwordHash: string;
+      role: User['role'];
+      status: User['status'];
+    },
+    dbExecutor: DbExecutor = this.drizzleService.db,
+  ): Promise<User> {
+    try {
+      const [user] = await dbExecutor
+        .insert(users)
+        .values({
+          name: data.name,
+          email: data.email,
+          passwordHash: data.passwordHash,
+          passwordSetAt: new Date(),
+          role: data.role,
+          status: data.status,
+        })
+        .returning();
+
+      return user;
+    } catch (error) {
+      if (error instanceof DrizzleQueryError) {
+        if (error.cause instanceof DatabaseError) {
+          if (error.cause.code === '23505') {
+            throw new UsersError('EMAIL_UNIQUE_VIOLATION');
+          }
+        }
+      }
+      throw error;
+    }
+  }
+
   async update(
     id: User['id'],
     data: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>,

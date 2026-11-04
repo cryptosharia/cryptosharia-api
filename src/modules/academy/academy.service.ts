@@ -339,6 +339,12 @@ export class AcademyService {
     );
   }
 
+  async getLessonMedia(
+    lessonId: string,
+  ): Promise<AcademyLessonMedia | null> {
+    return this.repository.selectLessonMedia(lessonId);
+  }
+
   async setLessonMedia(
     lessonId: string,
     data: SetLessonMediaBody & { updatedBy: string },

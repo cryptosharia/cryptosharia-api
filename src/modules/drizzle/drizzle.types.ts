@@ -81,6 +81,7 @@ export const ActivityLog = createSelectSchema(activityLogs, {
       'cryptoasset.create',
       'cryptoasset.delete',
       'cryptoasset.update',
+      'user.create',
       'user.update',
       'website_settings.academy_visibility.updated',
     ])

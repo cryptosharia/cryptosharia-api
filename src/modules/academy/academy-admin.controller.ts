@@ -188,6 +188,24 @@ export class AcademyAdminController {
   // Media Management
   // ==========================================
 
+  @Get('content/:id/media')
+  @RequirePermissions('academy.manage', 'academy.review', 'academy.publish')
+  async getLessonMedia(
+    @Param(new ParseZodPipe(ContentIdParam)) { id }: ContentIdParam,
+  ) {
+    const media = await this.academyService.getLessonMedia(id);
+    return (
+      media ?? {
+        videoId: null,
+        version: 1,
+        readingRefs: [],
+        slideRefs: [],
+        subtitleRefs: [],
+        attachmentRefs: [],
+      }
+    );
+  }
+
   @Put('content/:id/media')
   @RequirePermissions('academy.manage')
   async setLessonMedia(

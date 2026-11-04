@@ -76,3 +76,23 @@ export const UserUpdateBody = User.pick({
     error: 'Minimal satu field wajib diisi',
   });
 export type UserUpdateBody = z.infer<typeof UserUpdateBody>;
+
+export const UserCreateBody = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, 'Nama minimal 2 karakter')
+    .max(120, 'Nama maksimal 120 karakter'),
+  email: z
+    .string()
+    .trim()
+    .email('Format email tidak valid')
+    .max(255, 'Email maksimal 255 karakter'),
+  password: z
+    .string()
+    .min(12, 'Password minimal 12 karakter')
+    .max(128, 'Password maksimal 128 karakter'),
+  role: User.shape.role.default('member'),
+  status: User.shape.status.default('active'),
+});
+export type UserCreateBody = z.infer<typeof UserCreateBody>;

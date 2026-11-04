@@ -10,6 +10,7 @@ import {
 } from '#src/common/error-response.schemas';
 import { USERS_ERRORS } from './users.error';
 import {
+  UserCreateBody,
   UserParam,
   UserResponse,
   UserUpdateBody,
@@ -45,6 +46,29 @@ export const usersRouteConfig: RouteConfig[] = [
             description: 'Total user (sebelum pagination)',
           }),
         },
+      },
+      422: {
+        description: APP_ERRORS.VALIDATION_FAILED,
+        body: ValidationFailedResponse,
+      },
+      ...commonErrors,
+    }),
+  },
+  {
+    method: 'post',
+    path: '/users',
+    summary: 'Tambah user baru',
+    description:
+      'Membuat akun user baru langsung dengan nama, email, password, role, dan status.<br>Hanya bisa diakses oleh akun dengan hak akses `users.manage_role`.',
+    security: protectedSecurity,
+    request: {
+      body: { content: { 'application/json': { schema: UserCreateBody } } },
+    },
+    responses: createResponsesConfig({
+      201: { description: 'User berhasil dibuat', body: UserResponse },
+      409: {
+        description: USERS_ERRORS.EMAIL_UNIQUE_VIOLATION,
+        body: createErrorResponse(USERS_ERRORS, ['EMAIL_UNIQUE_VIOLATION']),
       },
       422: {
         description: APP_ERRORS.VALIDATION_FAILED,

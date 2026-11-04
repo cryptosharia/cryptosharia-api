@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '#src/modules/audit/audit.service';
 import { AssetsService } from '#src/modules/assets/assets.service';
+import { CryptoService } from '#src/modules/crypto/crypto.service';
 import { User } from '#src/modules/drizzle/drizzle.types';
 import type { DbExecutor } from '#src/modules/drizzle/drizzle.types';
 import { UsersRepository, type UserWithAvatar } from './users.repository';
-import type { UserResponse } from './users.schemas';
+import type { UserCreateBody, UserResponse } from './users.schemas';
 
 @Injectable()
 export class UsersService {
@@ -12,6 +13,7 @@ export class UsersService {
     private readonly usersRepository: UsersRepository,
     private readonly assetsService: AssetsService,
     private readonly auditService: AuditService,
+    private readonly cryptoService: CryptoService,
   ) {}
 
   async selectById(
@@ -25,6 +27,38 @@ export class UsersService {
 
   async insert(data: Pick<User, 'name' | 'email'>, dbExecutor?: DbExecutor) {
     return this.usersRepository.insert(data, dbExecutor);
+  }
+
+  async create(
+    body: UserCreateBody,
+    actor: { id: User['id']; ipAddress?: string },
+    dbExecutor?: DbExecutor,
+  ): Promise<UserResponse> {
+    const passwordHash = await this.cryptoService.hashPassword(body.password);
+    const user = await this.usersRepository.insertWithPassword(
+      {
+        name: body.name,
+        email: body.email,
+        passwordHash,
+        role: body.role,
+        status: body.status,
+      },
+      dbExecutor,
+    );
+
+    await this.auditService.log({
+      userId: actor.id,
+      action: 'user.create',
+      subjectType: 'user',
+      subjectId: user.id,
+      description: `Created user ${user.email} with role ${user.role}`,
+      ipAddress: actor.ipAddress,
+    });
+
+    return this.toResponse({
+      user,
+      avatar: null,
+    });
   }
 
   async selectByEmail(email: User['email'], dbExecutor?: DbExecutor) {
