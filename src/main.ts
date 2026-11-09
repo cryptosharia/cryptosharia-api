@@ -11,7 +11,11 @@ import { join } from 'node:path';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    new FastifyAdapter({
+      routerOptions: {
+        maxParamLength: 500,
+      },
+    }),
   );
   // Cap multipart buffering at the largest endpoint limit before request handlers run.
   await app.register(multipart, {

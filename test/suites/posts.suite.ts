@@ -441,6 +441,34 @@ export class PostsSuite extends Suite {
           expect(byId.response.status).toBe(200);
         });
 
+        it('gets a post with a slug longer than 100 characters', async () => {
+          const accessToken = await createSession(
+            'post-long-slug@example.com',
+            'posts_manager',
+          );
+          const headers = { authorization: `Bearer ${accessToken}` };
+          const asset = await createAsset();
+          const longSlug =
+            'tuntas-4-hari-intensif-crypto-sharia-masterclass-cetak-investor-aset-digital-yang-paham-fundamental-sekaligus-syariat';
+
+          const created = await this.ctx.client.POST('/posts', {
+            body: postBody({
+              title: 'Long Slug Post',
+              slug: longSlug,
+              coverImageId: asset.id,
+              status: 'published',
+            }),
+            headers,
+          });
+          expect(created.response.status).toBe(201);
+
+          const byLongSlug = await this.ctx.client.GET('/posts/{identifier}', {
+            params: { path: { identifier: longSlug } },
+          });
+          expect(byLongSlug.response.status).toBe(200);
+          expect(byLongSlug.data?.slug).toBe(longSlug);
+        });
+
         it('returns not found for an unknown identifier', async () => {
           const { response } = await this.ctx.client.GET(
             '/posts/{identifier}',

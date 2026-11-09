@@ -42,7 +42,11 @@ describe('App', () => {
       .compile();
 
     ctx.app = moduleRef.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
+      new FastifyAdapter({
+        routerOptions: {
+          maxParamLength: 500,
+        },
+      }),
     );
     // Keep the E2E Fastify instance aligned with the production multipart boundary.
     await ctx.app.register(multipart, {
