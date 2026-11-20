@@ -55,3 +55,7 @@ media origin or coordinate routing to avoid conflicts. The volume trusts the API
 as its writer; it does not protect against a fully compromised API process.
 The enum migration is operator-run; do not start local uploads until it is applied.
 Existing Blob records and objects remain on Blob and require a separate migration.
+
+## Local storage cleanup safety
+
+The existing asset-cleanup selection remains restricted to legacy `vercel_blob` assets. Automatic cleanup of new local assets is intentionally disabled until all potential references (including Academy and website settings) are audited. Never run legacy cleanup against production during the data cutover.

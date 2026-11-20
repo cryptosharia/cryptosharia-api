@@ -77,6 +77,9 @@ export class AssetsRepository {
       .leftJoin(users, eq(users.avatarId, assets.id))
       .where(
         and(
+          // Keep legacy cleanup scope during migration. Local files may have
+          // references outside the three current FK joins and must be audited.
+          eq(assets.provider, 'vercel_blob'),
           lte(assets.createdAt, input.cutoff),
           isNull(posts.id),
           isNull(cryptoassets.id),
