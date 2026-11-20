@@ -12,6 +12,15 @@ i=0
 until docker exec "$name" pg_isready -U postgres -d restore_check >/dev/null 2>&1; do
   i=$((i + 1)); [ "$i" -lt 60 ] || { echo 'Restore server did not become ready' >&2; exit 1; }; sleep 1
 done
-docker exec -i "$name" pg_restore -U postgres -d restore_check --exit-on-error --no-owner --no-privileges < "$1"
+# Neon-managed neon_auth has provider-specific catalog attributes unsupported by
+# stock PostgreSQL. This verifies the application-owned schemas only; it is not
+# a complete restore test for Neon Auth identities and sessions.
+docker exec "$name" psql -U postgres -d restore_check -v ON_ERROR_STOP=1 \
+  -c "CREATE SCHEMA IF NOT EXISTS drizzle;" >/dev/null
+docker exec -i "$name" pg_restore -U postgres -d restore_check \
+  --exit-on-error --no-owner --no-privileges \
+  --schema=public --schema=drizzle < "$1"
 docker exec "$name" psql -U postgres -d restore_check -v ON_ERROR_STOP=1 -c "SELECT count(*) AS public_tables FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';"
-echo 'Restore completed in an isolated disposable container; inspect application data separately.'
+docker exec "$name" psql -U postgres -d restore_check -v ON_ERROR_STOP=1 \
+  -c "SELECT 'users' AS table_name, count(*) FROM public.users UNION ALL SELECT 'posts',count(*) FROM public.posts UNION ALL SELECT 'academy_content',count(*) FROM public.academy_content UNION ALL SELECT 'assets',count(*) FROM public.assets;"
+echo 'Application schemas public+drizzle restored. Neon Auth schema intentionally excluded; review its separate migration.'
