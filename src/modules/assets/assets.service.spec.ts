@@ -23,6 +23,7 @@ class MockAssetsRepository {
 }
 
 class MockStorageService {
+  provider: 'vercel_blob' | 'local' = 'vercel_blob';
   upload =
     vi.fn<(input: UploadInput) => Promise<{ url: string; pathname: string }>>();
   delete = vi.fn<(pathnameOrUrl: string) => Promise<void>>();
@@ -160,6 +161,22 @@ describe('AssetsService', () => {
       expect(uploadCall.pathname).not.toContain('temp/');
     });
 
+    it('persists the selected local provider', async () => {
+      storageService.provider = 'local';
+      storageService.upload.mockResolvedValue({
+        url: 'https://media.example/file',
+        pathname: mockAsset.pathname,
+      });
+      assetsRepository.insertAsset.mockResolvedValue({
+        ...mockAsset,
+        provider: 'local',
+      });
+      await assetsService.uploadAsset(mockUser.id, uploadInput);
+      expect(assetsRepository.insertAsset).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'local' }),
+      );
+    });
+
     it('maps storage failures to a provider error', async () => {
       storageService.upload.mockRejectedValue(
         new StorageError('UPLOAD_FAILED'),
@@ -182,7 +199,10 @@ describe('AssetsService', () => {
       await expect(
         assetsService.uploadAsset(mockUser.id, uploadInput),
       ).rejects.toThrow('database down');
-      expect(storageService.delete).toHaveBeenCalledWith(mockAsset.pathname);
+      expect(storageService.delete).toHaveBeenCalledWith(
+        mockAsset.pathname,
+        'vercel_blob',
+      );
     });
   });
 
@@ -247,8 +267,12 @@ describe('AssetsService', () => {
 
   describe('cleanup', () => {
     const candidates = [
-      { id: 'asset-1', pathname: 'assets/orphan-1.png' },
-      { id: 'asset-2', pathname: 'assets/orphan-2.png' },
+      {
+        id: 'asset-1',
+        pathname: 'assets/orphan-1.png',
+        provider: 'vercel_blob',
+      },
+      { id: 'asset-2', pathname: 'assets/orphan-2.png', provider: 'local' },
     ];
 
     it('reports candidates without deleting anything on a dry run', async () => {
@@ -285,9 +309,14 @@ describe('AssetsService', () => {
       expect(result).toMatchObject({ deleted: 2, failed: 0 });
       expect(storageService.delete).toHaveBeenCalledWith(
         candidates[0].pathname,
+        candidates[0].provider,
       );
       expect(assetsRepository.deleteAsset).toHaveBeenCalledWith(
         candidates[0].id,
+      );
+      expect(storageService.delete).toHaveBeenCalledWith(
+        candidates[1].pathname,
+        'local',
       );
     });
 

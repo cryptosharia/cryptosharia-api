@@ -35,7 +35,7 @@ export const contentStatusEnum = pgEnum('content_status', [
   'archived',
 ]);
 /** Storage provider for managed assets. */
-export const assetProviderEnum = pgEnum('asset_provider', ['vercel_blob']);
+export const assetProviderEnum = pgEnum('asset_provider', ['vercel_blob', 'local']);
 
 /** Post section categories. */
 export const postSectionEnum = pgEnum('post_section', [

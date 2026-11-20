@@ -19,6 +19,7 @@ RUN bun install --frozen-lockfile --production
 COPY tsconfig.json ./
 COPY src ./src
 COPY static ./static
+RUN mkdir -p /data/media && chown bun:bun /data/media && chmod 755 /data/media
 ENV NODE_ENV=production
 USER bun
 EXPOSE 3000

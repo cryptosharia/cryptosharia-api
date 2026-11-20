@@ -41,3 +41,17 @@ This is preparation, not an authorization to deploy. The image and Compose confi
 ## Rollback
 
 Keep the old services and immutable backup available. If validation fails before writes reach the VPS, route back to the old stack after coordinating owners. Once writes occur on the VPS, routing back alone loses those writes: freeze writes and reconcile or reverse-migrate them with a separately rehearsed plan before switching. Schema changes may be irreversible and require a verified restore. Preserve both datasets and audit the reconciliation; do not delete volumes or old Blob objects as part of rollback.
+
+### Local media storage
+
+Set `STORAGE_PROVIDER=local`, `STORAGE_LOCAL_ROOT=/data/media`, and
+`STORAGE_PUBLIC_BASE_URL=https://media.example.invalid` in the VPS environment.
+The persistent `media_data` volume is writable by the API and mounted read-only
+by the internal `media` nginx service. In Nginx Proxy Manager, add custom
+locations `/assets/` and `/temp/assets/` forwarding to `media` on port 80,
+preserving the request path. The public base URL must map those paths to this
+service. If an existing public origin already uses either path, use a separate
+media origin or coordinate routing to avoid conflicts. The volume trusts the API
+as its writer; it does not protect against a fully compromised API process.
+The enum migration is operator-run; do not start local uploads until it is applied.
+Existing Blob records and objects remain on Blob and require a separate migration.

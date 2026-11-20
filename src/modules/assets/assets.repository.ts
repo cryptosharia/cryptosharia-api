@@ -66,14 +66,17 @@ export class AssetsRepository {
   selectCleanupCandidates(input: { cutoff: Date; limit: number }) {
     // A left join keeps only assets with no remaining user, post, or cryptoasset reference.
     return this.drizzleService.db
-      .select({ id: assets.id, pathname: assets.pathname })
+      .select({
+        id: assets.id,
+        pathname: assets.pathname,
+        provider: assets.provider,
+      })
       .from(assets)
       .leftJoin(posts, eq(posts.coverImageId, assets.id))
       .leftJoin(cryptoassets, eq(cryptoassets.logoId, assets.id))
       .leftJoin(users, eq(users.avatarId, assets.id))
       .where(
         and(
-          eq(assets.provider, 'vercel_blob'),
           lte(assets.createdAt, input.cutoff),
           isNull(posts.id),
           isNull(cryptoassets.id),

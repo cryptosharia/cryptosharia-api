@@ -39,3 +39,40 @@ describe('environment validation', () => {
     ).toBe(true);
   });
 });
+
+describe('storage environment', () => {
+  it('accepts local without Blob credentials and defaults to Blob', () => {
+    expect(validate({ ...production }).STORAGE_PROVIDER).toBe('vercel_blob');
+    expect(
+      validate({
+        ...production,
+        STORAGE_PROVIDER: 'local',
+        STORAGE_LOCAL_ROOT: '/data/media',
+        STORAGE_PUBLIC_BASE_URL: 'https://media.example',
+        BLOB_READ_WRITE_TOKEN: undefined,
+        VERCEL_BLOB_BASE_URL: undefined,
+      }).STORAGE_PROVIDER,
+    ).toBe('local');
+  });
+  it('requires the selected provider configuration', () => {
+    expect(() =>
+      validate({ ...production, BLOB_READ_WRITE_TOKEN: undefined }),
+    ).toThrow(/BLOB_READ_WRITE_TOKEN/);
+    expect(() =>
+      validate({
+        ...production,
+        STORAGE_PROVIDER: 'local',
+        STORAGE_LOCAL_ROOT: 'relative',
+        STORAGE_PUBLIC_BASE_URL: 'http://media.example',
+      }),
+    ).toThrow(/STORAGE_LOCAL_ROOT/);
+    expect(() =>
+      validate({
+        ...production,
+        STORAGE_PROVIDER: 'local',
+        STORAGE_LOCAL_ROOT: '/media',
+        STORAGE_PUBLIC_BASE_URL: 'https://media.example/?x=1',
+      }),
+    ).toThrow(/STORAGE_PUBLIC_BASE_URL/);
+  });
+});

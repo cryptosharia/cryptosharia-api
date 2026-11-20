@@ -10,6 +10,7 @@ const defaultUpload = (input: UploadInput) => ({
 });
 
 export class TestStorageService {
+  provider = 'vercel_blob' as const;
   upload = vi.fn(defaultUpload);
   delete = vi.fn(() => undefined);
   getPublicUrl = vi.fn(

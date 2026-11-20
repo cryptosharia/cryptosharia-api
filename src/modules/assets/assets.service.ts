@@ -76,7 +76,7 @@ export class AssetsService {
         mimeType: input.contentType || null,
         width,
         height,
-        provider: 'vercel_blob',
+        provider: this.storageService.provider,
         createdBy: userId,
       });
       await this.auditService.log({
@@ -91,7 +91,10 @@ export class AssetsService {
     } catch (error) {
       try {
         // Do not leave an externally stored object when its database metadata was not saved.
-        await this.storageService.delete(uploaded.pathname);
+        await this.storageService.delete(
+          uploaded.pathname,
+          this.storageService.provider,
+        );
       } catch {
         // Surface the original persistence failure; rollback is best-effort.
       }
@@ -159,7 +162,10 @@ export class AssetsService {
     const failures: AssetCleanupResult['failures'] = [];
     for (const candidate of candidates) {
       try {
-        await this.storageService.delete(candidate.pathname);
+        await this.storageService.delete(
+          candidate.pathname,
+          candidate.provider,
+        );
         await this.assetsRepository.deleteAsset(candidate.id);
         deleted += 1;
       } catch (error) {
@@ -195,12 +201,6 @@ export class AssetsService {
   }
 
   private resolveAssetUrl(asset: Asset): string {
-    if (asset.pathname.startsWith('http')) return asset.pathname;
-
-    if (asset.provider === 'vercel_blob')
-      return this.storageService.getPublicUrl(asset.pathname);
-
-    // Fallback is also Vercel Blob :)
-    return this.storageService.getPublicUrl(asset.pathname);
+    return this.storageService.getPublicUrl(asset.pathname, asset.provider);
   }
 }

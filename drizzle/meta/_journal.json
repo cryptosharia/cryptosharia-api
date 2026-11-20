@@ -64,6 +64,13 @@
       "when": 1792730201543,
       "tag": "0008_keen_talon",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795155704627,
+      "tag": "0009_pale_lorna_dane",
+      "breakpoints": true
     }
   ]
 }

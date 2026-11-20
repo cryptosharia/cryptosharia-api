@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isAbsolute } from 'node:path';
 
 const envSchema = z
   .object({
@@ -13,6 +14,9 @@ const envSchema = z
     ACCESS_TOKEN_SECRET: z.string().min(1),
     API_KEY: z.string().min(1),
     CMC_API_KEY: z.string().min(1).optional(),
+    STORAGE_PROVIDER: z.enum(['local', 'vercel_blob']).default('vercel_blob'),
+    STORAGE_LOCAL_ROOT: z.string().optional(),
+    STORAGE_PUBLIC_BASE_URL: z.url().optional(),
     BLOB_READ_WRITE_TOKEN: z.string().min(1).optional(),
     VERCEL_BLOB_BASE_URL: z.url().optional(),
     IMGBB_API_KEY: z.string().min(1).optional(),
@@ -53,8 +57,6 @@ const envSchema = z
     if (env.NODE_ENV !== 'test') {
       const requiredOutsideTest = [
         ['CMC_API_KEY', env.CMC_API_KEY],
-        ['BLOB_READ_WRITE_TOKEN', env.BLOB_READ_WRITE_TOKEN],
-        ['VERCEL_BLOB_BASE_URL', env.VERCEL_BLOB_BASE_URL],
         ['IMGBB_API_KEY', env.IMGBB_API_KEY],
         ['RESEND_API_KEY', env.RESEND_API_KEY],
         ['RESEND_FROM', env.RESEND_FROM],
@@ -71,6 +73,38 @@ const envSchema = z
           });
         }
       }
+    }
+
+    if (env.STORAGE_PROVIDER === 'local') {
+      if (!env.STORAGE_LOCAL_ROOT || !isAbsolute(env.STORAGE_LOCAL_ROOT))
+        context.addIssue({
+          code: 'custom',
+          path: ['STORAGE_LOCAL_ROOT'],
+          message: 'An absolute directory is required for local storage',
+        });
+      if (
+        !env.STORAGE_PUBLIC_BASE_URL ||
+        !env.STORAGE_PUBLIC_BASE_URL.startsWith('https://') ||
+        new URL(env.STORAGE_PUBLIC_BASE_URL).search ||
+        new URL(env.STORAGE_PUBLIC_BASE_URL).hash
+      )
+        context.addIssue({
+          code: 'custom',
+          path: ['STORAGE_PUBLIC_BASE_URL'],
+          message:
+            'An HTTPS base URL without query or fragment is required for local storage',
+        });
+    } else if (env.NODE_ENV !== 'test') {
+      for (const name of [
+        'BLOB_READ_WRITE_TOKEN',
+        'VERCEL_BLOB_BASE_URL',
+      ] as const)
+        if (!env[name])
+          context.addIssue({
+            code: 'custom',
+            path: [name],
+            message: 'Required for Blob storage',
+          });
     }
 
     if (env.SERVERLESS !== true && env.NODE_ENV !== 'test' && !env.REDIS_URL) {

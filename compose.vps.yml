@@ -55,6 +55,8 @@ services:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
     networks: [internal, proxy]
+    volumes:
+      - media_data:/data/media
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
@@ -62,6 +64,15 @@ services:
     mem_limit: 1g
     cpus: 1.0
     pids_limit: 256
+    logging: *logging
+
+  media:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - media_data:/data/media:ro
+      - ./nginx-media.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [proxy]
     logging: *logging
 
   migrate:
@@ -93,3 +104,4 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  media_data:
