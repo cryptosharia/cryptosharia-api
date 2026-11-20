@@ -189,9 +189,27 @@ export class AssetsService {
 
   toAssetMetadata(asset: Asset | null | undefined): AssetMetadata | null {
     if (!asset) return null;
+    let url: string;
+    try {
+      url = this.resolveAssetUrl(asset);
+    } catch (error) {
+      // During migration, images stored in the old Blob store cannot be
+      // resolved until its original public hostname is configured.
+      // Omit an optional image rather than fail the entire content listing.
+      if (
+        asset.provider === 'vercel_blob' &&
+        this.storageService.provider === 'local' &&
+        !this.configService.get<string>('VERCEL_BLOB_BASE_URL') &&
+        error instanceof StorageError &&
+        error.code === 'UPLOAD_FAILED'
+      ) {
+        return null;
+      }
+      throw error;
+    }
     return {
       id: asset.id,
-      url: this.resolveAssetUrl(asset),
+      url,
       filename: asset.filename,
       size: asset.size,
       mimeType: asset.mimeType,

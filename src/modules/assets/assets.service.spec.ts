@@ -112,6 +112,34 @@ describe('AssetsService', () => {
     vi.clearAllMocks();
   });
 
+  describe('toAssetMetadata', () => {
+    it('omits an unresolved legacy Blob image in local-storage staging', () => {
+      storageService.provider = 'local';
+      configService.get.mockReturnValue(undefined);
+      storageService.getPublicUrl.mockImplementation(() => {
+        throw new StorageError('UPLOAD_FAILED');
+      });
+
+      expect(assetsService.toAssetMetadata(mockAsset)).toBeNull();
+      expect(storageService.getPublicUrl).toHaveBeenCalledWith(
+        mockAsset.pathname,
+        'vercel_blob',
+      );
+    });
+
+    it('does not swallow image errors when the legacy base URL is configured', () => {
+      storageService.provider = 'local';
+      configService.get.mockReturnValue('https://blob.example.com');
+      storageService.getPublicUrl.mockImplementation(() => {
+        throw new StorageError('UPLOAD_FAILED');
+      });
+
+      expect(() => assetsService.toAssetMetadata(mockAsset)).toThrow(
+        StorageError,
+      );
+    });
+  });
+
   describe('uploadAsset', () => {
     it('uploads the file and persists metadata', async () => {
       storageService.upload.mockResolvedValue({
