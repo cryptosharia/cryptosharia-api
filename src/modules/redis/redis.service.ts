@@ -71,6 +71,12 @@ export class RedisService implements OnModuleDestroy {
     return this.connection;
   }
 
+  async evalServerful(script: string, keys: string[]): Promise<unknown> {
+    if (this.mode !== 'serverful')
+      throw new Error('TCP Redis is not configured');
+    return (await this.serverfulClient).eval(script, { keys, arguments: [] });
+  }
+
   async get(key: string): Promise<string | null> {
     if (this.mode === 'disabled') return null;
     if (this.mode === 'serverless') return this.serverlessClient!.get(key);

@@ -96,7 +96,7 @@ const envSchema = z
       }
     }
 
-    if (!env.KV_REST_API_URL) {
+    if (env.SERVERLESS && !env.KV_REST_API_URL) {
       context.addIssue({
         code: 'custom',
         path: ['KV_REST_API_URL'],
@@ -104,7 +104,7 @@ const envSchema = z
       });
     }
 
-    if (!env.KV_REST_API_TOKEN) {
+    if (env.SERVERLESS && !env.KV_REST_API_TOKEN) {
       context.addIssue({
         code: 'custom',
         path: ['KV_REST_API_TOKEN'],

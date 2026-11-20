@@ -1,34 +1,26 @@
-# Production runtime image.
-# Bun runs TypeScript directly — there is no build step, so the image ships
-# the source files and lets bun execute them.
-#
-# tsconfig.json is copied because bun reads its `paths` aliases (#src/*, #test/*)
-# at runtime.
-
-FROM oven/bun:1
-
+# Pin the runtime to the Bun version used for local verification.
+FROM oven/bun:1.4.3 AS dependencies
 WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-# Install only production dependencies.
-# Docker caches layers — if only source code changes (not deps), the cached
-# "RUN bun install" layer is reused.
+# Explicit, operator-run migration image. Never runs automatically on startup.
+FROM dependencies AS migration
+COPY tsconfig.json drizzle.config.ts ./
+COPY src ./src
+COPY drizzle ./drizzle
+USER bun
+CMD ["bun", "run", "db:migrate"]
+
+FROM oven/bun:1.4.3 AS runtime
+WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
-
-# Copy source + tsconfig (required for path alias resolution)
 COPY tsconfig.json ./
 COPY src ./src
-
-# Create a dedicated non-root user for running the app.
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
-RUN chown -R appuser:appgroup /app
-USER appuser
-
-# Tell bun/app we're in production mode.
+COPY static ./static
 ENV NODE_ENV=production
-
-# Documentation only: the port the container listens on. Not a publish.
+USER bun
 EXPOSE 3000
-
-# The ONLY command that runs when a container starts from this image.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD bun -e "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 CMD ["bun", "run", "start"]

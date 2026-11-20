@@ -1,5 +1,10 @@
 import { Module } from '@nestjs/common';
+import { RedisModule } from '#src/modules/redis/redis.module';
 import { RateLimitService } from './rate-limit.service';
 
-@Module({ providers: [RateLimitService], exports: [RateLimitService] })
+@Module({
+  imports: [RedisModule],
+  providers: [RateLimitService],
+  exports: [RateLimitService],
+})
 export class RateLimitModule {}

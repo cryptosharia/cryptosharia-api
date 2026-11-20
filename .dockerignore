@@ -9,4 +9,3 @@ dist
 !.env.example
 test
 coverage
-drizzle
